@@ -1,0 +1,42 @@
+# ── Variables de entorno (pueden contener claves) ────────────────────────────
+# Versionar solo .env.example, nunca los archivos con valores reales.
+.env
+.env.local
+.env.*.local
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── Build ─────────────────────────────────────────────────────────────────────
+node_modules
+dist
+dist-ssr
+*.local
+
+# ── Testing local / reports ───────────────────────────────────────────────────
+# Los tests se versionan como código fuente; sus resultados y coberturas, no.
+coverage/
+coverage-*/
+.nyc_output/
+.vitest/
+test-results/
+playwright-report/
+junit*.xml
+
+# ── IDE / OS ──────────────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
