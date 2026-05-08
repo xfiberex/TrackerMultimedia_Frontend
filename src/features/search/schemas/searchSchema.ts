@@ -36,7 +36,7 @@ export interface SearchMediaItem {
 }
 
 export const mediaSearchTypeLabels: Record<MediaSearchType, string> = {
-  All: 'Todo',
+  All: 'Todos',
   Anime: 'Anime',
   Manga: 'Manga',
   Donghua: 'Donghua',

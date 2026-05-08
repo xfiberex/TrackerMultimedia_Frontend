@@ -17,7 +17,7 @@ Conecta con la API de [Jikan](https://jikan.moe/) para búsquedas externas.
 ### Backend
 
 ```bash
-cd Backend
+cd TrackerMultimedia_Backend
 ```
 
 #### 1. Inicializar User Secrets
@@ -81,7 +81,7 @@ El API queda disponible en `http://localhost:5218`.
 ### Frontend
 
 ```bash
-cd Frontend
+cd TrackerMultimedia_Frontend
 ```
 
 Instala las dependencias:
@@ -163,7 +163,7 @@ npm run preview  # Vista previa del build
 
 ```
 TrackerMultimedia/
-├── Backend/
+├── TrackerMultimedia_Backend/
 │   ├── Contracts/          # DTOs de entrada/salida del API
 │   ├── Controllers/        # Endpoints REST
 │   ├── Data/               # DbContext y configuración EF Core
@@ -173,7 +173,7 @@ TrackerMultimedia/
 │   ├── Properties/         # Configuración de arranque
 │   ├── Services/           # Lógica de negocio y servicios externos
 │   └── appsettings.json    # Configuración no-sensible (plantilla)
-└── Frontend/
+└── TrackerMultimedia_Frontend/
     └── src/
         ├── config/             # Variables de entorno y configuración global
         ├── features/           # Funcionalidades por dominio
