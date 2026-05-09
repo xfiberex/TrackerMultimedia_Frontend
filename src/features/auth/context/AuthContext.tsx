@@ -5,6 +5,7 @@ import {
 } from 'react'
 import { AuthAPI } from '../api/AuthAPI'
 import type {
+  AuthResponse,
   AuthMethodsResponse,
   LoginPayload,
   OAuthLinkConfirmPayload,
@@ -26,6 +27,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const [methods, setMethods] = useState<AuthMethodsResponse | null>(null)
 
+  const applySession = (response: AuthResponse) => {
+    tokenStore.set(response.accessToken)
+    localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken)
+    setUser(response.user)
+  }
+
   // Cargar métodos disponibles al montar (independiente de la sesión)
   useEffect(() => {
     void AuthAPI.getMethods()
@@ -43,9 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const init = savedToken
       ? AuthAPI.refresh(savedToken)
           .then((response) => {
-            tokenStore.set(response.accessToken)
-            localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken)
-            setUser(response.user)
+            applySession(response)
           })
           .catch(() => {
             localStorage.removeItem(REFRESH_TOKEN_KEY)
@@ -71,9 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (payload: LoginPayload) => {
     const response = await AuthAPI.login(payload)
-    tokenStore.set(response.accessToken)
-    localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken)
-    setUser(response.user)
+    applySession(response)
   }
 
   const register = async (payload: RegisterPayload) => {
@@ -106,6 +109,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(updatedUser)
   }
 
+  const completeSession = (response: AuthResponse) => {
+    applySession(response)
+  }
+
   const loginWithOAuth = async (provider: 'google' | 'github') => {
     const { authorizationUrl } = await AuthAPI.getOAuthUrl(provider)
     window.location.href = authorizationUrl
@@ -113,14 +120,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const linkConfirm = async (payload: OAuthLinkConfirmPayload) => {
     const response = await AuthAPI.linkConfirm(payload)
-    tokenStore.set(response.accessToken)
-    localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken)
-    setUser(response.user)
+    applySession(response)
   }
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoading, methods, login, register, logout, logoutAll, refreshUser, loginWithOAuth, linkConfirm }}
+      value={{ user, isLoading, methods, login, register, logout, logoutAll, refreshUser, completeSession, loginWithOAuth, linkConfirm }}
     >
       {children}
     </AuthContext.Provider>

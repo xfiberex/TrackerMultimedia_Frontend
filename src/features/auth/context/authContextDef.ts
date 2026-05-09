@@ -1,5 +1,6 @@
 import { createContext } from 'react'
 import type {
+  AuthResponse,
   AuthMethodsResponse,
   LoginPayload,
   OAuthLinkConfirmPayload,
@@ -16,6 +17,7 @@ export interface AuthContextValue {
   logout: () => Promise<void>
   logoutAll: () => Promise<void>
   refreshUser: () => Promise<void>
+  completeSession: (session: AuthResponse) => void
   /** Redirige al proveedor OAuth indicado para iniciar el flujo. */
   loginWithOAuth: (provider: 'google' | 'github') => Promise<void>
   /** Completa la vinculación explícita cuando el email ya pertenece a una cuenta manual. */
