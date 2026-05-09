@@ -95,6 +95,12 @@ describe('LoginView', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Credenciales inválidas.')
   })
 
+  it('shows the oauth error returned in the query string', async () => {
+    renderLoginView('/login?oauth_error=profile_error&oauth_error_message=No%20se%20pudo%20intercambiar%20el%20c%C3%B3digo%20con%20Google.')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo intercambiar el código con Google.')
+  })
+
   it('renders OAuth methods and shows an error when an OAuth start fails', async () => {
     const user = userEvent.setup()
     authState.methods = {

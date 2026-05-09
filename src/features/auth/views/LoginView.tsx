@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useToast } from '@/shared/components/ToastProvider'
 import { useAuth } from '../context/useAuth'
-import { extractAuthError } from '../utils/authErrors'
+import { extractAuthError, getOAuthErrorMessage } from '../utils/authErrors'
 
 export default function LoginView() {
   const [email, setEmail] = useState('')
@@ -27,6 +27,16 @@ export default function LoginView() {
       navigate('/library', { replace: true })
     }
   }, [user, isLoading, navigate])
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search)
+    const oauthError = getOAuthErrorMessage(
+      searchParams.get('oauth_error'),
+      searchParams.get('oauth_error_message'),
+    )
+
+    setError(oauthError)
+  }, [location.search])
 
   useEffect(() => {
     if (!flashMessage || consumedFlashRef.current === flashMessage) {
