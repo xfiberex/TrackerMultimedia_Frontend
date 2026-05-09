@@ -54,6 +54,13 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
+    // Si la petición que falló ES el endpoint de refresh, no intentar refrescar de nuevo.
+    // Esto evita que el interceptor consuma tokens OAuth recién recibidos cuando el
+    // init de AuthContext intenta restaurar una sesión expirada en paralelo.
+    if (originalRequest.url?.includes('/auth/refresh')) {
+      return Promise.reject(error)
+    }
+
     const refreshToken = localStorage.getItem('refreshToken')
     if (!refreshToken) {
       // Sin refresh token: no se puede renovar, dejar pasar el error
