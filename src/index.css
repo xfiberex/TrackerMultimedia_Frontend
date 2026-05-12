@@ -1177,11 +1177,195 @@ a {
   .side-panel-layer__scrim,
   .side-panel--closing .side-panel__content,
   .side-panel__content,
+  .side-panel-layer--centered .side-panel__content,
+  .side-panel-layer--centered.side-panel-layer--closing .side-panel__content,
   .confirm-dialog-layer__scrim,
   .confirm-dialog,
   .confirm-dialog--closing {
     animation: none !important;
   }
+}
+
+/* ==========================================================================
+   Search results table
+   ========================================================================== */
+
+.search-table-wrapper {
+  overflow-x: auto;
+}
+
+.search-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.search-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+
+.search-row {
+  border-bottom: 1px solid var(--border-soft);
+  transition: background 120ms ease;
+}
+
+.search-row:last-child {
+  border-bottom: none;
+}
+
+.search-row:hover {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.search-row td {
+  padding: 0.6rem 0.75rem;
+  vertical-align: middle;
+  color: var(--text-primary);
+}
+
+.search-row__cover-cell {
+  width: 56px;
+  padding-right: 0.5rem !important;
+}
+
+.search-row__thumb {
+  width: 44px;
+  height: 58px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+  background: #F1F5F9;
+}
+
+.search-row__thumb-placeholder {
+  width: 44px;
+  height: 58px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, rgba(203, 213, 225, 0.2), #F8FAFC);
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+}
+
+.search-row__title-cell {
+  min-width: 180px;
+}
+
+.search-row__title {
+  display: block;
+  font-weight: 500;
+  color: var(--accent-ink);
+  line-height: 1.3;
+}
+
+.search-row__alt {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.15rem;
+}
+
+.search-row__meta-cell {
+  white-space: nowrap;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.search-row__actions-cell {
+  white-space: nowrap;
+}
+
+.search-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-row__actions .button {
+  min-height: 2.25rem;
+  padding: 0 0.75rem;
+  font-size: 0.85rem;
+}
+
+.row-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.row-category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  background: var(--border-soft);
+  border-radius: 99px;
+  padding: 0.1rem 0.45rem;
+}
+
+.category-row__color {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.category-pill__swatch--lg {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+/* ==========================================================================
+   Side panel — centered variant
+   ========================================================================== */
+
+.side-panel-layer--centered {
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 1rem;
+}
+
+.side-panel-layer--centered .side-panel {
+  width: min(880px, calc(100vw - 2rem));
+  height: auto;
+  max-height: calc(100vh - 3rem);
+  padding: 0;
+}
+
+.side-panel-layer--centered .side-panel__content {
+  height: auto;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  border-radius: 4px;
+  border: 1px solid var(--border-strong);
+  border-left: 1px solid var(--border-strong);
+  animation: confirm-dialog-enter 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.side-panel-layer--centered.side-panel-layer--closing .side-panel__content {
+  animation: confirm-dialog-exit 220ms ease forwards;
+}
+
+/* ==========================================================================
+   Button active modifier (used for filter toggle)
+   ========================================================================== */
+
+.button--active {
+  background: rgba(203, 213, 225, 0.25);
+  border-color: #CBD5E1;
+  color: var(--accent-ink);
 }
 
 /* ==========================================================================

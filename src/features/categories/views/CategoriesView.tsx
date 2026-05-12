@@ -301,49 +301,62 @@ export default function CategoriesView() {
         ) : null}
 
         {!categoriesQuery.isError && categories.length > 0 ? (
-          <ul className="category-list">
-            {categories.map((category) => (
-              <li key={category.id} className="category-list__item">
-                <div className="category-list__info">
-                  <span
-                    className="category-pill__swatch"
-                    style={{ backgroundColor: category.color ?? 'transparent' }}
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <p className="category-list__title">{category.name}</p>
-                    <p className="category-list__meta">{category.color ?? 'Sin color asignado'}</p>
-                  </div>
-                </div>
-
-                <div className="card-actions__buttons">
-                  <button
-                    className="button button--secondary"
-                    type="button"
-                    onClick={() => {
-                      setError(null)
-                      setEditingCategory(category)
-                      setDraft(createDraft(category))
-                      focusEditor()
-                    }}
-                  >
-                    <PencilSquareIcon width={18} height={18} />
-                    Editar
-                  </button>
-
-                  <button
-                    className="button button--danger"
-                    type="button"
-                    onClick={() => handleDelete(category)}
-                    disabled={deleteMutation.isPending}
-                  >
-                    <TrashIcon width={18} height={18} />
-                    Eliminar
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="search-table-wrapper">
+            <table className="search-table">
+              <thead>
+                <tr>
+                  <th>Color</th>
+                  <th>Nombre</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((category) => (
+                  <tr key={category.id} className="search-row">
+                    <td className="search-row__meta-cell">
+                      <div className="category-row__color">
+                        <span
+                          className="category-pill__swatch category-pill__swatch--lg"
+                          style={{ backgroundColor: category.color ?? 'transparent' }}
+                          aria-hidden="true"
+                        />
+                        <span>{category.color ?? 'Sin color'}</span>
+                      </div>
+                    </td>
+                    <td className="search-row__title-cell">
+                      <span className="search-row__title">{category.name}</span>
+                    </td>
+                    <td className="search-row__actions-cell">
+                      <div className="search-row__actions">
+                        <button
+                          className="button button--secondary"
+                          type="button"
+                          onClick={() => {
+                            setError(null)
+                            setEditingCategory(category)
+                            setDraft(createDraft(category))
+                            focusEditor()
+                          }}
+                        >
+                          <PencilSquareIcon width={16} height={16} />
+                          Editar
+                        </button>
+                        <button
+                          className="button button--danger"
+                          type="button"
+                          onClick={() => handleDelete(category)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <TrashIcon width={16} height={16} />
+                          Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : null}
       </section>
 

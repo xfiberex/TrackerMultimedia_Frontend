@@ -7,6 +7,7 @@ interface SidePanelDialogProps {
   ariaLabel: string
   scrimLabel?: string
   disableClose?: boolean
+  variant?: 'side' | 'centered'
   onClose: () => void
   children: ReactNode
 }
@@ -16,6 +17,7 @@ export default function SidePanelDialog({
   ariaLabel,
   scrimLabel = 'Cerrar panel',
   disableClose = false,
+  variant = 'side',
   onClose,
   children,
 }: SidePanelDialogProps) {
@@ -72,8 +74,15 @@ export default function SidePanelDialog({
     return null
   }
 
+  const isCentered = variant === 'centered'
+  const layerClass = [
+    'side-panel-layer',
+    isCentered ? 'side-panel-layer--centered' : '',
+    isActuallyClosing ? 'side-panel-layer--closing' : '',
+  ].filter(Boolean).join(' ')
+
   return (
-    <div className={`side-panel-layer${isActuallyClosing ? ' side-panel-layer--closing' : ''}`} role="presentation">
+    <div className={layerClass} role="presentation">
       <button
         type="button"
         className="side-panel-layer__scrim"

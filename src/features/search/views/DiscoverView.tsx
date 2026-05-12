@@ -376,15 +376,31 @@ export default function DiscoverView() {
         ) : null}
 
         {!searchQuery.isLoading && !searchQuery.isError && results.length > 0 ? (
-          <div className="search-grid">
-            {results.map((item) => (
-              <SearchResultCard
-                key={`${item.sourceType}:${item.externalMediaKind}:${item.externalId}`}
-                item={item}
-                isPending={addMutation.isPending && pendingExternalId === item.externalId}
-                onAdd={openQuickAdd}
-              />
-            ))}
+          <div className="search-table-wrapper">
+            <table className="search-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Origen</th>
+                  <th>Estado editorial</th>
+                  <th>Año</th>
+                  <th>Puntuación</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((item) => (
+                  <SearchResultCard
+                    key={`${item.sourceType}:${item.externalMediaKind}:${item.externalId}`}
+                    item={item}
+                    isPending={addMutation.isPending && pendingExternalId === item.externalId}
+                    onAdd={openQuickAdd}
+                  />
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : null}
       </section>

@@ -15,43 +15,40 @@ interface SearchResultCardProps {
 
 export default function SearchResultCard({ item, isPending, onAdd }: SearchResultCardProps) {
   return (
-    <article className="search-card">
-      {item.coverImageUrl ? (
-        <img className="search-card__cover" src={item.coverImageUrl} alt={item.title} loading="lazy" />
-      ) : (
-        <div className="search-card__placeholder" aria-hidden="true">
-          <SparklesIcon width={36} height={36} />
-        </div>
-      )}
-
-      <div className="search-card__body">
-        <h3 className="search-card__title">{item.title}</h3>
-        <p className="search-card__alt">{item.alternativeTitle ?? 'Sin título alternativo'}</p>
-        <p className="search-card__meta">
-          {item.suggestedType}
-          {' · '}
-          {mediaSourceLabels[item.sourceType]}
-          {' · '}
-          {item.externalStatusLabel ?? 'Estado editorial sin dato'}
-          {' · '}
-          {item.releaseYear ?? 'Año sin dato'}
-        </p>
-        <p className="search-card__footer">Puntuación externa: {formatScore(item.externalScore)}</p>
-
-        <div className="card-actions">
+    <tr className="search-row">
+      <td className="search-row__cover-cell">
+        {item.coverImageUrl ? (
+          <img className="search-row__thumb" src={item.coverImageUrl} alt={item.title} loading="lazy" />
+        ) : (
+          <div className="search-row__thumb-placeholder" aria-hidden="true">
+            <SparklesIcon width={20} height={20} />
+          </div>
+        )}
+      </td>
+      <td className="search-row__title-cell">
+        <span className="search-row__title">{item.title}</span>
+        {item.alternativeTitle ? (
+          <span className="search-row__alt">{item.alternativeTitle}</span>
+        ) : null}
+      </td>
+      <td className="search-row__meta-cell">{item.suggestedType}</td>
+      <td className="search-row__meta-cell">{mediaSourceLabels[item.sourceType]}</td>
+      <td className="search-row__meta-cell">{item.externalStatusLabel ?? '—'}</td>
+      <td className="search-row__meta-cell">{item.releaseYear ?? '—'}</td>
+      <td className="search-row__meta-cell">{formatScore(item.externalScore)}</td>
+      <td className="search-row__actions-cell">
+        <div className="search-row__actions">
           <button className="button button--primary" onClick={() => onAdd(item)} disabled={isPending}>
-            <PlusIcon width={18} height={18} />
-            {isPending ? 'Guardando...' : 'Preparar importación'}
+            <PlusIcon width={16} height={16} />
+            {isPending ? 'Guardando...' : 'Importar'}
           </button>
-
           {item.referenceUrl ? (
             <a className="button button--secondary" href={item.referenceUrl} target="_blank" rel="noreferrer">
-              <ArrowTopRightOnSquareIcon width={18} height={18} />
-              Abrir
+              <ArrowTopRightOnSquareIcon width={16} height={16} />
             </a>
           ) : null}
         </div>
-      </div>
-    </article>
+      </td>
+    </tr>
   )
 }

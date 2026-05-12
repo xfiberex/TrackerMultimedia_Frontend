@@ -5,8 +5,6 @@ import {
   defaultProgressUnitByContentKind,
   mediaTrackingStatusLabels,
   mediaTrackingStatuses,
-  progressUnitLabels,
-  progressUnits,
   type CreateMediaItemInput,
   type MediaItem,
   type MediaItemCategory,
@@ -14,14 +12,12 @@ import {
 
 type MediaItemDraft = {
   title: string
-  alternativeTitle: string
   description: string
   contentKind: CreateMediaItemInput['contentKind']
   status: CreateMediaItemInput['status']
   releaseYear: string
-  progressUnit: CreateMediaItemInput['progressUnit']
+  currentSeason: string
   progressCurrent: string
-  progressTotal: string
   personalScore: string
   coverImageUrl: string
   referenceUrl: string
@@ -45,14 +41,12 @@ function createDraft(item: MediaItem | null): MediaItemDraft {
 
   return {
     title: item?.title ?? '',
-    alternativeTitle: item?.alternativeTitle ?? '',
     description: item?.description ?? '',
     contentKind,
     status: item?.status ?? 'Planned',
     releaseYear: item?.releaseYear != null ? String(item.releaseYear) : '',
-    progressUnit: item?.progressUnit ?? defaultProgressUnitByContentKind[contentKind],
+    currentSeason: String(item?.currentSeason ?? 1),
     progressCurrent: String(item?.progressCurrent ?? item?.progressCount ?? 0),
-    progressTotal: item?.progressTotal != null ? String(item.progressTotal) : '',
     personalScore: item?.personalScore != null ? String(item.personalScore) : '',
     coverImageUrl: item?.coverImageUrl ?? '',
     referenceUrl: item?.referenceUrl ?? '',
@@ -71,11 +65,6 @@ function trimOrNull(value: string): string | null {
 function toOptionalNumber(value: string): number | null {
   const normalized = value.trim()
   return normalized.length > 0 ? Number(normalized) : null
-}
-
-function toOptionalInteger(value: string): number | null {
-  const parsed = toOptionalNumber(value)
-  return parsed == null ? null : Math.trunc(parsed)
 }
 
 function toRequiredInteger(value: string, fallback: number): number {
@@ -105,14 +94,6 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
     setDraft((current) => ({ ...current, [field]: value }))
   }
 
-  const handleContentKindChange = (contentKind: MediaItemDraft['contentKind']) => {
-    setDraft((current) => ({
-      ...current,
-      contentKind,
-      progressUnit: defaultProgressUnitByContentKind[contentKind],
-    }))
-  }
-
   const toggleCategory = (categoryId: string) => {
     setDraft((current) => ({
       ...current,
@@ -126,12 +107,12 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
     event.preventDefault()
 
     const progressCurrent = toRequiredInteger(draft.progressCurrent, 0)
-    const progressTotal = toOptionalInteger(draft.progressTotal)
+    const currentSeason = toRequiredInteger(draft.currentSeason, 1)
     const preservedLegacyType = item?.type != null && item.contentKind === draft.contentKind ? item.type : null
 
     onSubmit({
       title: draft.title.trim(),
-      alternativeTitle: trimOrNull(draft.alternativeTitle),
+      alternativeTitle: item?.alternativeTitle ?? null,
       type: preservedLegacyType,
       description: trimOrNull(draft.description),
       contentKind: draft.contentKind,
@@ -144,11 +125,11 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
       coverImageUrl: trimOrNull(draft.coverImageUrl),
       referenceUrl: trimOrNull(draft.referenceUrl),
       releaseYear: toOptionalNumber(draft.releaseYear),
-      progressUnit: draft.progressUnit,
+      progressUnit: item?.progressUnit ?? defaultProgressUnitByContentKind[draft.contentKind],
       progressCount: progressCurrent,
       progressCurrent,
-      progressTotal,
-      currentSeason: item?.currentSeason ?? 1,
+      progressTotal: item?.progressTotal ?? null,
+      currentSeason,
       personalScore: toOptionalNumber(draft.personalScore),
       startedAtUtc: toOptionalUtcDateString(draft.startedAtUtc),
       completedAtUtc: toOptionalUtcDateString(draft.completedAtUtc),
@@ -170,11 +151,6 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
           {item?.sourceType !== 'Manual' ? (
             <p className="panel__description">El origen externo y sus identificadores se conservarán al guardar.</p>
           ) : null}
-          {item?.type ? (
-            <p className="panel__description">
-              Si cambias el formato base, el tipo legado se limpiará para usar solo el dominio nuevo.
-            </p>
-          ) : null}
         </div>
 
         <button type="button" className="button button--ghost" onClick={onCancel}>
@@ -185,7 +161,7 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
       {error ? <div className="auth-error" role="alert">{error}</div> : null}
 
       <div className="control-grid">
-        <div className="control">
+        <div className="control control--span-full">
           <label htmlFor="editor-title">Título principal</label>
           <input
             id="editor-title"
@@ -197,17 +173,7 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
           />
         </div>
 
-        <div className="control">
-          <label htmlFor="editor-alt-title">Título alternativo</label>
-          <input
-            id="editor-alt-title"
-            className="input"
-            value={draft.alternativeTitle}
-            onChange={(event) => updateField('alternativeTitle', event.target.value)}
-          />
-        </div>
-
-        <div className="control">
+        <div className="control control--span-full">
           <label htmlFor="editor-description">Descripción</label>
           <input
             id="editor-description"
@@ -223,7 +189,7 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
             id="editor-content-kind"
             className="select"
             value={draft.contentKind}
-            onChange={(event) => handleContentKindChange(event.target.value as MediaItemDraft['contentKind'])}
+            onChange={(event) => updateField('contentKind', event.target.value as MediaItemDraft['contentKind'])}
           >
             {contentKinds.map((contentKind) => (
               <option key={contentKind} value={contentKind}>
@@ -293,25 +259,35 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
         </div>
 
         <div className="control">
-          <label htmlFor="editor-progress-unit">Unidad de progreso</label>
-          <select
-            id="editor-progress-unit"
-            className="select"
-            value={draft.progressUnit}
-            onChange={(event) => updateField('progressUnit', event.target.value as MediaItemDraft['progressUnit'])}
-          >
-            {progressUnits.map((progressUnit) => (
-              <option key={progressUnit} value={progressUnit}>
-                {progressUnitLabels[progressUnit]}
-              </option>
-            ))}
-          </select>
+          <label htmlFor="editor-score">Puntuación personal (máx. 5)</label>
+          <input
+            id="editor-score"
+            className="input"
+            type="number"
+            min="0"
+            max="5"
+            step="0.5"
+            value={draft.personalScore}
+            onChange={(event) => updateField('personalScore', event.target.value)}
+          />
         </div>
 
         <div className="control">
-          <label htmlFor="editor-progress-current">Progreso actual</label>
+          <label htmlFor="editor-season">Temporada</label>
           <input
-            id="editor-progress-current"
+            id="editor-season"
+            className="input"
+            type="number"
+            min="0"
+            value={draft.currentSeason}
+            onChange={(event) => updateField('currentSeason', event.target.value)}
+          />
+        </div>
+
+        <div className="control">
+          <label htmlFor="editor-chapter">Capítulo</label>
+          <input
+            id="editor-chapter"
             className="input"
             type="number"
             min="0"
@@ -320,33 +296,7 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
           />
         </div>
 
-        <div className="control">
-          <label htmlFor="editor-progress-total">Progreso total</label>
-          <input
-            id="editor-progress-total"
-            className="input"
-            type="number"
-            min="0"
-            value={draft.progressTotal}
-            onChange={(event) => updateField('progressTotal', event.target.value)}
-          />
-        </div>
-
-        <div className="control">
-          <label htmlFor="editor-score">Puntuación personal</label>
-          <input
-            id="editor-score"
-            className="input"
-            type="number"
-            min="0"
-            max="10"
-            step="0.1"
-            value={draft.personalScore}
-            onChange={(event) => updateField('personalScore', event.target.value)}
-          />
-        </div>
-
-        <div className="control">
+        <div className="control control--span-full">
           <label htmlFor="editor-cover">Portada URL</label>
           <input
             id="editor-cover"
@@ -357,7 +307,7 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
           />
         </div>
 
-        <div className="control">
+        <div className="control control--span-full">
           <label htmlFor="editor-reference">Enlace de referencia</label>
           <input
             id="editor-reference"

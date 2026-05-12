@@ -1,6 +1,8 @@
 import {
+  AdjustmentsHorizontalIcon,
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
+  ChartBarIcon,
   ChevronDownIcon,
   PlusIcon,
   RectangleStackIcon,
@@ -12,7 +14,7 @@ import { CategoriesApi } from '@/features/categories/api/CategoriesAPI'
 import { MediaItemsApi } from '@/features/media-items/api/MediaItemsAPI'
 import MediaItemEditorForm from '@/features/media-items/components/MediaItemEditorForm'
 import LibraryFilters from '@/features/media-items/components/LibraryFilters'
-import MediaItemCard from '@/features/media-items/components/MediaItemCard'
+import MediaItemRow from '@/features/media-items/components/MediaItemRow'
 import MediaStatsPanel from '@/features/media-items/components/MediaStatsPanel'
 import {
   type CreateMediaItemInput,
@@ -243,6 +245,8 @@ export default function LibraryView() {
   const [editorError, setEditorError] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null)
   const [isCreateEditorOpen, setIsCreateEditorOpen] = useState(false)
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+  const [isStatsOpen, setIsStatsOpen] = useState(false)
   const [deleteCandidate, setDeleteCandidate] = useState<MediaItem | null>(null)
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const importJsonInputRef = useRef<HTMLInputElement | null>(null)
@@ -489,6 +493,23 @@ export default function LibraryView() {
             <PlusIcon width={18} height={18} />
             Nuevo registro
           </button>
+          <button
+            className={`button button--secondary${isFiltersOpen ? ' button--active' : ''}`}
+            type="button"
+            onClick={() => setIsFiltersOpen((prev) => !prev)}
+          >
+            <AdjustmentsHorizontalIcon width={18} height={18} />
+            {isFiltersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+            {appliedFilterCount > 0 ? ` (${appliedFilterCount})` : ''}
+          </button>
+          <button
+            className={`button button--secondary${isStatsOpen ? ' button--active' : ''}`}
+            type="button"
+            onClick={() => setIsStatsOpen((prev) => !prev)}
+          >
+            <ChartBarIcon width={18} height={18} />
+            {isStatsOpen ? 'Ocultar resumen' : 'Resumen'}
+          </button>
           <TransferActionMenu
             label="Importar"
             icon={<ArrowUpTrayIcon width={18} height={18} />}
@@ -507,11 +528,6 @@ export default function LibraryView() {
               { key: 'export-csv', label: 'CSV', onSelect: () => exportMutation.mutate('Csv') },
             ]}
           />
-          {appliedFilterCount > 0 ? (
-            <button className="button button--secondary" type="button" onClick={clearFilters}>
-              Limpiar filtros
-            </button>
-          ) : null}
         </div>
         <input
           ref={importJsonInputRef}
@@ -554,18 +570,20 @@ export default function LibraryView() {
         </div>
       ) : null}
 
-      <section className="panel">
-        <LibraryFilters
-          categories={availableCategories}
-          categoriesHelpText={categoriesHelpText}
-          filters={filters}
-          searchInput={searchInput}
-          onSearchInputChange={setSearchInput}
-          onSubmit={handleSearchSubmit}
-          onFilterChange={applyFilterPatch}
-          onClearFilters={clearFilters}
-        />
-      </section>
+      {isFiltersOpen ? (
+        <section className="panel">
+          <LibraryFilters
+            categories={availableCategories}
+            categoriesHelpText={categoriesHelpText}
+            filters={filters}
+            searchInput={searchInput}
+            onSearchInputChange={setSearchInput}
+            onSubmit={handleSearchSubmit}
+            onFilterChange={applyFilterPatch}
+            onClearFilters={clearFilters}
+          />
+        </section>
+      ) : null}
 
       <section className="panel">
         <div className="results-header">
@@ -576,18 +594,6 @@ export default function LibraryView() {
                 ? 'No pudimos actualizar el listado con los criterios actuales.'
                 : `${response?.totalCount ?? 0} coincidencias con los criterios actuales.`}
             </p>
-          </div>
-          <div className="results-header__actions">
-            {!isEditorOpen ? (
-              <button className="button button--primary" type="button" onClick={openCreateEditor}>
-                <PlusIcon width={18} height={18} />
-                Agregar manualmente
-              </button>
-            ) : (
-              <button className="button button--ghost" type="button" onClick={closeEditor}>
-                Cerrar editor
-              </button>
-            )}
           </div>
         </div>
 
@@ -618,16 +624,33 @@ export default function LibraryView() {
 
         {!libraryQuery.isError && items.length > 0 ? (
           <>
-            <div className="media-grid">
-              {items.map((item) => (
-                <MediaItemCard
-                  key={item.id}
-                  item={item}
-                  isDeleting={deleteMutation.isPending && pendingDeleteId === item.id}
-                  onDelete={handleDeleteItem}
-                  onEdit={openEditEditor}
-                />
-              ))}
+            <div className="search-table-wrapper">
+              <table className="search-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Título</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Origen</th>
+                    <th>Progreso</th>
+                    <th>Año</th>
+                    <th>Puntuación</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item) => (
+                    <MediaItemRow
+                      key={item.id}
+                      item={item}
+                      isDeleting={deleteMutation.isPending && pendingDeleteId === item.id}
+                      onDelete={handleDeleteItem}
+                      onEdit={openEditEditor}
+                    />
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             <div className="pagination">
@@ -653,13 +676,14 @@ export default function LibraryView() {
         ) : null}
       </section>
 
-      {statsQuery.data && !statsQuery.isError ? <MediaStatsPanel stats={statsQuery.data} /> : null}
+      {isStatsOpen && statsQuery.data && !statsQuery.isError ? <MediaStatsPanel stats={statsQuery.data} /> : null}
 
       {isEditorOpen ? (
         <SidePanelDialog
           open={isEditorOpen}
           ariaLabel={editingItem ? `Editar ${editingItem.title}` : 'Crear elemento de biblioteca'}
           scrimLabel="Cerrar panel del editor"
+          variant="centered"
           onClose={closeEditor}
         >
           <div className="side-panel__meta">
