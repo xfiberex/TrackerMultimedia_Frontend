@@ -101,6 +101,8 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
   const isEditing = item !== null
   const [draft, setDraft] = useState<MediaItemDraft>(() => createDraft(item))
 
+  // Resincronizar draft cuando cambia el item siendo editado
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     setDraft(createDraft(item))
   }, [item])

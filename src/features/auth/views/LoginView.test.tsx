@@ -82,6 +82,52 @@ describe('LoginView', () => {
     expect(navigateMock).toHaveBeenCalledWith('/profile', { replace: true })
   })
 
+  it('shows email validation error on real-time validation', async () => {
+    const user = userEvent.setup()
+
+    renderLoginView()
+
+    const emailInput = screen.getByLabelText('Correo electrónico')
+    await user.type(emailInput, 'invalid-email')
+
+    // Wait for debounced validation
+    await waitFor(
+      () => {
+        expect(screen.getByText(/email inválido/i)).toBeInTheDocument()
+      },
+      { timeout: 1000 }
+    )
+
+    // Submit button should be disabled
+    expect(screen.getByRole('button', { name: 'Iniciar sesión' })).toBeDisabled()
+  })
+
+  it('clears email validation error when corrected', async () => {
+    const user = userEvent.setup()
+
+    renderLoginView()
+
+    const emailInput = screen.getByLabelText('Correo electrónico')
+    await user.type(emailInput, 'invalid')
+
+    // Wait for validation error
+    await waitFor(() => {
+      expect(screen.getByText(/email inválido/i)).toBeInTheDocument()
+    })
+
+    // Clear and type valid email
+    await user.clear(emailInput)
+    await user.type(emailInput, 'valid@example.com')
+
+    // Wait for error to disappear
+    await waitFor(() => {
+      expect(screen.queryByText(/email inválido/i)).not.toBeInTheDocument()
+    })
+
+    // Submit button should be enabled
+    expect(screen.getByRole('button', { name: 'Iniciar sesión' })).not.toBeDisabled()
+  })
+
   it('shows the extracted manual login error', async () => {
     const user = userEvent.setup()
     authState.login.mockRejectedValue({ response: { data: 'Credenciales inválidas.' } })

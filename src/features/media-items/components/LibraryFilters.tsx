@@ -59,6 +59,8 @@ export default function LibraryFilters({
   const advancedFilterCount = countAdvancedFilters(filters)
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(advancedFilterCount > 0)
 
+  // Abrir panel automáticamente cuando hay filtros avanzados activos
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (advancedFilterCount > 0) {
       setIsAdvancedOpen(true)

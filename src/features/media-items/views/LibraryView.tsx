@@ -83,6 +83,8 @@ function TransferActionMenu({
     }
   }, [isOpen])
 
+  // Cerrar menú cuando está deshabilitado
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (disabled) {
       setIsOpen(false)

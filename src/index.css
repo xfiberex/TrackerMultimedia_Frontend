@@ -1702,7 +1702,32 @@ a {
   .auth-card {
     border-radius: 16px;
   }
+}
 
+/* ── Form Validation & Accessibility ─────────────────────────────────────────── */
+
+.input--error {
+  border-color: #b14a52;
+  background-color: rgba(177, 74, 82, 0.05);
+}
+
+.input--error:focus {
+  outline-color: #b14a52;
+}
+
+.field-error {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #b14a52;
+  font-weight: 500;
+}
+
+.control {
+  position: relative;
+}
+
+@media (max-width: 560px) {
   .toast-stack {
     top: auto;
     right: 1rem;
@@ -1730,9 +1755,7 @@ a {
   .search-quick-add__preview {
     grid-template-columns: 1fr;
   }
-}
 
-@media (max-width: 560px) {
   .app-shell__header-inner,
   .app-shell__main {
     width: min(var(--page-max-width), calc(100% - 1rem));

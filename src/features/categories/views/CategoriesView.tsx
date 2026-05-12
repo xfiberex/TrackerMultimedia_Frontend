@@ -74,6 +74,7 @@ export default function CategoriesView() {
     queryFn: ({ signal }) => CategoriesApi.getAll(signal),
   })
 
+  // Resincronizar draft cuando cambia el category siendo editado
   useEffect(() => {
     setDraft(createDraft(editingCategory))
   }, [editingCategory])
@@ -203,12 +204,10 @@ export default function CategoriesView() {
 
       {categoriesQuery.isError ? (
         <div className="status-stack">
-          {categoriesQuery.isError ? (
-            <div className="status-banner status-banner--warning" role="status">
-              <strong>La taxonomía no se pudo sincronizar.</strong>
-              <span>Puedes seguir preparando el editor, pero la lista no se refrescó correctamente.</span>
-            </div>
-          ) : null}
+          <div className="status-banner status-banner--warning" role="status">
+            <strong>La taxonomía no se pudo sincronizar.</strong>
+            <span>Puedes seguir preparando el editor, pero la lista no se refrescó correctamente.</span>
+          </div>
         </div>
       ) : null}
 

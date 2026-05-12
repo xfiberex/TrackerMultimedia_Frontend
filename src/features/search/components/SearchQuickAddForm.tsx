@@ -63,6 +63,8 @@ export default function SearchQuickAddForm({
 }: SearchQuickAddFormProps) {
   const [draft, setDraft] = useState<SearchQuickAddDraft>(() => createDraft())
 
+  // Resetear draft cuando cambia el item siendo agregado
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     setDraft(createDraft())
   }, [item])

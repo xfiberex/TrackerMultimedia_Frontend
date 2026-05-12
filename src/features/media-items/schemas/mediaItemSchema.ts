@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 export const mediaTypes = ['Anime', 'Manga', 'Donghua', 'Manhwa', 'Manhua'] as const
 export const contentKinds = ['Series', 'Movie', 'Book', 'Comic', 'Game', 'Podcast', 'Video', 'Album', 'Other'] as const
 export const mediaTrackingStatuses = ['Planned', 'InProgress', 'Completed', 'OnHold', 'Dropped'] as const
@@ -18,65 +20,89 @@ export type MediaItemsSortField = (typeof mediaItemsSortFields)[number]
 export type SortDirection = (typeof sortDirections)[number]
 export type LibraryTransferFormat = (typeof libraryTransferFormats)[number]
 
-export interface MediaItemCategory {
-  id: string
-  name: string
-  color: string | null
-}
+// ── Validadores Zod ─────────────────────────────────────────────────────────
 
-export interface MediaItem {
-  id: string
-  title: string
-  alternativeTitle: string | null
-  type: MediaType | null
-  description: string | null
-  contentKind: ContentKind
-  status: MediaTrackingStatus
-  sourceType: MediaItemSourceType
-  externalId: number | null
-  externalMediaKind: ExternalMediaKind | null
-  externalStatusLabel: string | null
-  externalScore: number | null
-  coverImageUrl: string | null
-  referenceUrl: string | null
-  releaseYear: number | null
-  progressUnit: ProgressUnit
-  progressCount: number
-  progressCurrent: number
-  progressTotal: number | null
-  currentSeason: number
-  personalScore: number | null
-  notes: string | null
-  categories?: MediaItemCategory[]
-  startedAtUtc: string | null
-  completedAtUtc: string | null
-  createdAtUtc: string
-  updatedAtUtc: string
-}
+const mediaTypeSchema = z.enum(mediaTypes)
+const contentKindSchema = z.enum(contentKinds)
+const statusSchema = z.enum(mediaTrackingStatuses)
+const sourceTypeSchema = z.enum(mediaItemSourceTypes)
+const progressUnitSchema = z.enum(progressUnits)
+const sortFieldSchema = z.enum(mediaItemsSortFields)
+const sortDirSchema = z.enum(sortDirections)
 
-export interface PagedResponse<T> {
+export const mediaItemCategorySchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, 'Nombre requerido'),
+  color: z.string().nullable(),
+})
+
+export const mediaItemSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1),
+  alternativeTitle: z.string().nullable(),
+  type: mediaTypeSchema.nullable(),
+  description: z.string().nullable(),
+  contentKind: contentKindSchema,
+  status: statusSchema,
+  sourceType: sourceTypeSchema,
+  externalId: z.number().nullable(),
+  externalMediaKind: z.enum(externalMediaKinds).nullable(),
+  externalStatusLabel: z.string().nullable(),
+  externalScore: z.number().min(0).max(10).nullable(),
+  coverImageUrl: z.string().url().nullable(),
+  referenceUrl: z.string().url().nullable(),
+  releaseYear: z.number().int().positive().nullable(),
+  progressUnit: progressUnitSchema,
+  progressCount: z.number().int().min(0),
+  progressCurrent: z.number().int().min(0),
+  progressTotal: z.number().int().positive().nullable(),
+  currentSeason: z.number().int().min(0),
+  personalScore: z.number().min(0).max(10).nullable(),
+  notes: z.string().nullable(),
+  categories: z.array(mediaItemCategorySchema).optional(),
+  startedAtUtc: z.string().datetime().nullable(),
+  completedAtUtc: z.string().datetime().nullable(),
+  createdAtUtc: z.string().datetime(),
+  updatedAtUtc: z.string().datetime(),
+})
+
+export const pagedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
+  z.object({
+    items: z.array(itemSchema),
+    page: z.number().int().positive(),
+    pageSize: z.number().int().positive(),
+    totalCount: z.number().int().min(0),
+    totalPages: z.number().int().min(0),
+  })
+
+export const mediaItemsFiltersSchema = z.object({
+  search: z.string().optional(),
+  type: mediaTypeSchema.optional(),
+  categoryIds: z.array(z.string()).optional(),
+  status: statusSchema.optional(),
+  sourceType: sourceTypeSchema.optional(),
+  createdFrom: z.string().optional(),
+  createdTo: z.string().optional(),
+  minPersonalScore: z.number().min(0).max(10).optional(),
+  maxPersonalScore: z.number().min(0).max(10).optional(),
+  sortBy: sortFieldSchema.optional(),
+  sortDirection: sortDirSchema.optional(),
+  page: z.number().int().positive().optional(),
+  pageSize: z.number().int().positive().optional(),
+})
+
+// ── Tipos ────────────────────────────────────────────────────────────────────
+
+export type MediaItemCategory = z.infer<typeof mediaItemCategorySchema>
+export type MediaItem = z.infer<typeof mediaItemSchema>
+export type PagedResponse<T> = {
   items: T[]
   page: number
   pageSize: number
   totalCount: number
   totalPages: number
 }
-
-export interface MediaItemsFilters {
-  search?: string
-  type?: MediaType
-  categoryIds?: string[]
-  status?: MediaTrackingStatus
-  sourceType?: MediaItemSourceType
-  createdFrom?: string
-  createdTo?: string
-  minPersonalScore?: number
-  maxPersonalScore?: number
-  sortBy?: MediaItemsSortField
-  sortDirection?: SortDirection
-  page?: number
-  pageSize?: number
-}
+export type MediaItemsFilters = z.infer<typeof mediaItemsFiltersSchema>
 
 export interface ContentKindStat {
   contentKind: ContentKind
