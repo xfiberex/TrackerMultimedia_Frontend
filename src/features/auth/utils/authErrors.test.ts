@@ -1,8 +1,10 @@
 import { extractAuthError } from './authErrors'
 
 describe('extractAuthError', () => {
-  it('returns the fallback when there is no response payload', () => {
-    expect(extractAuthError({}, 'Fallback message')).toBe('Fallback message')
+  it('returns a network error message when there is no response payload', () => {
+    expect(extractAuthError({}, 'Fallback message')).toBe(
+      'Error de conexión. Verifica tu internet e intenta de nuevo.',
+    )
   })
 
   it('returns the plain string response when available', () => {
@@ -18,6 +20,7 @@ describe('extractAuthError', () => {
   it('returns the first validation error from problem details', () => {
     const error = {
       response: {
+        status: 400,
         data: {
           errors: {
             Email: ['El correo es obligatorio.'],

@@ -5,13 +5,13 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { CategoriesApi } from '@/features/categories/api/CategoriesAPI'
 import type { Category, CreateCategoryInput } from '@/features/categories/schemas/categorySchema'
 import EmptyState from '@/shared/components/EmptyState'
 import Loader from '@/shared/components/Loader'
 import ConfirmDialog from '@/shared/components/ConfirmDialog'
-import { useToast } from '@/shared/components/ToastProvider'
+import { useToast } from '@/shared/hooks/useToast'
 import { queryKeys } from '@/shared/constants/queryKeys'
 
 type CategoryDraft = {
@@ -74,11 +74,6 @@ export default function CategoriesView() {
     queryFn: ({ signal }) => CategoriesApi.getAll(signal),
   })
 
-  // Resincronizar draft cuando cambia el category siendo editado
-  useEffect(() => {
-    setDraft(createDraft(editingCategory))
-  }, [editingCategory])
-
   const saveMutation = useMutation({
     mutationFn: async ({ categoryId, payload }: { categoryId: string | null, payload: CreateCategoryInput }) => {
       if (categoryId) {
@@ -96,6 +91,7 @@ export default function CategoriesView() {
       })
       setError(null)
       setEditingCategory(null)
+      setDraft(createDraft(null))
       void queryClient.invalidateQueries({ queryKey: queryKeys.categories.root })
       void queryClient.invalidateQueries({ queryKey: queryKeys.mediaItems.root })
     },
@@ -117,6 +113,7 @@ export default function CategoriesView() {
     onSuccess: (deletedCategory) => {
       if (editingCategory?.id === deletedCategory.id) {
         setEditingCategory(null)
+        setDraft(createDraft(null))
       }
 
       setDeleteCandidate(null)
@@ -150,11 +147,13 @@ export default function CategoriesView() {
   const openFreshEditor = () => {
     setError(null)
     setEditingCategory(null)
+    setDraft(createDraft(null))
     focusEditor()
   }
 
   const resetForm = () => {
     setEditingCategory(null)
+    setDraft(createDraft(null))
     setError(null)
   }
 
@@ -324,6 +323,7 @@ export default function CategoriesView() {
                     onClick={() => {
                       setError(null)
                       setEditingCategory(category)
+                      setDraft(createDraft(category))
                       focusEditor()
                     }}
                   >

@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Content Security Policy: previene inyección de scripts e inline code -->
+    <!-- frame-ancestors solo es efectivo como HTTP header; configurarlo en el servidor -->
     <meta
       http-equiv="Content-Security-Policy"
       content="
@@ -12,8 +13,7 @@
         style-src 'self' 'unsafe-inline' fonts.googleapis.com;
         font-src 'self' fonts.gstatic.com;
         img-src 'self' data: https:;
-        connect-src 'self' https://*.jikan.moe https://*.googleapis.com https://api.github.com;
-        frame-ancestors 'none';
+        connect-src 'self' https://*.jikan.moe https://*.googleapis.com https://api.github.com https://trackermultimedia-backend.onrender.com;
         base-uri 'self';
         form-action 'self'
       "

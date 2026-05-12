@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ConfirmDialog from '@/shared/components/ConfirmDialog'
-import { useToast } from '@/shared/components/ToastProvider'
+import { useToast } from '@/shared/hooks/useToast'
 import { AuthAPI } from '../api/AuthAPI'
 import { useAuth } from '../context/useAuth'
 import { extractAuthError } from '../utils/authErrors'

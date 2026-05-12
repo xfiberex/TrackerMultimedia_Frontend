@@ -3,7 +3,7 @@ import {
   MagnifyingGlassIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline'
-import { useEffect, useState, type FormEventHandler } from 'react'
+import { useState, type FormEventHandler } from 'react'
 import type { Category } from '@/features/categories/schemas/categorySchema'
 import {
   mediaItemSourceTypes,
@@ -57,15 +57,8 @@ export default function LibraryFilters({
   onClearFilters,
 }: LibraryFiltersProps) {
   const advancedFilterCount = countAdvancedFilters(filters)
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(advancedFilterCount > 0)
-
-  // Abrir panel automáticamente cuando hay filtros avanzados activos
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => {
-    if (advancedFilterCount > 0) {
-      setIsAdvancedOpen(true)
-    }
-  }, [advancedFilterCount])
+  const [isManuallyOpen, setIsManuallyOpen] = useState(false)
+  const isAdvancedOpen = isManuallyOpen || advancedFilterCount > 0
 
   const toggleCategoryFilter = (categoryId: string) => {
     const currentIds = filters.categoryIds ?? []
@@ -208,7 +201,7 @@ export default function LibraryFilters({
       <details
         className="filters-advanced"
         open={isAdvancedOpen}
-        onToggle={(event) => setIsAdvancedOpen((event.currentTarget as HTMLDetailsElement).open)}
+        onToggle={(event) => setIsManuallyOpen((event.currentTarget as HTMLDetailsElement).open)}
       >
         <summary className="filters-advanced__summary">
           <div>

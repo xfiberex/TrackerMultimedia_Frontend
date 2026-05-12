@@ -30,7 +30,7 @@ import EmptyState from '@/shared/components/EmptyState'
 import Loader from '@/shared/components/Loader'
 import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import SidePanelDialog from '@/shared/components/SidePanelDialog'
-import { useToast } from '@/shared/components/ToastProvider'
+import { useToast } from '@/shared/hooks/useToast'
 import { queryKeys } from '@/shared/constants/queryKeys'
 import { toPositiveInt } from '@/shared/utils'
 
@@ -56,9 +56,10 @@ function TransferActionMenu({
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
+  const isMenuOpen = isOpen && !disabled
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isMenuOpen) {
       return undefined
     }
 
@@ -81,24 +82,16 @@ function TransferActionMenu({
       document.removeEventListener('mousedown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isOpen])
-
-  // Cerrar menú cuando está deshabilitado
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => {
-    if (disabled) {
-      setIsOpen(false)
-    }
-  }, [disabled])
+  }, [isMenuOpen])
 
   return (
-    <div className={`action-menu${isOpen ? ' action-menu--open' : ''}`} ref={rootRef}>
+    <div className={`action-menu${isMenuOpen ? ' action-menu--open' : ''}`} ref={rootRef}>
       <button
         className="button button--secondary action-menu__trigger"
         type="button"
         aria-haspopup="menu"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen((open) => !open)}
+        aria-expanded={isMenuOpen}
+        onClick={() => setIsOpen((prev) => !prev)}
         disabled={disabled}
       >
         {icon}
@@ -106,7 +99,7 @@ function TransferActionMenu({
         <ChevronDownIcon className="action-menu__chevron" width={16} height={16} aria-hidden="true" />
       </button>
 
-      {isOpen ? (
+      {isMenuOpen ? (
         <div className="action-menu__popover" role="menu" aria-label={label}>
           {items.map((item) => (
             <button
@@ -682,6 +675,7 @@ export default function LibraryView() {
           </div>
 
           <MediaItemEditorForm
+            key={editingItem?.id ?? 'create'}
             item={editingItem}
             availableCategories={availableCategories}
             error={editorError}

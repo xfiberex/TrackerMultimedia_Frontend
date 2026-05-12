@@ -7,7 +7,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { useToast } from '@/shared/components/ToastProvider'
+import { useToast } from '@/shared/hooks/useToast'
 import { AuthAPI } from '../api/AuthAPI'
 
 type Status = 'pending' | 'success' | 'error'

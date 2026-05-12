@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import type { Category } from '@/features/categories/schemas/categorySchema'
 import {
   mediaSourceLabels,
@@ -62,12 +62,6 @@ export default function SearchQuickAddForm({
   onSubmit,
 }: SearchQuickAddFormProps) {
   const [draft, setDraft] = useState<SearchQuickAddDraft>(() => createDraft())
-
-  // Resetear draft cuando cambia el item siendo agregado
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => {
-    setDraft(createDraft())
-  }, [item])
 
   const updateField = <K extends keyof SearchQuickAddDraft>(field: K, value: SearchQuickAddDraft[K]) => {
     setDraft((current) => ({ ...current, [field]: value }))

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useToast } from '@/shared/components/ToastProvider'
+import { useToast } from '@/shared/hooks/useToast'
 import { AuthAPI } from '../api/AuthAPI'
 import { extractAuthError } from '../utils/authErrors'
 

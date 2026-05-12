@@ -3,7 +3,7 @@ import {
   SparklesIcon,
 } from '@heroicons/react/24/outline'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CategoriesApi } from '@/features/categories/api/CategoriesAPI'
 import { MediaItemsApi } from '@/features/media-items/api/MediaItemsAPI'
@@ -29,7 +29,7 @@ import {
 import EmptyState from '@/shared/components/EmptyState'
 import Loader from '@/shared/components/Loader'
 import SidePanelDialog from '@/shared/components/SidePanelDialog'
-import { useToast } from '@/shared/components/ToastProvider'
+import { useToast } from '@/shared/hooks/useToast'
 import { queryKeys } from '@/shared/constants/queryKeys'
 import { toPositiveInt } from '@/shared/utils'
 
@@ -111,6 +111,7 @@ function mapSearchResultToCreatePayload(item: SearchMediaItem, overrides: Search
 export default function DiscoverView() {
   const [searchParams, setSearchParams] = useSearchParams()
   const filters = resolveSearchFilters(searchParams)
+  const [prevFiltersQuery, setPrevFiltersQuery] = useState(filters.query)
   const [queryInput, setQueryInput] = useState(filters.query)
   const [quickAddError, setQuickAddError] = useState<string | null>(null)
   const [selectedItem, setSelectedItem] = useState<SearchMediaItem | null>(null)
@@ -118,12 +119,9 @@ export default function DiscoverView() {
   const queryClient = useQueryClient()
   const { showToast } = useToast()
 
-  useEffect(() => {
+  if (prevFiltersQuery !== filters.query) {
+    setPrevFiltersQuery(filters.query)
     setQueryInput(filters.query)
-  }, [filters.query])
-
-  if (queryInput !== filters.query && queryInput.length === 0 && filters.query.length === 0) {
-    // no-op guard for React Compiler friendliness when the state already matches the URL
   }
 
   const providersQuery = useQuery({
@@ -410,6 +408,7 @@ export default function DiscoverView() {
           </div>
 
           <SearchQuickAddForm
+            key={selectedItem.externalId}
             item={selectedItem}
             categories={availableCategories}
             categoriesHelpText={categoriesHelpText}

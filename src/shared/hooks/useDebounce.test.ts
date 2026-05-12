@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { useDebounce } from '@/shared/hooks/useDebounce'
-import { renderHook } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 
 describe('useDebounce', () => {
   beforeEach(() => {
@@ -23,7 +23,9 @@ describe('useDebounce', () => {
     rerender({ value: 'updated' })
     expect(result.current).toBe('initial') // Still debounced
 
-    vi.advanceTimersByTime(300)
+    await act(async () => {
+      vi.advanceTimersByTime(300)
+    })
     expect(result.current).toBe('updated') // Now updated
   })
 

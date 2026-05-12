@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import {
   contentKindLabels,
   contentKinds,
@@ -100,12 +100,6 @@ function toOptionalUtcDateString(value: string): string | null {
 export default function MediaItemEditorForm({ item, availableCategories, error, isPending, onCancel, onSubmit }: MediaItemEditorFormProps) {
   const isEditing = item !== null
   const [draft, setDraft] = useState<MediaItemDraft>(() => createDraft(item))
-
-  // Resincronizar draft cuando cambia el item siendo editado
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => {
-    setDraft(createDraft(item))
-  }, [item])
 
   const updateField = <K extends keyof MediaItemDraft>(field: K, value: MediaItemDraft[K]) => {
     setDraft((current) => ({ ...current, [field]: value }))

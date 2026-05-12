@@ -19,29 +19,22 @@ export default function SidePanelDialog({
   onClose,
   children,
 }: SidePanelDialogProps) {
-  const [isRendered, setIsRendered] = useState(open)
   const [isClosing, setIsClosing] = useState(false)
+  const isActuallyClosing = isClosing && !open
+  const isRendered = open || isActuallyClosing
   const closeTimeoutRef = useRef<number | null>(null)
+  const prevOpenRef = useRef(open)
 
   useEffect(() => {
-    if (closeTimeoutRef.current != null) {
-      window.clearTimeout(closeTimeoutRef.current)
-      closeTimeoutRef.current = null
-    }
+    const wasOpen = prevOpenRef.current
+    prevOpenRef.current = open
 
-    if (open) {
-      setIsRendered(true)
-      setIsClosing(false)
-      return undefined
-    }
-
-    if (!isRendered) {
+    if (open || !wasOpen) {
       return undefined
     }
 
     setIsClosing(true)
     closeTimeoutRef.current = window.setTimeout(() => {
-      setIsRendered(false)
       setIsClosing(false)
       closeTimeoutRef.current = null
     }, SIDE_PANEL_EXIT_DURATION_MS)
@@ -52,7 +45,7 @@ export default function SidePanelDialog({
         closeTimeoutRef.current = null
       }
     }
-  }, [isRendered, open])
+  }, [open])
 
   useEffect(() => {
     if (!isRendered) {
@@ -80,7 +73,7 @@ export default function SidePanelDialog({
   }
 
   return (
-    <div className={`side-panel-layer${isClosing ? ' side-panel-layer--closing' : ''}`} role="presentation">
+    <div className={`side-panel-layer${isActuallyClosing ? ' side-panel-layer--closing' : ''}`} role="presentation">
       <button
         type="button"
         className="side-panel-layer__scrim"
@@ -93,7 +86,7 @@ export default function SidePanelDialog({
       />
 
       <aside
-        className={`side-panel${isClosing ? ' side-panel--closing' : ''}`}
+        className={`side-panel${isActuallyClosing ? ' side-panel--closing' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}

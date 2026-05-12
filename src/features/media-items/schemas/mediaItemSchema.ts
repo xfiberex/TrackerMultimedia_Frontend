@@ -180,7 +180,7 @@ export interface CreateMediaItemInput {
   completedAtUtc?: string | null
 }
 
-export interface UpdateMediaItemInput extends CreateMediaItemInput {}
+export type UpdateMediaItemInput = CreateMediaItemInput
 
 export const mediaTypeToContentKind: Record<MediaType, ContentKind> = {
   Anime: 'Series',

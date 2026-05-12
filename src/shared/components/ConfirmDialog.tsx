@@ -26,29 +26,22 @@ export default function ConfirmDialog({
   onClose,
 }: ConfirmDialogProps) {
   const titleId = useId()
-  const [isRendered, setIsRendered] = useState(open)
   const [isClosing, setIsClosing] = useState(false)
+  const isActuallyClosing = isClosing && !open
+  const isRendered = open || isActuallyClosing
   const closeTimeoutRef = useRef<number | null>(null)
+  const prevOpenRef = useRef(open)
 
   useEffect(() => {
-    if (closeTimeoutRef.current != null) {
-      window.clearTimeout(closeTimeoutRef.current)
-      closeTimeoutRef.current = null
-    }
+    const wasOpen = prevOpenRef.current
+    prevOpenRef.current = open
 
-    if (open) {
-      setIsRendered(true)
-      setIsClosing(false)
-      return undefined
-    }
-
-    if (!isRendered) {
+    if (open || !wasOpen) {
       return undefined
     }
 
     setIsClosing(true)
     closeTimeoutRef.current = window.setTimeout(() => {
-      setIsRendered(false)
       setIsClosing(false)
       closeTimeoutRef.current = null
     }, CONFIRM_DIALOG_EXIT_DURATION_MS)
@@ -59,7 +52,7 @@ export default function ConfirmDialog({
         closeTimeoutRef.current = null
       }
     }
-  }, [isRendered, open])
+  }, [open])
 
   useEffect(() => {
     if (!isRendered) {
@@ -87,7 +80,7 @@ export default function ConfirmDialog({
   }
 
   return (
-    <div className={`confirm-dialog-layer${isClosing ? ' confirm-dialog-layer--closing' : ''}`} role="presentation">
+    <div className={`confirm-dialog-layer${isActuallyClosing ? ' confirm-dialog-layer--closing' : ''}`} role="presentation">
       <button
         type="button"
         className="confirm-dialog-layer__scrim"
@@ -100,7 +93,7 @@ export default function ConfirmDialog({
       />
 
       <section
-        className={`confirm-dialog${tone === 'danger' ? ' confirm-dialog--danger' : ''}${isClosing ? ' confirm-dialog--closing' : ''}`}
+        className={`confirm-dialog${tone === 'danger' ? ' confirm-dialog--danger' : ''}${isActuallyClosing ? ' confirm-dialog--closing' : ''}`}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby={titleId}

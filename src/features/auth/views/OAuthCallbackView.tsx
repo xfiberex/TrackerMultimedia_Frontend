@@ -92,7 +92,7 @@ export default function OAuthCallbackView() {
     }).catch(() => {
       navigate('/login?oauth_error=session_error', { replace: true })
     })
-  }, [navigate, refreshUser])
+  }, [navigate, refreshUser, completeSession])
 
   return <Loader />
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useToast } from '@/shared/components/ToastProvider'
+import { useToast } from '@/shared/hooks/useToast'
 import { useAuth } from '../context/useAuth'
 import { loginPayloadSchema, normalizeError, getOAuthErrorMessage } from '../utils/authErrors'
 import { validateField } from '@/shared/utils/validation'
@@ -10,7 +10,6 @@ export default function LoginView() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [isPending, setIsPending] = useState(false)
   const [oauthPending, setOAuthPending] = useState<'google' | 'github' | null>(null)
 
@@ -43,11 +42,11 @@ export default function LoginView() {
     )
   }, [location.search])
 
-  useEffect(() => {
-    if (oauthError) {
-      setError(oauthError)
-    }
-  }, [oauthError])
+  const emailError = useMemo(() => {
+    if (!debouncedEmail) return ''
+    return validateField(loginPayloadSchema.shape.email, debouncedEmail) ?? ''
+  }, [debouncedEmail])
+  const displayError = error ?? oauthError
 
   useEffect(() => {
     if (!flashMessage || consumedFlashRef.current === flashMessage) {
@@ -57,24 +56,6 @@ export default function LoginView() {
     consumedFlashRef.current = flashMessage
     showToast({ tone: 'success', message: flashMessage })
   }, [flashMessage, showToast])
-
-  // Validación en tiempo real del email
-  useEffect(() => {
-    if (!debouncedEmail) {
-      setFieldErrors((prev) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { email, ...rest } = prev
-        return rest
-      })
-      return
-    }
-
-    const emailError = validateField(loginPayloadSchema.shape.email, debouncedEmail)
-    setFieldErrors((prev) => ({
-      ...prev,
-      email: emailError || '',
-    }))
-  }, [debouncedEmail])
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault()
@@ -115,7 +96,7 @@ export default function LoginView() {
         <h1 className="auth-card__title">Iniciar sesión</h1>
         <p className="auth-card__subtitle">Bienvenido de vuelta.</p>
 
-        {error ? <div className="auth-error" role="alert">{error}</div> : null}
+        {displayError ? <div className="auth-error" role="alert">{displayError}</div> : null}
 
         {/* Botones OAuth — solo si el backend los tiene habilitados */}
         {(methods?.googleEnabled || methods?.gitHubEnabled) && (
@@ -155,16 +136,16 @@ export default function LoginView() {
             <input
               id="email"
               type="email"
-              className={`input${fieldErrors.email ? ' input--error' : ''}`}
+              className={`input${emailError ? ' input--error' : ''}`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
               autoFocus
-              aria-describedby={fieldErrors.email ? 'email-error' : undefined}
+              aria-describedby={emailError ? 'email-error' : undefined}
             />
-            {fieldErrors.email && (
-              <span id="email-error" className="field-error" role="alert">{fieldErrors.email}</span>
+            {emailError && (
+              <span id="email-error" className="field-error" role="alert">{emailError}</span>
             )}
           </div>
 
@@ -181,7 +162,7 @@ export default function LoginView() {
             />
           </div>
 
-          <button type="submit" className="button button--primary" disabled={isPending || oauthPending !== null || !!fieldErrors.email}>
+          <button type="submit" className="button button--primary" disabled={isPending || oauthPending !== null || !!emailError}>
             {isPending ? 'Iniciando sesión…' : 'Iniciar sesión'}
           </button>
         </form>

@@ -1,34 +1,18 @@
 import {
-  createContext,
-  useContext,
   useEffect,
   useRef,
   useState,
   type ReactNode,
 } from 'react'
+import { ToastContext, type ShowToastOptions, type ToastTone } from '@/shared/context/ToastContext'
 
 const TOAST_EXIT_DURATION_MS = 220
-
-export type ToastTone = 'info' | 'success' | 'danger'
-
-interface ShowToastOptions {
-  title?: string
-  message: string
-  tone?: ToastTone
-  durationMs?: number
-}
 
 interface ToastRecord extends ShowToastOptions {
   id: number
   tone: ToastTone
   isClosing: boolean
 }
-
-interface ToastContextValue {
-  showToast: (options: ShowToastOptions) => void
-}
-
-const ToastContext = createContext<ToastContextValue | null>(null)
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastRecord[]>([])
@@ -77,11 +61,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    // Guardar referencias locales para evitar cambios durante cleanup
+    const dismissTimeouts = dismissTimeoutIdsRef.current
+    const removalTimeouts = removalTimeoutIdsRef.current
+
     return () => {
-      dismissTimeoutIdsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId))
-      dismissTimeoutIdsRef.current.clear()
-      removalTimeoutIdsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId))
-      removalTimeoutIdsRef.current.clear()
+      dismissTimeouts.forEach((timeoutId) => window.clearTimeout(timeoutId))
+      dismissTimeouts.clear()
+      removalTimeouts.forEach((timeoutId) => window.clearTimeout(timeoutId))
+      removalTimeouts.clear()
     }
   }, [])
 
@@ -136,14 +124,4 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       </div>
     </ToastContext.Provider>
   )
-}
-
-export function useToast() {
-  const context = useContext(ToastContext)
-
-  if (!context) {
-    throw new Error('useToast debe usarse dentro de ToastProvider.')
-  }
-
-  return context
 }
