@@ -33,6 +33,22 @@ import { useToast } from '@/shared/hooks/useToast'
 import { queryKeys } from '@/shared/constants/queryKeys'
 import { toPositiveInt } from '@/shared/utils'
 
+const PROVIDER_STORAGE_KEY = 'discover:enabledProviders'
+
+function loadEnabledProviders(): string[] {
+  try {
+    const stored = localStorage.getItem(PROVIDER_STORAGE_KEY)
+    if (stored) return JSON.parse(stored) as string[]
+  } catch {}
+  return ['anilist']
+}
+
+function saveEnabledProviders(keys: string[]): void {
+  try {
+    localStorage.setItem(PROVIDER_STORAGE_KEY, JSON.stringify(keys))
+  } catch {}
+}
+
 function getActiveProviders(providers: DiscoverProvider[], type: MediaSearchType): DiscoverProvider[] {
   return providers.filter((provider) => provider.supportedTypes.includes(type))
 }
@@ -116,12 +132,21 @@ export default function DiscoverView() {
   const [quickAddError, setQuickAddError] = useState<string | null>(null)
   const [selectedItem, setSelectedItem] = useState<SearchMediaItem | null>(null)
   const [pendingExternalId, setPendingExternalId] = useState<number | null>(null)
+  const [enabledProviderKeys, setEnabledProviderKeys] = useState<string[]>(loadEnabledProviders)
   const queryClient = useQueryClient()
   const { showToast } = useToast()
 
   if (prevFiltersQuery !== filters.query) {
     setPrevFiltersQuery(filters.query)
     setQueryInput(filters.query)
+  }
+
+  const toggleProvider = (key: string) => {
+    setEnabledProviderKeys((prev) => {
+      const next = prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+      saveEnabledProviders(next)
+      return next
+    })
   }
 
   const providersQuery = useQuery({
@@ -134,10 +159,15 @@ export default function DiscoverView() {
     queryFn: ({ signal }) => CategoriesApi.getAll(signal),
   })
 
+  const searchFilters: SearchMediaItemsFilters = {
+    ...filters,
+    providers: enabledProviderKeys,
+  }
+
   const searchQuery = useQuery({
-    queryKey: queryKeys.search.results(filters),
-    queryFn: ({ signal }) => SearchApi.search(filters, signal),
-    enabled: filters.query.trim().length >= 2,
+    queryKey: queryKeys.search.results(searchFilters),
+    queryFn: ({ signal }) => SearchApi.search(searchFilters, signal),
+    enabled: filters.query.trim().length >= 2 && enabledProviderKeys.length > 0,
   })
 
   const addMutation = useMutation({
@@ -213,6 +243,7 @@ export default function DiscoverView() {
   const results = searchQuery.data ?? []
   const discoverProviders = providersQuery.data ?? []
   const activeProviders = getActiveProviders(discoverProviders, filters.type ?? 'All')
+    .filter((p) => enabledProviderKeys.includes(p.key))
   const isSearchReady = queryInput.trim().length >= 2
   const activeProvidersLabel = activeProviders.length > 0
     ? activeProviders.map((provider) => provider.displayName).join(' · ')
@@ -283,20 +314,42 @@ export default function DiscoverView() {
 
           <div className="control-grid">
             <div className="control control--span-full">
-              <label>Proveedores activos</label>
+              <label>Proveedores</label>
               {providersQuery.isError ? (
                 <p className="category-empty">No se pudo cargar la lista de proveedores disponibles.</p>
-              ) : activeProviders.length > 0 ? (
-                <div className="category-pills">
-                  {activeProviders.map((provider) => (
-                    <span key={provider.key} className="category-pill">
-                      <span>{provider.displayName}</span>
-                      <span className="search-card__alt">{formatProviderSupport(provider)}</span>
-                    </span>
-                  ))}
+              ) : discoverProviders.length > 0 ? (
+                <div className="provider-cards">
+                  {discoverProviders.map((provider) => {
+                    const isEnabled = enabledProviderKeys.includes(provider.key)
+                    const switchId = `provider-switch-${provider.key}`
+                    return (
+                      <div
+                        key={provider.key}
+                        className={`provider-card${isEnabled ? ' provider-card--enabled' : ''}`}
+                      >
+                        <div className="provider-card__info">
+                          <span className="provider-card__name">{provider.displayName}</span>
+                          <span className="provider-card__types">{formatProviderSupport(provider)}</span>
+                        </div>
+                        <label
+                          className="toggle-switch"
+                          htmlFor={switchId}
+                          aria-label={`${isEnabled ? 'Desactivar' : 'Activar'} ${provider.displayName}`}
+                        >
+                          <input
+                            id={switchId}
+                            type="checkbox"
+                            checked={isEnabled}
+                            onChange={() => toggleProvider(provider.key)}
+                          />
+                          <span className="toggle-switch__track" />
+                        </label>
+                      </div>
+                    )
+                  })}
                 </div>
               ) : (
-                <p className="category-empty">No hay proveedores activos para este tipo de búsqueda.</p>
+                <p className="category-empty">Cargando proveedores...</p>
               )}
             </div>
 
@@ -349,7 +402,14 @@ export default function DiscoverView() {
           <Loader title={searchLoaderTitle} message="Buscando en los catálogos externos activos..." />
         ) : null}
 
-        {!searchQuery.isLoading && filters.query.trim().length < 2 ? (
+        {!searchQuery.isLoading && enabledProviderKeys.length === 0 ? (
+          <EmptyState
+            title="Sin proveedores activos"
+            message="Activa al menos un proveedor para poder realizar búsquedas."
+          />
+        ) : null}
+
+        {!searchQuery.isLoading && enabledProviderKeys.length > 0 && filters.query.trim().length < 2 ? (
           <EmptyState
             title="Empieza con una búsqueda"
             message="Escribe al menos 2 caracteres para iniciar la búsqueda."
@@ -368,7 +428,7 @@ export default function DiscoverView() {
           />
         ) : null}
 
-        {!searchQuery.isLoading && !searchQuery.isError && results.length === 0 && filters.query.trim().length >= 2 ? (
+        {!searchQuery.isLoading && !searchQuery.isError && results.length === 0 && filters.query.trim().length >= 2 && enabledProviderKeys.length > 0 ? (
           <EmptyState
             title="Sin resultados"
             message="Prueba con otro nombre o cambia el tipo de búsqueda para ampliar el alcance."

@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const mediaTypes = ['Anime', 'Manga', 'Donghua', 'Manhwa', 'Manhua'] as const
 export const contentKinds = ['Series', 'Movie', 'Book', 'Comic', 'Game', 'Podcast', 'Video', 'Album', 'Other'] as const
 export const mediaTrackingStatuses = ['Planned', 'InProgress', 'Completed', 'OnHold', 'Dropped'] as const
-export const mediaItemSourceTypes = ['Manual', 'Jikan'] as const
+export const mediaItemSourceTypes = ['Manual', 'Jikan', 'AniList', 'MangaDex'] as const
 export const externalMediaKinds = ['Anime', 'Manga'] as const
 export const progressUnits = ['Episodes', 'Chapters', 'Volumes', 'Pages', 'Hours', 'Seasons', 'Tracks', 'Items', 'None'] as const
 export const mediaItemsSortFields = ['CreatedAt', 'PersonalScore', 'ReleaseYear', 'Title'] as const
@@ -229,6 +229,8 @@ export const mediaTrackingStatusLabels: Record<MediaTrackingStatus, string> = {
 export const mediaSourceLabels: Record<MediaItemSourceType, string> = {
   Manual: 'Manual',
   Jikan: 'Jikan',
+  AniList: 'AniList',
+  MangaDex: 'MangaDex',
 }
 
 export const progressUnitLabels: Record<ProgressUnit, string> = {

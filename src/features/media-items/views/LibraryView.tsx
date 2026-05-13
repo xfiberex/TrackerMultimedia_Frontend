@@ -2,7 +2,6 @@ import {
   AdjustmentsHorizontalIcon,
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
-  ChartBarIcon,
   ChevronDownIcon,
   PlusIcon,
   RectangleStackIcon,
@@ -11,11 +10,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CategoriesApi } from '@/features/categories/api/CategoriesAPI'
+import { FormatsApi } from '@/features/catalog/api/FormatsAPI'
 import { MediaItemsApi } from '@/features/media-items/api/MediaItemsAPI'
 import MediaItemEditorForm from '@/features/media-items/components/MediaItemEditorForm'
 import LibraryFilters from '@/features/media-items/components/LibraryFilters'
 import MediaItemRow from '@/features/media-items/components/MediaItemRow'
-import MediaStatsPanel from '@/features/media-items/components/MediaStatsPanel'
 import {
   type CreateMediaItemInput,
   type LibraryImportResponse,
@@ -246,7 +245,6 @@ export default function LibraryView() {
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null)
   const [isCreateEditorOpen, setIsCreateEditorOpen] = useState(false)
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
-  const [isStatsOpen, setIsStatsOpen] = useState(false)
   const [deleteCandidate, setDeleteCandidate] = useState<MediaItem | null>(null)
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const importJsonInputRef = useRef<HTMLInputElement | null>(null)
@@ -266,9 +264,9 @@ export default function LibraryView() {
     queryFn: ({ signal }) => CategoriesApi.getAll(signal),
   })
 
-  const statsQuery = useQuery({
-    queryKey: queryKeys.mediaItems.stats(),
-    queryFn: ({ signal }) => MediaItemsApi.getStats(signal),
+  const formatsQuery = useQuery({
+    queryKey: queryKeys.formats.list(),
+    queryFn: ({ signal }) => FormatsApi.getAll(signal),
   })
 
   const saveMutation = useMutation({
@@ -457,17 +455,18 @@ export default function LibraryView() {
   }
 
   const availableCategories = categoriesQuery.data ?? []
+  const availableFormats = formatsQuery.data ?? []
   const response = libraryQuery.data
   const items = response?.items ?? []
   const appliedFilterCount = countAppliedFilters(filters)
   const hasItems = (response?.totalCount ?? 0) > 0
-  const showStatusStack = Boolean(libraryQuery.isError || statsQuery.isError || categoriesQuery.isError)
+  const showStatusStack = Boolean(libraryQuery.isError || categoriesQuery.isError)
   const categoriesHelpText = categoriesQuery.isError
     ? 'Las categorías no están disponibles ahora mismo. Puedes seguir filtrando por texto, estado y origen.'
     : undefined
 
-  if (libraryQuery.isLoading && !response && statsQuery.isLoading) {
-    return <Loader title="Cargando biblioteca" message="Sincronizando filtros, listado y estadísticas." />
+  if (libraryQuery.isLoading && !response) {
+    return <Loader title="Cargando biblioteca" message="Sincronizando filtros y listado." />
   }
 
   return (
@@ -501,14 +500,6 @@ export default function LibraryView() {
             <AdjustmentsHorizontalIcon width={18} height={18} />
             {isFiltersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
             {appliedFilterCount > 0 ? ` (${appliedFilterCount})` : ''}
-          </button>
-          <button
-            className={`button button--secondary${isStatsOpen ? ' button--active' : ''}`}
-            type="button"
-            onClick={() => setIsStatsOpen((prev) => !prev)}
-          >
-            <ChartBarIcon width={18} height={18} />
-            {isStatsOpen ? 'Ocultar resumen' : 'Resumen'}
           </button>
           <TransferActionMenu
             label="Importar"
@@ -553,12 +544,6 @@ export default function LibraryView() {
             <div className="status-banner status-banner--danger" role="alert">
               <strong>La biblioteca no se sincronizó.</strong>
               <span>Reintenta la carga o revisa el backend antes de seguir editando.</span>
-            </div>
-          ) : null}
-          {statsQuery.isError ? (
-            <div className="status-banner status-banner--warning" role="status">
-              <strong>Las estadísticas no están disponibles.</strong>
-              <span>La colección sigue accesible, pero el resumen no pudo actualizarse.</span>
             </div>
           ) : null}
           {categoriesQuery.isError ? (
@@ -676,8 +661,6 @@ export default function LibraryView() {
         ) : null}
       </section>
 
-      {isStatsOpen && statsQuery.data && !statsQuery.isError ? <MediaStatsPanel stats={statsQuery.data} /> : null}
-
       {isEditorOpen ? (
         <SidePanelDialog
           open={isEditorOpen}
@@ -702,6 +685,7 @@ export default function LibraryView() {
             key={editingItem?.id ?? 'create'}
             item={editingItem}
             availableCategories={availableCategories}
+            availableFormats={availableFormats.length > 0 ? availableFormats : undefined}
             error={editorError}
             isPending={saveMutation.isPending}
             onCancel={closeEditor}

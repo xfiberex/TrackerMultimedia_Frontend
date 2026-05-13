@@ -22,6 +22,7 @@ const FRAG_SRC = `
   uniform float u_time;
   uniform vec2  u_resolution;
   uniform vec2  u_pointer;
+  uniform float u_dark;
 
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -65,15 +66,21 @@ const FRAG_SRC = `
     n += fbm(p * 3.2 - t * 0.6) * 0.45;
     n  = clamp(n * 0.7 + 0.1, 0.0, 1.0);
 
-    // Palette: #F8FAFC → #E2E8F0 → #CBD5E1
-    vec3 c0 = vec3(0.973, 0.980, 0.988); // #F8FAFC
-    vec3 c1 = vec3(0.886, 0.910, 0.941); // #E2E8F0
-    vec3 c2 = vec3(0.796, 0.835, 0.882); // #CBD5E1
+    // Palettes: light (#F8FAFC→#E2E8F0→#CBD5E1) / dark (#0F172A→#1E293B→#334155)
+    vec3 lc0 = vec3(0.973, 0.980, 0.988);
+    vec3 lc1 = vec3(0.886, 0.910, 0.941);
+    vec3 lc2 = vec3(0.796, 0.835, 0.882);
+    vec3 dc0 = vec3(0.059, 0.090, 0.165);
+    vec3 dc1 = vec3(0.118, 0.161, 0.231);
+    vec3 dc2 = vec3(0.200, 0.255, 0.333);
+    vec3 c0 = mix(lc0, dc0, u_dark);
+    vec3 c1 = mix(lc1, dc1, u_dark);
+    vec3 c2 = mix(lc2, dc2, u_dark);
 
     vec3 color = mix(c0, c1, n);
     color = mix(color, c2, n * n * 0.5);
 
-    // Bright-centre vignette — keeps the core light
+    // Vignette — keeps the core light in light mode, subtle in dark mode
     float v = 1.0 - dot(uv - 0.5, uv - 0.5) * 1.2;
     color = mix(c1 * 0.98, color, clamp(v, 0.0, 1.0) * 0.6 + 0.4);
 
@@ -113,10 +120,11 @@ function initGL(canvas: HTMLCanvasElement) {
   gl.linkProgram(prog)
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null
 
-  const posLoc = gl.getAttribLocation(prog, 'a_position')
+  const posLoc  = gl.getAttribLocation(prog, 'a_position')
   const timeLoc = gl.getUniformLocation(prog, 'u_time')
   const resLoc  = gl.getUniformLocation(prog, 'u_resolution')
   const ptrLoc  = gl.getUniformLocation(prog, 'u_pointer')
+  const darkLoc = gl.getUniformLocation(prog, 'u_dark')
 
   const buf = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, buf)
@@ -126,7 +134,7 @@ function initGL(canvas: HTMLCanvasElement) {
     gl.STATIC_DRAW,
   )
 
-  return { gl, prog, buf, posLoc, timeLoc, resLoc, ptrLoc }
+  return { gl, prog, buf, posLoc, timeLoc, resLoc, ptrLoc, darkLoc }
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -134,9 +142,10 @@ function initGL(canvas: HTMLCanvasElement) {
 export default function AmbientBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [failed,  setFailed]  = useState(false)
-  const ptrRef  = useRef({ x: 0, y: 0 })
-  const rafRef  = useRef(0)
-  const t0Ref   = useRef(0)
+  const ptrRef    = useRef({ x: 0, y: 0 })
+  const rafRef    = useRef(0)
+  const t0Ref     = useRef(0)
+  const isDarkRef = useRef(document.documentElement.getAttribute('data-theme') === 'dark')
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -148,7 +157,7 @@ export default function AmbientBackground() {
       return
     }
 
-    const { gl, prog, buf, posLoc, timeLoc, resLoc, ptrLoc } = state
+    const { gl, prog, buf, posLoc, timeLoc, resLoc, ptrLoc, darkLoc } = state
 
     const resize = () => {
       canvas.width  = window.innerWidth
@@ -163,6 +172,11 @@ export default function AmbientBackground() {
     }
     window.addEventListener('pointermove', onPointer)
 
+    const observer = new MutationObserver(() => {
+      isDarkRef.current = document.documentElement.getAttribute('data-theme') === 'dark'
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+
     t0Ref.current = performance.now()
 
     const frame = (now: number) => {
@@ -174,6 +188,7 @@ export default function AmbientBackground() {
       gl.uniform1f(timeLoc, t)
       gl.uniform2f(resLoc,  canvas.width, canvas.height)
       gl.uniform2f(ptrLoc,  ptrRef.current.x, ptrRef.current.y)
+      gl.uniform1f(darkLoc, isDarkRef.current ? 1.0 : 0.0)
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
       rafRef.current = requestAnimationFrame(frame)
     }
@@ -183,6 +198,7 @@ export default function AmbientBackground() {
       cancelAnimationFrame(rafRef.current)
       window.removeEventListener('resize', resize)
       window.removeEventListener('pointermove', onPointer)
+      observer.disconnect()
     }
   }, [])
 

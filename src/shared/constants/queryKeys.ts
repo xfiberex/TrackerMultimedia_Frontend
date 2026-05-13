@@ -8,6 +8,10 @@ export const queryKeys = {
     list: () => ['categories', 'list'] as const,
     detail: (categoryId: Category['id']) => ['categories', 'detail', categoryId] as const,
   },
+  formats: {
+    root: ['formats'] as const,
+    list: () => ['formats', 'list'] as const,
+  },
   mediaItems: {
     root: ['media-items'] as const,
     list: (filters: MediaItemsFilters) => ['media-items', 'list', filters] as const,

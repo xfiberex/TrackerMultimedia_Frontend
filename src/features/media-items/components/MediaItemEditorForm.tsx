@@ -9,6 +9,7 @@ import {
   type MediaItem,
   type MediaItemCategory,
 } from '@/features/media-items/schemas/mediaItemSchema'
+import type { UserFormat } from '@/features/catalog/schemas/formatsSchema'
 
 type MediaItemDraft = {
   title: string
@@ -30,6 +31,7 @@ type MediaItemDraft = {
 interface MediaItemEditorFormProps {
   item: MediaItem | null
   availableCategories: MediaItemCategory[]
+  availableFormats?: UserFormat[]
   error: string | null
   isPending: boolean
   onCancel: () => void
@@ -86,7 +88,7 @@ function toOptionalUtcDateString(value: string): string | null {
   return new Date(`${normalized}T00:00:00.000Z`).toISOString()
 }
 
-export default function MediaItemEditorForm({ item, availableCategories, error, isPending, onCancel, onSubmit }: MediaItemEditorFormProps) {
+export default function MediaItemEditorForm({ item, availableCategories, availableFormats, error, isPending, onCancel, onSubmit }: MediaItemEditorFormProps) {
   const isEditing = item !== null
   const [draft, setDraft] = useState<MediaItemDraft>(() => createDraft(item))
 
@@ -185,18 +187,36 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
 
         <div className="control">
           <label htmlFor="editor-content-kind">Formato base</label>
-          <select
-            id="editor-content-kind"
-            className="select"
-            value={draft.contentKind}
-            onChange={(event) => updateField('contentKind', event.target.value as MediaItemDraft['contentKind'])}
-          >
-            {contentKinds.map((contentKind) => (
-              <option key={contentKind} value={contentKind}>
-                {contentKindLabels[contentKind]}
-              </option>
-            ))}
-          </select>
+          {availableFormats && availableFormats.length > 0 ? (
+            <select
+              id="editor-content-kind"
+              className="select"
+              value={availableFormats.find((f) => f.contentKind === draft.contentKind)?.id ?? availableFormats[0].id}
+              onChange={(event) => {
+                const fmt = availableFormats.find((f) => f.id === event.target.value)
+                updateField('contentKind', fmt?.contentKind ?? 'Other')
+              }}
+            >
+              {availableFormats.map((fmt) => (
+                <option key={fmt.id} value={fmt.id}>
+                  {fmt.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <select
+              id="editor-content-kind"
+              className="select"
+              value={draft.contentKind}
+              onChange={(event) => updateField('contentKind', event.target.value as MediaItemDraft['contentKind'])}
+            >
+              {contentKinds.map((contentKind) => (
+                <option key={contentKind} value={contentKind}>
+                  {contentKindLabels[contentKind]}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className="control">
@@ -241,7 +261,7 @@ export default function MediaItemEditorForm({ item, availableCategories, error, 
               })}
             </div>
           ) : (
-            <p className="category-empty">Aún no tienes categorías. Créala desde la vista Categorías.</p>
+            <p className="category-empty">Aún no tienes categorías. Créalas desde la sección Catálogo.</p>
           )}
         </div>
 

@@ -12,6 +12,7 @@ export interface SearchMediaItemsFilters {
   query: string
   type?: MediaSearchType
   limit?: number
+  providers?: string[]
 }
 
 export interface DiscoverProvider {

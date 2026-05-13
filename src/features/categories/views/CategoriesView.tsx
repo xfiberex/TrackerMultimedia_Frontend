@@ -1,11 +1,12 @@
 import {
+  ChevronDownIcon,
   PencilSquareIcon,
   PlusIcon,
   TagIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { CategoriesApi } from '@/features/categories/api/CategoriesAPI'
 import type { Category, CreateCategoryInput } from '@/features/categories/schemas/categorySchema'
 import EmptyState from '@/shared/components/EmptyState'
@@ -13,6 +14,134 @@ import Loader from '@/shared/components/Loader'
 import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import { useToast } from '@/shared/hooks/useToast'
 import { queryKeys } from '@/shared/constants/queryKeys'
+
+const PRESET_COLORS = [
+  '#3B82F6',
+  '#10B981',
+  '#F59E0B',
+  '#EF4444',
+  '#8B5CF6',
+  '#EC4899',
+  '#06B6D4',
+  '#64748B',
+]
+
+function ColorPickerDropdown({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (color: string) => void
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const nativeRef = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    if (!isOpen) return undefined
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false)
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen])
+
+  const displayColor = value.trim() || null
+  const isValidHex = /^#[0-9A-Fa-f]{6}$/.test(value.trim())
+
+  return (
+    <div className="color-picker-control" ref={rootRef}>
+      <button
+        type="button"
+        className="color-picker-trigger"
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <span
+          className="color-picker-trigger__swatch"
+          style={{ backgroundColor: isValidHex ? displayColor ?? 'transparent' : 'transparent' }}
+        />
+        <span className="color-picker-trigger__value">
+          {value.trim() || 'Sin color'}
+        </span>
+        <ChevronDownIcon
+          className={`color-picker-trigger__chevron${isOpen ? ' color-picker-trigger__chevron--open' : ''}`}
+          width={14}
+          height={14}
+        />
+      </button>
+
+      {isOpen ? (
+        <div className="color-picker-popover" role="listbox" aria-label="Selector de color">
+          <div className="color-picker-presets" role="group" aria-label="Colores predefinidos">
+            {PRESET_COLORS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                role="option"
+                aria-selected={value.trim() === color}
+                className={`color-preset-btn${value.trim() === color ? ' color-preset-btn--active' : ''}`}
+                style={{ backgroundColor: color }}
+                title={color}
+                onClick={() => {
+                  onChange(color)
+                  setIsOpen(false)
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="color-picker-native-row">
+            <label htmlFor="category-color-native">Personalizado</label>
+            <input
+              ref={nativeRef}
+              id="category-color-native"
+              type="color"
+              className="color-picker-native"
+              value={isValidHex ? value.trim() : '#000000'}
+              onChange={(e) => onChange(e.target.value)}
+            />
+            <input
+              type="text"
+              className="color-picker-hex-input"
+              placeholder="#336699"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              aria-label="Valor hexadecimal del color"
+            />
+            {value.trim() ? (
+              <button
+                type="button"
+                className="button button--ghost"
+                style={{ minHeight: '2.25rem', padding: '0 0.75rem', fontSize: '0.82rem' }}
+                onClick={() => {
+                  onChange('')
+                  setIsOpen(false)
+                }}
+              >
+                Quitar
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}
 
 type CategoryDraft = {
   name: string
@@ -242,13 +371,10 @@ export default function CategoriesView() {
             </div>
 
             <div className="control">
-              <label htmlFor="category-color">Color</label>
-              <input
-                id="category-color"
-                className="input"
-                placeholder="#336699"
+              <label>Color</label>
+              <ColorPickerDropdown
                 value={draft.color}
-                onChange={(event) => updateField('color', event.target.value)}
+                onChange={(color) => updateField('color', color)}
               />
             </div>
           </div>

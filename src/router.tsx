@@ -4,7 +4,7 @@ import Loader from '@/shared/components/Loader'
 import AuthGuard from '@/shared/components/AuthGuard'
 
 const AppLayout = lazy(() => import('@/layouts/AppLayout'))
-const CategoriesView = lazy(() => import('@/features/categories/views/CategoriesView'))
+const CatalogView = lazy(() => import('@/features/catalog/views/CatalogView'))
 const LibraryView = lazy(() => import('@/features/media-items/views/LibraryView'))
 const DiscoverView = lazy(() => import('@/features/search/views/DiscoverView'))
 const LoginView = lazy(() => import('@/features/auth/views/LoginView'))
@@ -37,7 +37,7 @@ export default function Router() {
             <Route element={<AppLayout />}>
               <Route index element={<Navigate to="/library" replace />} />
               <Route path="/library" element={<LibraryView />} />
-              <Route path="/categories" element={<CategoriesView />} />
+              <Route path="/catalog" element={<CatalogView />} />
               <Route path="/discover" element={<DiscoverView />} />
               <Route path="/profile" element={<ProfileView />} />
             </Route>

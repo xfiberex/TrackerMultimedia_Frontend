@@ -1,11 +1,14 @@
 import {
   MagnifyingGlassIcon,
+  MoonIcon,
   RectangleStackIcon,
-  TagIcon,
+  Squares2X2Icon,
+  SunIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/features/auth/context/useAuth'
+import { useDarkMode } from '@/shared/hooks/useDarkMode'
 
 const navigation = [
   {
@@ -19,14 +22,15 @@ const navigation = [
     icon: MagnifyingGlassIcon,
   },
   {
-    to: '/categories',
-    label: 'Categorías',
-    icon: TagIcon,
+    to: '/catalog',
+    label: 'Catálogo',
+    icon: Squares2X2Icon,
   },
 ]
 
 export default function AppLayout() {
   const { user, logout } = useAuth()
+  const { isDark, toggle } = useDarkMode()
 
   return (
     <div className="app-shell">
@@ -49,6 +53,15 @@ export default function AppLayout() {
                 <UserCircleIcon width={16} height={16} />
                 {user?.displayName}
               </NavLink>
+              <button
+                className="theme-toggle"
+                type="button"
+                onClick={toggle}
+                title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              >
+                {isDark ? <SunIcon width={18} height={18} /> : <MoonIcon width={18} height={18} />}
+              </button>
               <button
                 className="button button--ghost"
                 onClick={() => void logout()}
