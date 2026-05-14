@@ -63,3 +63,36 @@ export function toPositiveInt(value: string | null, fallback: number): number {
 
   return parsedValue
 }
+
+export function extractApiError(err: unknown, fallback: string): string {
+  if (typeof err !== 'object' || err === null || !('response' in err)) {
+    return fallback
+  }
+
+  const response = (err as { response?: { data?: unknown } }).response
+  const data = response?.data
+
+  if (typeof data === 'string') {
+    return data
+  }
+
+  if (typeof data === 'object' && data !== null) {
+    if ('detail' in data && typeof data.detail === 'string') {
+      return data.detail
+    }
+
+    if ('title' in data && typeof data.title === 'string') {
+      return data.title
+    }
+
+    if ('errors' in data && typeof data.errors === 'object' && data.errors !== null) {
+      for (const fieldErrors of Object.values(data.errors as Record<string, unknown>)) {
+        if (Array.isArray(fieldErrors) && typeof fieldErrors[0] === 'string') {
+          return fieldErrors[0]
+        }
+      }
+    }
+  }
+
+  return fallback
+}

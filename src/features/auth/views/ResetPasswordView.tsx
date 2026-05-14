@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { AuthAPI } from '../api/AuthAPI'
-import { extractAuthError } from '../utils/authErrors'
+import { extractApiError } from '@/shared/utils'
 
 export default function ResetPasswordView() {
   const [searchParams] = useSearchParams()
@@ -29,7 +29,7 @@ export default function ResetPasswordView() {
       await AuthAPI.resetPassword({ email, token, newPassword })
       navigate('/login', { state: { message: 'Contraseña actualizada. Ya puedes iniciar sesión.' } })
     } catch (err) {
-      setError(extractAuthError(err, 'El enlace de recuperación no es válido o ha expirado.'))
+      setError(extractApiError(err, 'El enlace de recuperación no es válido o ha expirado.'))
     } finally {
       setIsPending(false)
     }

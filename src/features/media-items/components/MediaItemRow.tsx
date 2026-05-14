@@ -8,6 +8,7 @@ import {
   mediaSourceLabels,
   mediaTrackingStatusLabels,
   mediaTypeLabels,
+  progressUnitShortLabels,
   type MediaItem,
 } from '@/features/media-items/schemas/mediaItemSchema'
 import { formatScore } from '@/shared/utils'
@@ -24,11 +25,12 @@ function getKindLabel(item: MediaItem): string {
 }
 
 function getProgressLabel(item: MediaItem): string {
-  const cap = item.progressCurrent ?? item.progressCount ?? 0
+  const current = item.progressCurrent ?? item.progressCount ?? 0
+  const unit = progressUnitShortLabels[item.progressUnit]
   if (item.currentSeason > 1) {
-    return `T${item.currentSeason} · Cap. ${cap}`
+    return `T${item.currentSeason} · ${unit} ${current}`
   }
-  return `Cap. ${cap}`
+  return `${unit} ${current}`
 }
 
 export default function MediaItemRow({ item, isDeleting = false, onDelete, onEdit }: MediaItemRowProps) {

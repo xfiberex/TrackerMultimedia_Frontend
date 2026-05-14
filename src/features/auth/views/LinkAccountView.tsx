@@ -10,7 +10,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
-import { extractAuthError } from '../utils/authErrors'
+import { extractApiError } from '@/shared/utils'
 
 export default function LinkAccountView() {
   const [searchParams] = useSearchParams()
@@ -49,7 +49,7 @@ export default function LinkAccountView() {
       await linkConfirm({ linkToken, provider, email, password })
       navigate('/library', { replace: true })
     } catch (err) {
-      setError(extractAuthError(err, 'No se pudo vincular la cuenta. Verifica tu contraseña.'))
+      setError(extractApiError(err, 'No se pudo vincular la cuenta. Verifica tu contraseña.'))
     } finally {
       setIsPending(false)
     }

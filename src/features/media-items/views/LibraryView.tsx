@@ -33,7 +33,7 @@ import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import SidePanelDialog from '@/shared/components/SidePanelDialog'
 import { useToast } from '@/shared/hooks/useToast'
 import { queryKeys } from '@/shared/constants/queryKeys'
-import { toPositiveInt } from '@/shared/utils'
+import { extractApiError, toPositiveInt } from '@/shared/utils'
 
 type FilterPatch = Partial<Record<keyof MediaItemsFilters, string | number | string[] | undefined>>
 
@@ -121,35 +121,6 @@ function TransferActionMenu({
       ) : null}
     </div>
   )
-}
-
-function extractApiError(error: unknown, fallback: string): string {
-  if (typeof error !== 'object' || error === null || !('response' in error)) {
-    return fallback
-  }
-
-  const response = (error as { response?: { data?: unknown } }).response
-  const data = response?.data
-
-  if (typeof data === 'string') {
-    return data
-  }
-
-  if (typeof data === 'object' && data !== null) {
-    if ('detail' in data && typeof data.detail === 'string') {
-      return data.detail
-    }
-
-    if ('errors' in data && typeof data.errors === 'object' && data.errors !== null) {
-      for (const fieldErrors of Object.values(data.errors as Record<string, unknown>)) {
-        if (Array.isArray(fieldErrors) && typeof fieldErrors[0] === 'string') {
-          return fieldErrors[0]
-        }
-      }
-    }
-  }
-
-  return fallback
 }
 
 function getTransferFormatLabel(format: LibraryTransferFormat): string {

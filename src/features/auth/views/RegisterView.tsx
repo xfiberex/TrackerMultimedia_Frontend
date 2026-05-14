@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
-import { extractAuthError } from '../utils/authErrors'
+import { extractApiError } from '@/shared/utils'
 
 export default function RegisterView() {
   const [email, setEmail] = useState('')
@@ -37,7 +37,7 @@ export default function RegisterView() {
       await register({ email, password, displayName: displayName.trim() || undefined })
       setRegistered(true)
     } catch (err) {
-      setError(extractAuthError(err, 'No se pudo crear la cuenta. Inténtalo de nuevo.'))
+      setError(extractApiError(err, 'No se pudo crear la cuenta. Inténtalo de nuevo.'))
     } finally {
       setIsPending(false)
     }
@@ -49,7 +49,7 @@ export default function RegisterView() {
     try {
       await loginWithOAuth(provider)
     } catch (err) {
-      setError(extractAuthError(err, `No se pudo iniciar el acceso con ${provider}.`))
+      setError(extractApiError(err, `No se pudo iniciar el acceso con ${provider}.`))
       setOAuthPending(null)
     }
   }

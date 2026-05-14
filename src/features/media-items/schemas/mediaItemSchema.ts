@@ -245,6 +245,18 @@ export const progressUnitLabels: Record<ProgressUnit, string> = {
   None: 'Sin unidad',
 }
 
+export const progressUnitShortLabels: Record<ProgressUnit, string> = {
+  Episodes: 'Ep.',
+  Chapters: 'Cap.',
+  Volumes: 'Vol.',
+  Pages: 'Pág.',
+  Hours: 'Hrs.',
+  Seasons: 'Temp.',
+  Tracks: 'Pista',
+  Items: 'Ítem',
+  None: '—',
+}
+
 export const defaultProgressUnitByContentKind: Record<ContentKind, ProgressUnit> = {
   Series: 'Episodes',
   Movie: 'None',

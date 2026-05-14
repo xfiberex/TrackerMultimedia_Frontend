@@ -4,7 +4,7 @@ import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import { useToast } from '@/shared/hooks/useToast'
 import { AuthAPI } from '../api/AuthAPI'
 import { useAuth } from '../context/useAuth'
-import { extractAuthError } from '../utils/authErrors'
+import { extractApiError } from '@/shared/utils'
 
 export default function ProfileView() {
   const { user, refreshUser, logoutAll } = useAuth()
@@ -37,7 +37,7 @@ export default function ProfileView() {
       await refreshUser()
       showToast({ tone: 'success', message: 'Perfil actualizado correctamente.' })
     } catch (err) {
-      setProfileError(extractAuthError(err, 'No se pudo actualizar el perfil.'))
+      setProfileError(extractApiError(err, 'No se pudo actualizar el perfil.'))
     } finally {
       setIsProfilePending(false)
     }
@@ -61,7 +61,7 @@ export default function ProfileView() {
       setNewPassword('')
       setConfirmPassword('')
     } catch (err) {
-      setPwError(extractAuthError(err, 'No se pudo cambiar la contraseña.'))
+      setPwError(extractApiError(err, 'No se pudo cambiar la contraseña.'))
     } finally {
       setIsPwPending(false)
     }
@@ -79,7 +79,7 @@ export default function ProfileView() {
       setIsLogoutDialogOpen(false)
       showToast({
         tone: 'danger',
-        message: extractAuthError(err, 'No se pudieron cerrar todas las sesiones.'),
+        message: extractApiError(err, 'No se pudieron cerrar todas las sesiones.'),
       })
     } finally {
       setIsLogoutAllPending(false)

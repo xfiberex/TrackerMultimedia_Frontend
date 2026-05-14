@@ -31,22 +31,27 @@ import Loader from '@/shared/components/Loader'
 import SidePanelDialog from '@/shared/components/SidePanelDialog'
 import { useToast } from '@/shared/hooks/useToast'
 import { queryKeys } from '@/shared/constants/queryKeys'
-import { toPositiveInt } from '@/shared/utils'
+import { extractApiError, toPositiveInt } from '@/shared/utils'
 
 const PROVIDER_STORAGE_KEY = 'discover:enabledProviders'
 
 function loadEnabledProviders(): string[] {
   try {
     const stored = localStorage.getItem(PROVIDER_STORAGE_KEY)
-    if (stored) return JSON.parse(stored) as string[]
-  } catch {}
+    if (stored) {
+      const parsed: unknown = JSON.parse(stored)
+      if (Array.isArray(parsed)) {
+        return parsed.filter((v): v is string => typeof v === 'string')
+      }
+    }
+  } catch { /* ignore */ }
   return ['anilist']
 }
 
 function saveEnabledProviders(keys: string[]): void {
   try {
     localStorage.setItem(PROVIDER_STORAGE_KEY, JSON.stringify(keys))
-  } catch {}
+  } catch { /* ignore */ }
 }
 
 function getActiveProviders(providers: DiscoverProvider[], type: MediaSearchType): DiscoverProvider[] {
@@ -64,35 +69,6 @@ function resolveSearchFilters(searchParams: URLSearchParams): SearchMediaItemsFi
     type: ((searchParams.get('type') as MediaSearchType | null) ?? 'All'),
     limit: toPositiveInt(searchParams.get('limit'), 8),
   }
-}
-
-function extractApiError(error: unknown, fallback: string): string {
-  if (typeof error !== 'object' || error === null || !('response' in error)) {
-    return fallback
-  }
-
-  const response = (error as { response?: { data?: unknown } }).response
-  const data = response?.data
-
-  if (typeof data === 'string') {
-    return data
-  }
-
-  if (typeof data === 'object' && data !== null) {
-    if ('detail' in data && typeof data.detail === 'string') {
-      return data.detail
-    }
-
-    if ('errors' in data && typeof data.errors === 'object' && data.errors !== null) {
-      for (const fieldErrors of Object.values(data.errors as Record<string, unknown>)) {
-        if (Array.isArray(fieldErrors) && typeof fieldErrors[0] === 'string') {
-          return fieldErrors[0]
-        }
-      }
-    }
-  }
-
-  return fallback
 }
 
 function mapSearchResultToCreatePayload(item: SearchMediaItem, overrides: SearchQuickAddInput): CreateMediaItemInput {

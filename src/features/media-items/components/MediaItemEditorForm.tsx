@@ -5,6 +5,7 @@ import {
   defaultProgressUnitByContentKind,
   mediaTrackingStatusLabels,
   mediaTrackingStatuses,
+  progressUnitLabels,
   type CreateMediaItemInput,
   type MediaItem,
   type MediaItemCategory,
@@ -91,6 +92,8 @@ function toOptionalUtcDateString(value: string): string | null {
 export default function MediaItemEditorForm({ item, availableCategories, availableFormats, error, isPending, onCancel, onSubmit }: MediaItemEditorFormProps) {
   const isEditing = item !== null
   const [draft, setDraft] = useState<MediaItemDraft>(() => createDraft(item))
+  const progressUnit = item?.progressUnit ?? defaultProgressUnitByContentKind[draft.contentKind]
+  const progressLabel = progressUnitLabels[progressUnit]
 
   const updateField = <K extends keyof MediaItemDraft>(field: K, value: MediaItemDraft[K]) => {
     setDraft((current) => ({ ...current, [field]: value }))
@@ -150,7 +153,7 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
               ? 'Ajusta el formato base, el progreso flexible y los metadatos visibles del elemento seleccionado.'
               : 'Crea un registro manual con el nuevo modelo flexible, sin depender del buscador externo.'}
           </p>
-          {item?.sourceType !== 'Manual' ? (
+          {item !== null && item.sourceType !== 'Manual' ? (
             <p className="panel__description">El origen externo y sus identificadores se conservarán al guardar.</p>
           ) : null}
         </div>
@@ -279,14 +282,14 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
         </div>
 
         <div className="control">
-          <label htmlFor="editor-score">Puntuación personal (máx. 5)</label>
+          <label htmlFor="editor-score">Puntuación personal (0–10)</label>
           <input
             id="editor-score"
             className="input"
             type="number"
             min="0"
-            max="5"
-            step="0.5"
+            max="10"
+            step="0.1"
             value={draft.personalScore}
             onChange={(event) => updateField('personalScore', event.target.value)}
           />
@@ -305,7 +308,7 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
         </div>
 
         <div className="control">
-          <label htmlFor="editor-chapter">Capítulo</label>
+          <label htmlFor="editor-chapter">{progressLabel}</label>
           <input
             id="editor-chapter"
             className="input"

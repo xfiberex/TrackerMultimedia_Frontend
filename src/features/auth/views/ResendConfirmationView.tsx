@@ -8,7 +8,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useToast } from '@/shared/hooks/useToast'
 import { AuthAPI } from '../api/AuthAPI'
-import { extractAuthError } from '../utils/authErrors'
+import { extractApiError } from '@/shared/utils'
 
 export default function ResendConfirmationView() {
   const [email, setEmail] = useState('')
@@ -30,7 +30,7 @@ export default function ResendConfirmationView() {
       })
       setSent(true)
     } catch (err) {
-      setError(extractAuthError(err, 'No se pudo enviar el correo. Inténtalo más tarde.'))
+      setError(extractApiError(err, 'No se pudo enviar el correo. Inténtalo más tarde.'))
     } finally {
       setIsPending(false)
     }

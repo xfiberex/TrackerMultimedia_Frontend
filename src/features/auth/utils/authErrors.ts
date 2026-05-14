@@ -119,15 +119,6 @@ export function normalizeError(err: unknown): AppError {
 }
 
 /**
- * Extrae un mensaje de error legible de una respuesta de axios.
- * @deprecated Usar `normalizeError()` en su lugar para mejor tipado
- */
-export function extractAuthError(err: unknown, fallback: string): string {
-  const appError = normalizeError(err)
-  return appError.message || fallback
-}
-
-/**
  * Obtiene el mensaje de error OAuth desde código y mensaje.
  */
 export function getOAuthErrorMessage(errorCode: string | null, errorMessage: string | null): string | null {

@@ -1,10 +1,8 @@
-import { extractAuthError } from './authErrors'
+import { extractApiError } from '@/shared/utils'
 
-describe('extractAuthError', () => {
-  it('returns a network error message when there is no response payload', () => {
-    expect(extractAuthError({}, 'Fallback message')).toBe(
-      'Error de conexión. Verifica tu internet e intenta de nuevo.',
-    )
+describe('extractApiError', () => {
+  it('returns the fallback when there is no response payload', () => {
+    expect(extractApiError({}, 'Fallback message')).toBe('Fallback message')
   })
 
   it('returns the plain string response when available', () => {
@@ -14,7 +12,7 @@ describe('extractAuthError', () => {
       },
     }
 
-    expect(extractAuthError(error, 'Fallback message')).toBe('Credenciales inválidas.')
+    expect(extractApiError(error, 'Fallback message')).toBe('Credenciales inválidas.')
   })
 
   it('returns the first validation error from problem details', () => {
@@ -30,16 +28,16 @@ describe('extractAuthError', () => {
       },
     }
 
-    expect(extractAuthError(error, 'Fallback message')).toBe('El correo es obligatorio.')
+    expect(extractApiError(error, 'Fallback message')).toBe('El correo es obligatorio.')
   })
 
   it('falls back to detail and then title when there are no validation errors', () => {
     expect(
-      extractAuthError({ response: { data: { detail: 'Detalle del error.' } } }, 'Fallback message'),
+      extractApiError({ response: { data: { detail: 'Detalle del error.' } } }, 'Fallback message'),
     ).toBe('Detalle del error.')
 
     expect(
-      extractAuthError({ response: { data: { title: 'Título del error.' } } }, 'Fallback message'),
+      extractApiError({ response: { data: { title: 'Título del error.' } } }, 'Fallback message'),
     ).toBe('Título del error.')
   })
 })
