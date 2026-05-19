@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import { useToast } from '@/shared/hooks/useToast'
@@ -13,6 +13,10 @@ export default function ProfileView() {
 
   // --- Nombre mostrado ---
   const [displayName, setDisplayName] = useState(user?.displayName ?? '')
+
+  useEffect(() => {
+    if (user) setDisplayName(user.displayName ?? '')
+  }, [user])
   const [profileError, setProfileError] = useState<string | null>(null)
   const [isProfilePending, setIsProfilePending] = useState(false)
 

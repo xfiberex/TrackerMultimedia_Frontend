@@ -64,6 +64,8 @@ export const mediaItemSchema = z.object({
   completedAtUtc: z.string().datetime().nullable(),
   createdAtUtc: z.string().datetime(),
   updatedAtUtc: z.string().datetime(),
+  formatId: z.string().uuid().nullable().optional(),
+  formatName: z.string().nullable().optional(),
 })
 
 export const pagedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
@@ -176,6 +178,7 @@ export interface CreateMediaItemInput {
   currentSeason?: number
   personalScore?: number | null
   notes?: string | null
+  userFormatId?: string | null
   startedAtUtc?: string | null
   completedAtUtc?: string | null
 }

@@ -16,6 +16,7 @@ type MediaItemDraft = {
   title: string
   description: string
   contentKind: CreateMediaItemInput['contentKind']
+  formatId: string | null
   status: CreateMediaItemInput['status']
   releaseYear: string
   currentSeason: string
@@ -46,6 +47,7 @@ function createDraft(item: MediaItem | null): MediaItemDraft {
     title: item?.title ?? '',
     description: item?.description ?? '',
     contentKind,
+    formatId: item?.formatId ?? null,
     status: item?.status ?? 'Planned',
     releaseYear: item?.releaseYear != null ? String(item.releaseYear) : '',
     currentSeason: String(item?.currentSeason ?? 1),
@@ -136,6 +138,7 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
       progressTotal: item?.progressTotal ?? null,
       currentSeason,
       personalScore: toOptionalNumber(draft.personalScore),
+      userFormatId: draft.formatId ?? null,
       startedAtUtc: toOptionalUtcDateString(draft.startedAtUtc),
       completedAtUtc: toOptionalUtcDateString(draft.completedAtUtc),
       notes: trimOrNull(draft.notes),
@@ -189,17 +192,15 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
         </div>
 
         <div className="control">
-          <label htmlFor="editor-content-kind">Formato base</label>
+          <label htmlFor="editor-format">Formato</label>
           {availableFormats && availableFormats.length > 0 ? (
             <select
-              id="editor-content-kind"
+              id="editor-format"
               className="select"
-              value={availableFormats.find((f) => f.contentKind === draft.contentKind)?.id ?? availableFormats[0].id}
-              onChange={(event) => {
-                const fmt = availableFormats.find((f) => f.id === event.target.value)
-                updateField('contentKind', fmt?.contentKind ?? 'Other')
-              }}
+              value={draft.formatId ?? ''}
+              onChange={(event) => updateField('formatId', event.target.value || null)}
             >
+              <option value="">Sin formato</option>
               {availableFormats.map((fmt) => (
                 <option key={fmt.id} value={fmt.id}>
                   {fmt.name}
@@ -208,7 +209,7 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
             </select>
           ) : (
             <select
-              id="editor-content-kind"
+              id="editor-format"
               className="select"
               value={draft.contentKind}
               onChange={(event) => updateField('contentKind', event.target.value as MediaItemDraft['contentKind'])}

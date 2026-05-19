@@ -12,10 +12,6 @@ import { CategoriesApi } from '@/features/categories/api/CategoriesAPI'
 import type { Category, CreateCategoryInput } from '@/features/categories/schemas/categorySchema'
 import { FormatsApi } from '@/features/catalog/api/FormatsAPI'
 import type { CreateFormatInput, UserFormat } from '@/features/catalog/schemas/formatsSchema'
-import {
-  contentKindLabels,
-  contentKinds,
-} from '@/features/media-items/schemas/mediaItemSchema'
 import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import EmptyState from '@/shared/components/EmptyState'
 import Loader from '@/shared/components/Loader'
@@ -419,10 +415,10 @@ function CategoriesSection() {
 
 // ── Formats section ───────────────────────────────────────────────────────────
 
-type FormatDraft = { name: string; contentKind: string }
+type FormatDraft = { name: string }
 
 function makeFormatDraft(fmt: UserFormat | null): FormatDraft {
-  return { name: fmt?.name ?? '', contentKind: fmt?.contentKind ?? '' }
+  return { name: fmt?.name ?? '' }
 }
 
 function FormatsSection() {
@@ -498,13 +494,9 @@ function FormatsSection() {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setFormError(null)
-    const contentKind = draft.contentKind.trim() || null
     saveMutation.mutate({
       id: editingFormat?.id ?? null,
-      payload: {
-        name: draft.name.trim(),
-        contentKind: contentKind as CreateFormatInput['contentKind'],
-      },
+      payload: { name: draft.name.trim() },
     })
   }
 
@@ -522,7 +514,7 @@ function FormatsSection() {
               Formatos
             </h2>
             <p className="catalog-section__description">
-              Define los formatos disponibles en el selector de la biblioteca. Puedes asignarles un tipo base para sugerir unidades de progreso.
+              Etiquetas personales para clasificar el contenido de tu biblioteca: Anime, Serie, Película, Manga, etc.
             </p>
           </div>
           <button className="button button--primary" type="button" onClick={openCreate}>
@@ -558,7 +550,6 @@ function FormatsSection() {
               <thead>
                 <tr>
                   <th>Nombre</th>
-                  <th>Tipo base</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -567,11 +558,6 @@ function FormatsSection() {
                   <tr key={fmt.id} className="search-row">
                     <td className="search-row__title-cell">
                       <span className="search-row__title">{fmt.name}</span>
-                    </td>
-                    <td className="search-row__meta-cell">
-                      <span className="hero-chip">
-                        {fmt.contentKind ? contentKindLabels[fmt.contentKind] : 'Sin tipo'}
-                      </span>
                     </td>
                     <td className="search-row__actions-cell">
                       <div className="search-row__actions">
@@ -628,26 +614,6 @@ function FormatsSection() {
                 autoFocus
                 placeholder="Ej: OVA, Novela visual, Cortometraje…"
               />
-            </div>
-
-            <div className="control">
-              <label htmlFor="fmt-content-kind">Tipo base (opcional)</label>
-              <select
-                id="fmt-content-kind"
-                className="select"
-                value={draft.contentKind}
-                onChange={(e) => setDraft((d) => ({ ...d, contentKind: e.target.value }))}
-              >
-                <option value="">Sin tipo asignado</option>
-                {contentKinds.map((kind) => (
-                  <option key={kind} value={kind}>
-                    {contentKindLabels[kind]}
-                  </option>
-                ))}
-              </select>
-              <span className="control__hint">
-                El tipo base determina la unidad de progreso sugerida al crear un elemento en la biblioteca.
-              </span>
             </div>
 
             <div className="catalog-modal__actions">
