@@ -35,9 +35,12 @@ const PRESET_COLORS = [
 function ColorPickerDropdown({
   value,
   onChange,
+  labelId,
 }: {
   value: string
   onChange: (color: string) => void
+  /** Id del texto que etiqueta el control, para que el disparador tenga nombre accesible. */
+  labelId: string
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -72,12 +75,13 @@ function ColorPickerDropdown({
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
+        aria-labelledby={`${labelId} ${labelId}-value`}
       >
         <span
           className="color-picker-trigger__swatch"
           style={{ backgroundColor: isValidHex ? value.trim() : 'transparent' }}
         />
-        <span className="color-picker-trigger__value">
+        <span className="color-picker-trigger__value" id={`${labelId}-value`}>
           {value.trim() || 'Sin color'}
         </span>
         <ChevronDownIcon
@@ -382,8 +386,10 @@ function CategoriesSection() {
             </div>
 
             <div className="control">
-              <label>Color</label>
+              {/* Widget compuesto, no un control único: se nombra por aria-labelledby. */}
+              <span className="control__label" id="format-color-label">Color</span>
               <ColorPickerDropdown
+                labelId="format-color-label"
                 value={draft.color}
                 onChange={(color) => setDraft((d) => ({ ...d, color }))}
               />

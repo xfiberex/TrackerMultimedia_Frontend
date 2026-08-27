@@ -34,6 +34,12 @@ export default function AppLayout() {
 
   return (
     <div className="app-shell">
+      {/* WCAG 2.4.1: sin esto hay siete controles de cabecera antes del contenido
+          en cada cambio de página. Solo es visible al recibir el foco. */}
+      <a className="skip-link" href="#contenido">
+        Saltar al contenido
+      </a>
+
       <header className="app-shell__header">
         <div className="app-shell__header-inner">
           <div className="app-shell__topbar">
@@ -93,7 +99,7 @@ export default function AppLayout() {
         </div>
       </header>
 
-      <main className="app-shell__main">
+      <main className="app-shell__main" id="contenido" tabIndex={-1}>
         <Outlet />
       </main>
     </div>

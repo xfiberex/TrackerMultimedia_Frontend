@@ -48,7 +48,8 @@ describe('AppLayout', () => {
 
     expect(screen.getByRole('link', { name: 'Biblioteca' })).toHaveClass('app-nav__link--active')
     expect(screen.getByRole('link', { name: 'Descubrir' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Categorías' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Catálogo' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Saltar al contenido' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Tester' })).toHaveAttribute('title', 'user@test.com')
     expect(screen.getByText('Library content')).toBeInTheDocument()
   })

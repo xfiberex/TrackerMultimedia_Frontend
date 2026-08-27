@@ -239,8 +239,8 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
           </select>
         </div>
 
-        <div className="control control--span-full">
-          <label>Categorías</label>
+        <div className="control control--span-full" role="group" aria-labelledby="editor-categories-label">
+          <span className="control__label" id="editor-categories-label">Categorías</span>
           {availableCategories.length > 0 ? (
             <div className="category-pills">
               {availableCategories.map((category) => {

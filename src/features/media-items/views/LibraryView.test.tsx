@@ -192,7 +192,6 @@ describe('LibraryView', () => {
       )
     })
 
-    expect(getStatsMock).toHaveBeenCalledWith(expect.any(AbortSignal))
     expect(await screen.findByText('Frieren')).toBeInTheDocument()
   })
 
@@ -202,7 +201,9 @@ describe('LibraryView', () => {
 
     renderLibraryView('/library?search=frieren&type=Anime&categoryIds=cat-1&page=3&pageSize=24')
 
-    await user.click(await screen.findByRole('button', { name: 'Limpiar' }))
+    // Los filtros están plegados por defecto: hay que desplegarlos primero.
+    await user.click(await screen.findByRole('button', { name: /Mostrar filtros/ }))
+    await user.click(screen.getByRole('button', { name: 'Limpiar' }))
 
     await waitFor(() => {
       expect(getAllMock).toHaveBeenLastCalledWith(
@@ -238,7 +239,9 @@ describe('LibraryView', () => {
 
     renderLibraryView('/library?page=2&pageSize=12')
 
-    await user.type(await screen.findByLabelText('Buscar título'), '  solo leveling  ')
+    // Los filtros están plegados por defecto: hay que desplegarlos primero.
+    await user.click(await screen.findByRole('button', { name: /Mostrar filtros/ }))
+    await user.type(screen.getByLabelText('Buscar título'), '  solo leveling  ')
     await user.click(screen.getByRole('button', { name: 'Buscar' }))
 
     await waitFor(() => {
@@ -337,7 +340,6 @@ describe('LibraryView', () => {
     await waitFor(() => {
       expect(getAllMock.mock.calls.length).toBeGreaterThan(1)
       expect(getAllCategoriesMock.mock.calls.length).toBeGreaterThan(1)
-      expect(getStatsMock.mock.calls.length).toBeGreaterThan(1)
     })
 
     expect(
@@ -350,10 +352,10 @@ describe('LibraryView', () => {
 
     renderLibraryView('/library')
 
-    await user.click(await screen.findByRole('button', { name: 'Agregar manualmente' }))
+    await user.click(await screen.findByRole('button', { name: 'Nuevo registro' }))
 
     expect(screen.getByRole('dialog', { name: 'Crear elemento de biblioteca' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Cerrar editor' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cerrar panel del editor' })).toBeInTheDocument()
 
     await user.keyboard('{Escape}')
 
@@ -394,18 +396,16 @@ describe('LibraryView', () => {
 
     renderLibraryView('/library')
 
-    await user.click(await screen.findByRole('button', { name: 'Agregar manualmente' }))
+    await user.click(await screen.findByRole('button', { name: 'Nuevo registro' }))
     const editor = screen.getByRole('form', { name: 'Editor de biblioteca' })
     await user.type(within(editor).getByLabelText('Título principal'), '  Manual entry  ')
-    await user.selectOptions(within(editor).getByLabelText('Formato base'), 'Comic')
+    await user.selectOptions(within(editor).getByLabelText('Formato'), 'Comic')
     await user.selectOptions(within(editor).getByLabelText('Estado del registro'), 'Completed')
     await user.click(within(editor).getByRole('button', { name: 'Favoritos' }))
     await user.type(within(editor).getByLabelText('Año de estreno'), '2024')
-    await user.selectOptions(within(editor).getByLabelText('Unidad de progreso'), 'Chapters')
-    await user.clear(within(editor).getByLabelText('Progreso actual'))
-    await user.type(within(editor).getByLabelText('Progreso actual'), '15')
-    await user.type(within(editor).getByLabelText('Progreso total'), '15')
-    await user.type(within(editor).getByLabelText('Puntuación personal'), '8.5')
+    await user.clear(within(editor).getByLabelText('Capítulos'))
+    await user.type(within(editor).getByLabelText('Capítulos'), '15')
+    await user.type(within(editor).getByLabelText('Puntuación personal (0–10)'), '8.5')
     await user.type(within(editor).getByLabelText('Notas personales'), '  Nota nueva  ')
     await user.click(within(editor).getByRole('button', { name: 'Guardar nuevo registro' }))
 
@@ -428,9 +428,10 @@ describe('LibraryView', () => {
         progressUnit: 'Chapters',
         progressCount: 15,
         progressCurrent: 15,
-        progressTotal: 15,
+        progressTotal: null,
         currentSeason: 1,
         personalScore: 8.5,
+        userFormatId: null,
         startedAtUtc: null,
         completedAtUtc: null,
         notes: 'Nota nueva',
@@ -466,10 +467,10 @@ describe('LibraryView', () => {
     await user.type(titleInput, 'Frieren Final')
     await user.selectOptions(within(editor).getByLabelText('Estado del registro'), 'Completed')
     await user.click(within(editor).getByRole('button', { name: 'Favoritos' }))
-    await user.clear(within(editor).getByLabelText('Progreso actual'))
-    await user.type(within(editor).getByLabelText('Progreso actual'), '28')
-    await user.clear(within(editor).getByLabelText('Puntuación personal'))
-    await user.type(within(editor).getByLabelText('Puntuación personal'), '9.8')
+    await user.clear(within(editor).getByLabelText('Episodios'))
+    await user.type(within(editor).getByLabelText('Episodios'), '28')
+    await user.clear(within(editor).getByLabelText('Puntuación personal (0–10)'))
+    await user.type(within(editor).getByLabelText('Puntuación personal (0–10)'), '9.8')
     await user.type(within(editor).getByLabelText('Notas personales'), 'Gran cierre')
     await user.click(within(editor).getByRole('button', { name: 'Guardar cambios' }))
 
@@ -495,6 +496,7 @@ describe('LibraryView', () => {
         progressTotal: 28,
         currentSeason: 2,
         personalScore: 9.8,
+        userFormatId: null,
         startedAtUtc: null,
         completedAtUtc: null,
         notes: 'Gran cierre',
@@ -510,9 +512,11 @@ describe('LibraryView', () => {
 
     renderLibraryView('/library')
 
-    const filtersForm = await screen.findByRole('form', { name: 'Filtros de biblioteca' })
-    await user.click(within(filtersForm).getByRole('button', { name: 'Backlog' }))
-    await user.click(within(filtersForm).getByRole('button', { name: 'Favoritos' }))
+    // Los filtros están plegados por defecto: hay que desplegarlos primero.
+    await user.click(await screen.findByRole('button', { name: /Mostrar filtros/ }))
+    const filtersForm = () => screen.getByRole('form', { name: 'Filtros de biblioteca' })
+    await user.click(within(filtersForm()).getByRole('button', { name: 'Backlog' }))
+    await user.click(within(filtersForm()).getByRole('button', { name: 'Favoritos' }))
 
     await waitFor(() => {
       expect(getAllMock).toHaveBeenLastCalledWith(

@@ -1,0 +1,14 @@
+# Blueprint de Netlify. Vive en la raíz de este repositorio, que es la raíz del
+# proyecto de Vite: no lleva `base` porque no hay carpeta intermedia que declarar.
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Enrutado de la SPA: cualquier ruta desconocida la resuelve React Router.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import { useToast } from '@/shared/hooks/useToast'
@@ -13,10 +13,18 @@ export default function ProfileView() {
 
   // --- Nombre mostrado ---
   const [displayName, setDisplayName] = useState(user?.displayName ?? '')
+  const [syncedDisplayName, setSyncedDisplayName] = useState(user?.displayName ?? '')
 
-  useEffect(() => {
-    if (user) setDisplayName(user.displayName ?? '')
-  }, [user])
+  // Reajuste del campo cuando el usuario cambia (por ejemplo tras refreshUser).
+  // Se hace durante el render, que es el patrón que recomienda React: hacerlo en un
+  // useEffect provoca un render en cascada, con el campo mostrando el valor viejo
+  // durante un fotograma.
+  const currentDisplayName = user?.displayName ?? ''
+  if (user && currentDisplayName !== syncedDisplayName) {
+    setSyncedDisplayName(currentDisplayName)
+    setDisplayName(currentDisplayName)
+  }
+
   const [profileError, setProfileError] = useState<string | null>(null)
   const [isProfilePending, setIsProfilePending] = useState(false)
 

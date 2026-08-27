@@ -532,7 +532,8 @@ a {
   grid-column: 1 / -1;
 }
 
-.control label {
+.control label,
+.control__label {
   font-size: 0.875rem;
   font-weight: 400;
   color: var(--text-primary);
@@ -1171,19 +1172,51 @@ a {
   }
 }
 
+/* Quien pide movimiento reducido no debe ver NI animaciones ni transiciones.
+   Antes esta regla solo anulaba `animation` en nueve selectores, y las 30 y pico
+   transiciones de la hoja seguían ejecutándose. */
 @media (prefers-reduced-motion: reduce) {
-  .toast,
-  .toast--closing,
-  .side-panel-layer__scrim,
-  .side-panel--closing .side-panel__content,
-  .side-panel__content,
-  .side-panel-layer--centered .side-panel__content,
-  .side-panel-layer--centered.side-panel-layer--closing .side-panel__content,
-  .confirm-dialog-layer__scrim,
-  .confirm-dialog,
-  .confirm-dialog--closing {
-    animation: none !important;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
+}
+
+/* ==========================================================================
+   Skip link (WCAG 2.4.1)
+   Fuera de pantalla hasta que recibe el foco por teclado.
+   ========================================================================== */
+
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: -100%;
+  z-index: 1000;
+  padding: 0.65rem 1.1rem;
+  border-radius: 0 0 8px 8px;
+  background: var(--surface, #fff);
+  color: var(--text-primary, #111);
+  border: 1px solid var(--border, #d4d4d8);
+  border-top: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: top 0.15s ease-out;
+}
+
+.skip-link:focus-visible,
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid var(--accent, #6366f1);
+  outline-offset: 2px;
+}
+
+.app-shell__main:focus {
+  outline: none;
 }
 
 /* ==========================================================================
@@ -1480,7 +1513,8 @@ a {
 }
 
 /* Labels */
-.auth-shell .control label {
+.auth-shell .control label,
+.auth-shell .control__label {
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 0.875rem;
   font-weight: 400;

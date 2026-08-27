@@ -43,7 +43,15 @@ export default function SearchResultCard({ item, isPending, onAdd }: SearchResul
             {isPending ? 'Guardando...' : 'Importar'}
           </button>
           {item.referenceUrl ? (
-            <a className="button button--secondary" href={item.referenceUrl} target="_blank" rel="noreferrer">
+            // El icono es decorativo (aria-hidden), así que sin aria-label el enlace se
+            // anunciaba como «enlace» a secas: sin nombre accesible y sin destino claro.
+            <a
+              className="button button--secondary"
+              href={item.referenceUrl}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Abrir ${item.title} en ${mediaSourceLabels[item.sourceType]}`}
+            >
               <ArrowTopRightOnSquareIcon width={16} height={16} />
             </a>
           ) : null}

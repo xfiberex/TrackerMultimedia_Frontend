@@ -16,7 +16,15 @@ Conecta con la API de [Jikan](https://jikan.moe/) para búsquedas externas.
 
 ### Backend
 
+> El backend es un repositorio independiente (`TrackerMultimedia_Backend`). Lo que
+> sigue es el resumen mínimo para levantarlo junto al frontend; la referencia
+> completa y actualizada de secretos, migraciones y despliegue está en el `README.md`
+> de ese repositorio. Si los dos textos se contradicen, manda el suyo.
+
+Clónalo al lado de este y sitúate en él:
+
 ```bash
+git clone <url-del-repositorio-backend>
 cd TrackerMultimedia_Backend
 ```
 
@@ -162,24 +170,42 @@ npm run preview  # Vista previa del build
 ## Estructura del proyecto
 
 ```
-TrackerMultimedia/
-├── TrackerMultimedia_Backend/
-│   ├── Contracts/          # DTOs de entrada/salida del API
-│   ├── Controllers/        # Endpoints REST
-│   ├── Data/               # DbContext y configuración EF Core
-│   ├── Domain/             # Entidades, enums y validaciones de dominio
-│   ├── Infrastructure/     # Opciones tipadas (SmtpOptions, OAuthOptions, etc.)
-│   ├── Migrations/         # Historial de migraciones de base de datos
-│   ├── Properties/         # Configuración de arranque
-│   ├── Services/           # Lógica de negocio y servicios externos
-│   └── appsettings.json    # Configuración no-sensible (plantilla)
-└── TrackerMultimedia_Frontend/
-    └── src/
-        ├── config/             # Variables de entorno y configuración global
-        ├── features/           # Funcionalidades por dominio
-        │   ├── auth/           # Autenticación: contexto, API, vistas, hooks
-        │   ├── media-items/    # Biblioteca: API, componentes, vistas
-        │   └── search/         # Descubrimiento: API, componentes, vistas
-        ├── layouts/            # Shell de la aplicación
-        └── shared/             # API base, componentes y utilidades comunes
+TrackerMultimedia_Frontend/
+├── public/                     # Estáticos servidos tal cual
+├── index.html                  # Punto de entrada de Vite
+├── netlify.toml                # Blueprint de despliegue
+├── vite.config.ts              # Build, proxy de desarrollo y configuración de tests
+└── src/
+    ├── config/                 # Variables de entorno y configuración global
+    ├── features/               # Funcionalidades por dominio
+    │   ├── auth/               # Autenticación: contexto, API, vistas, hooks
+    │   ├── media-items/        # Biblioteca: API, componentes, vistas
+    │   └── search/             # Descubrimiento: API, componentes, vistas
+    ├── layouts/                # Shell de la aplicación
+    ├── shared/                 # API base, componentes y utilidades comunes
+    └── test/                   # Configuración de Vitest y utilidades de test
 ```
+
+El backend vive en un repositorio aparte, `TrackerMultimedia_Backend`. Su estructura
+y su despliegue se documentan allí.
+
+---
+
+## Despliegue en Netlify
+
+El blueprint `netlify.toml` está en la raíz de este repositorio, que es también la raíz
+del proyecto de Vite: por eso no declara `base`. Netlify lo detecta al conectar el
+repositorio y de ahí saca el comando de build, el directorio publicado y la regla de
+reescritura que mantiene funcionando el enrutado de React Router.
+
+### Variable obligatoria
+
+- `VITE_API_URL` — URL pública del backend **incluyendo `/api`**, por ejemplo
+  `https://trackermultimedia-backend.onrender.com/api`. Vite la incrusta en el bundle
+  en tiempo de build, así que cambiarla exige volver a desplegar, no solo reiniciar.
+
+### Al conectar los dos servicios
+
+La misma URL pública que Netlify asigne a este sitio tiene que quedar registrada en el
+backend, en `App__FrontendBaseUrl` y en `Cors__AllowedOrigins__0`. Si no, el navegador
+bloqueará las peticiones por CORS y los enlaces de los correos apuntarán a otro sitio.

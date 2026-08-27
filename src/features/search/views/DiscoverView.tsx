@@ -289,8 +289,8 @@ export default function DiscoverView() {
           </div>
 
           <div className="control-grid">
-            <div className="control control--span-full">
-              <label>Proveedores</label>
+            <div className="control control--span-full" role="group" aria-labelledby="discover-providers-label">
+              <span className="control__label" id="discover-providers-label">Proveedores</span>
               {providersQuery.isError ? (
                 <p className="category-empty">No se pudo cargar la lista de proveedores disponibles.</p>
               ) : discoverProviders.length > 0 ? (

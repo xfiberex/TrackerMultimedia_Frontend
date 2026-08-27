@@ -115,7 +115,7 @@ describe('DiscoverView', () => {
 
     await waitFor(() => {
       expect(searchMock).toHaveBeenCalledWith(
-        { query: 'naruto', type: 'Anime', limit: 6 },
+        { query: 'naruto', type: 'Anime', limit: 6, providers: expect.any(Array) },
         expect.any(AbortSignal),
       )
     })
@@ -134,7 +134,7 @@ describe('DiscoverView', () => {
 
     await waitFor(() => {
       expect(searchMock).toHaveBeenCalledWith(
-        { query: 'berserk', type: 'All', limit: 8 },
+        { query: 'berserk', type: 'All', limit: 8, providers: expect.any(Array) },
         expect.any(AbortSignal),
       )
     })
@@ -154,7 +154,7 @@ describe('DiscoverView', () => {
     renderDiscoverView('/discover?query=naruto&type=Anime&limit=8')
 
     await screen.findByText('Naruto')
-    await user.click(screen.getByRole('button', { name: 'Preparar importación' }))
+    await user.click(screen.getByRole('button', { name: /importar/i }))
 
     expect(screen.getByRole('dialog', { name: 'Importar Naruto' })).toBeInTheDocument()
     await user.selectOptions(screen.getByLabelText('Estado inicial'), 'Completed')

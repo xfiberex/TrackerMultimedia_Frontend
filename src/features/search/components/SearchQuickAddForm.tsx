@@ -146,8 +146,8 @@ export default function SearchQuickAddForm({
           />
         </div>
 
-        <div className="control control--span-full">
-          <label>Categorías</label>
+        <div className="control control--span-full" role="group" aria-labelledby="quickadd-categories-label">
+          <span className="control__label" id="quickadd-categories-label">Categorías</span>
           {categories.length > 0 ? (
             <div className="category-pills">
               {categories.map((category) => {

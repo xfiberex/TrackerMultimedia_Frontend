@@ -57,7 +57,11 @@ describe('CategoriesView', () => {
     renderCategoriesView()
 
     await user.type(await screen.findByLabelText('Nombre de la categoría'), '  Backlog  ')
-    await user.type(screen.getByLabelText('Color'), '#336699')
+
+    // El color se elige en un desplegable: hay que abrirlo antes de escribir el hex.
+    await user.click(screen.getByRole('button', { name: /^color/i }))
+    await user.type(screen.getByLabelText('Valor hexadecimal del color'), '#336699')
+
     await user.click(screen.getByRole('button', { name: 'Crear categoría' }))
 
     await waitFor(() => {
@@ -81,7 +85,8 @@ describe('CategoriesView', () => {
     const nameInput = screen.getByLabelText('Nombre de la categoría')
     await user.clear(nameInput)
     await user.type(nameInput, 'Retomar')
-    const colorInput = screen.getByLabelText('Color')
+    await user.click(screen.getByRole('button', { name: /^color/i }))
+    const colorInput = screen.getByLabelText('Valor hexadecimal del color')
     await user.clear(colorInput)
     await user.type(colorInput, '#445566')
     await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))

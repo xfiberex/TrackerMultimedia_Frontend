@@ -166,8 +166,8 @@ export default function LibraryFilters({
         </div>
       </div>
 
-      <div className="control">
-        <label>Categorías</label>
+      <div className="control" role="group" aria-labelledby="library-categories-label">
+        <span className="control__label" id="library-categories-label">Categorías</span>
         {categories.length > 0 ? (
           <div className="category-pills">
             {categories.map((category) => {

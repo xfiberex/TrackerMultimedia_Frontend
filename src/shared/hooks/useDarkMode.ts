@@ -3,7 +3,15 @@ import { useEffect, useState } from 'react'
 const STORAGE_KEY = 'tm-theme'
 const DARK_VALUE = 'dark'
 
-function getInitialDark(): boolean {
+function prefersDarkScheme(): boolean {
+  // matchMedia no existe en jsdom ni en entornos sin DOM completo.
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+function getStoredPreference(): boolean | null {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored === DARK_VALUE) return true
@@ -11,7 +19,11 @@ function getInitialDark(): boolean {
   } catch {
     // localStorage not available
   }
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
+  return null
+}
+
+function getInitialDark(): boolean {
+  return getStoredPreference() ?? prefersDarkScheme()
 }
 
 function applyTheme(isDark: boolean) {
