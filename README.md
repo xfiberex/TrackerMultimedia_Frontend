@@ -6,8 +6,9 @@ Conecta con la API de [Jikan](https://jikan.moe/) para búsquedas externas.
 ## Requisitos previos
 
 - [Node.js](https://nodejs.org/) 20 o superior
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [PostgreSQL](https://www.postgresql.org/) 14 o superior
+- [.NET 10 SDK](https://dotnet.microsoft.com/download) — para el backend
+- [Docker](https://www.docker.com/products/docker-desktop/) — la base de datos corre en un
+  contenedor; **no hace falta instalar PostgreSQL en la máquina**
 - [`dotnet-ef` tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet): `dotnet tool install --global dotnet-ef`
 
 ---
@@ -28,47 +29,53 @@ git clone <url-del-repositorio-backend>
 cd TrackerMultimedia_Backend
 ```
 
-#### 1. Inicializar User Secrets
+#### 1. Levantar la base de datos
 
-Los secretos de desarrollo **nunca se versionan**. Se guardan localmente con `dotnet user-secrets`, que los almacena en `%APPDATA%\Microsoft\UserSecrets\` fuera del repositorio.
+PostgreSQL corre en Docker, definido por el `docker-compose.yml` del repositorio del
+backend. Copia `.env.example` a `.env`, pon una contraseña, y arranca:
 
 ```bash
-dotnet user-secrets init
+cp .env.example .env         # y rellena POSTGRES_PASSWORD
+docker compose up -d         # PostgreSQL en 127.0.0.1:5433
+docker compose ps            # debe decir "healthy" antes de seguir
 ```
+
+El puerto es el **5433**, no el 5432, para no chocar con una instalación nativa de
+PostgreSQL. Los datos viven en un volumen con nombre: `docker compose down` los conserva y
+`docker compose down -v` los borra.
 
 #### 2. Configurar los secretos
 
-Copia y ejecuta los siguientes comandos reemplazando los valores entre `<...>`:
+Se guardan con `dotnet user-secrets`, fuera de la carpeta del repositorio, así que no pueden
+acabar en un commit. **En PowerShell, comillas simples para los valores**: entre comillas
+dobles, PowerShell expande lo que empiece por `$` y deja la clave vacía sin avisar.
 
-```bash
-# Base de datos
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Database=tracker_multimedia;Username=<usuario>;Password=<contraseña>"
+```powershell
+dotnet user-secrets init
 
-# API key interna (header X-Api-Key para rutas administrativas)
-dotnet user-secrets set "Security:ApiKey" "<cadena-aleatoria-larga>"
+# Base de datos: puerto y nombre los fija docker-compose.yml; la contraseña, tu .env
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" 'Host=localhost;Port=5433;Database=trackerMultimedia;Username=postgres;Password=<la-de-tu-.env>;'
 
-# JWT — debe ser una cadena de al menos 32 caracteres
-dotnet user-secrets set "Jwt:Secret" "<cadena-aleatoria-de-32-o-mas-caracteres>"
+# JWT, generado sin que aparezca en pantalla
+$bytes = New-Object byte[] 48
+(New-Object System.Security.Cryptography.RNGCryptoServiceProvider).GetBytes($bytes)
+dotnet user-secrets set "Jwt:Secret" ([Convert]::ToBase64String($bytes))
+Remove-Variable bytes
 
-# SMTP — Mailtrap (https://mailtrap.io → Email Testing → SMTP Settings)
-dotnet user-secrets set "Smtp:Host"     "sandbox.smtp.mailtrap.io"
-dotnet user-secrets set "Smtp:Port"     "587"
-dotnet user-secrets set "Smtp:Username" "<mailtrap-username>"
-dotnet user-secrets set "Smtp:Password" "<mailtrap-password>"
-dotnet user-secrets set "Smtp:Enabled"  "true"
-
-# Google OAuth (https://console.cloud.google.com → APIs & Services → Credentials)
-dotnet user-secrets set "OAuth:Google:Enabled"      "true"
-dotnet user-secrets set "OAuth:Google:ClientId"     "<google-client-id>"
-dotnet user-secrets set "OAuth:Google:ClientSecret" "<google-client-secret>"
-
-# GitHub OAuth (https://github.com/settings/developers → New OAuth App)
-dotnet user-secrets set "OAuth:GitHub:Enabled"      "true"
-dotnet user-secrets set "OAuth:GitHub:ClientId"     "<github-client-id>"
-dotnet user-secrets set "OAuth:GitHub:ClientSecret" "<github-client-secret>"
+# Correo y OAuth: solo si vas a usarlos. Sin ellos la aplicación funciona,
+# pero no envía correos de confirmación ni permite entrar con Google o GitHub.
+dotnet user-secrets set "Smtp:Username"             '<mailtrap-username>'
+dotnet user-secrets set "Smtp:Password"             '<mailtrap-password>'
+dotnet user-secrets set "OAuth:Google:ClientId"     '<google-client-id>'
+dotnet user-secrets set "OAuth:Google:ClientSecret" '<google-client-secret>'
+dotnet user-secrets set "OAuth:GitHub:ClientId"     '<github-client-id>'
+dotnet user-secrets set "OAuth:GitHub:ClientSecret" '<github-client-secret>'
 ```
 
-> Los valores no-sensibles (`RedirectUri`, `FromAddress`, `FrontendBaseUrl`, etc.) ya están configurados en `appsettings.json` y no requieren secretos.
+> En user-secrets va **solo lo secreto**. Lo demás —host y puerto SMTP, si un proveedor
+> está activo, las URLs de callback, los orígenes CORS— es configuración normal y vive en
+> `appsettings.Local.json`, que se copia de `appsettings.Local.example.json`. La referencia
+> completa está en el README del backend.
 
 #### 3. Aplicar migraciones
 
@@ -107,7 +114,7 @@ cp .env.example .env
 Edita `.env` con la URL del backend (ya tiene el valor por defecto para desarrollo):
 
 ```
-VITE_API_URL=http://localhost:5218/api
+VITE_API_URL=/api
 ```
 
 Inicia el servidor de desarrollo:
@@ -116,14 +123,59 @@ Inicia el servidor de desarrollo:
 npm run dev
 ```
 
-La interfaz queda disponible en `http://localhost:5173`.
+La interfaz queda disponible en `http://localhost:5173`, y el proxy de Vite reenvía todo lo
+que empiece por `/api` al backend en el 5218. Por eso `VITE_API_URL` es una **ruta relativa**
+y no una URL absoluta: el navegador la resuelve contra el host desde el que cargó la página.
 
-### Pruebas y artefactos locales
+### Abrirlo desde otro dispositivo de la red
 
-Los tests del frontend se versionan como código fuente, pero no sus resultados generados.
+```bash
+npm run dev -- --host
+```
 
-- El `.gitignore` excluye salidas locales como `coverage/`, `.vitest/`, `test-results/`, `playwright-report/` y reportes `junit*.xml`.
-- Si generas cobertura o reportes de pruebas en local, esos archivos no deben subirse al repositorio.
+Vite imprime entonces una segunda dirección del tipo `http://192.168.x.x:5173`, accesible
+desde el móvil o desde otro ordenador de la misma red. Funciona sin tocar nada más
+precisamente porque `VITE_API_URL=/api` es relativa: con una URL absoluta a `localhost`,
+el otro dispositivo intentaría hablar con **su propio** localhost y no encontraría nada.
+
+Dos cosas que conviene saber antes de usarlo así:
+
+- **Expone la aplicación a toda la red local.** No hay nada más entre ella y quien esté
+  conectado al mismo router. Para una red doméstica de confianza es razonable; en una red
+  compartida o pública, no.
+- **El backend sigue escuchando solo en `localhost`.** Solo el proxy de Vite llega a él,
+  que es justo lo que se quiere: la API no queda expuesta por su cuenta.
+
+### Pruebas
+
+124 pruebas de componente con Vitest y Testing Library. No necesitan backend ni base de
+datos: las llamadas a la API van simuladas.
+
+```bash
+npm run test -- --run        # una pasada, ~9 s
+npm run test                 # modo watch
+```
+
+**No hay integración continua y no va a haberla** (proyecto de un solo desarrollador), así
+que la verificación antes de cada commit es manual. Son cinco comandos, menos de un minuto:
+
+```bash
+# En TrackerMultimedia_Backend/
+dotnet test TrackerMultimedia_Backend.slnx
+dotnet restore                             # no debe emitir ningún NU1903
+
+# En TrackerMultimedia_Frontend/
+npm run lint
+npm run test -- --run
+npm run build                              # incluye tsc -b
+```
+
+Ninguno sobra, por dos huecos que ya han mordido en este proyecto: **`npm run build` no
+ejecuta el linter** —solo hace `tsc -b && vite build`—, y **`tsc -b` no ejecuta las
+pruebas**, ni las pruebas comprueban tipos.
+
+Los tests se versionan como código fuente, pero no sus resultados generados: el `.gitignore`
+excluye `coverage/`, `.vitest/`, `test-results/` y los reportes `junit*.xml`.
 
 ---
 
@@ -149,11 +201,23 @@ Los tests del frontend se versionan como código fuente, pero no sus resultados 
 ### Backend
 
 ```bash
+docker compose up -d                  # Levantar PostgreSQL (127.0.0.1:5433)
+docker compose down                   # Pararlo, conservando los datos
+docker compose down -v                # Pararlo y BORRAR los datos
 dotnet build                          # Compilar
 dotnet run                            # Iniciar en desarrollo
+dotnet test TrackerMultimedia_Backend.slnx   # Suite de integración (105 pruebas)
 dotnet ef migrations add <Nombre>     # Crear una nueva migración
 dotnet ef database update             # Aplicar migraciones pendientes
-dotnet user-secrets list              # Ver secretos configurados
+dotnet ef migrations list             # Ver cuáles existen y cuáles están aplicadas
+dotnet user-secrets list              # Ver secretos configurados (imprime los valores)
+```
+
+Tras tocar el modelo o una migración, comprueba el esquema desde cero. Es lo único que
+detecta una migración que no se aplica, porque las pruebas usan SQLite y se las saltan:
+
+```bash
+docker compose down -v && docker compose up -d && dotnet ef database update
 ```
 
 ### Frontend
@@ -191,7 +255,11 @@ y su despliegue se documentan allí.
 
 ---
 
-## Despliegue en Netlify
+## Despliegue en Netlify — *inactivo*
+
+> ⚠️ **No hay despliegue.** Desde el 2026-08-27 la aplicación se usa **solo en local**, a
+> través del servidor de desarrollo de Vite. Los servicios de Netlify, Render y Neon están
+> deshabilitados. Esta sección se conserva como receta para volver a desplegar.
 
 El blueprint `netlify.toml` está en la raíz de este repositorio, que es también la raíz
 del proyecto de Vite: por eso no declara `base`. Netlify lo detecta al conectar el

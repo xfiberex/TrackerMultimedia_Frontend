@@ -11,7 +11,18 @@ const config = {
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // El mismo proxy en las dos formas de servir la aplicación: `npm run dev` usa
+  // `server`, y `npm run preview` (build de producción en el 4173) usa `preview`.
+  // Sin el segundo, `/api` devuelve 404 al previsualizar el build.
   server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5218',
+        changeOrigin: true,
+      },
+    },
+  },
+  preview: {
     proxy: {
       '/api': {
         target: 'http://localhost:5218',
