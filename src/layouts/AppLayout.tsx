@@ -9,6 +9,7 @@ import {
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/features/auth/context/useAuth'
 import { useDarkMode } from '@/shared/hooks/useDarkMode'
+import { useToast } from '@/shared/hooks/useToast'
 
 const navigation = [
   {
@@ -31,6 +32,21 @@ const navigation = [
 export default function AppLayout() {
   const { user, logout } = useAuth()
   const { isDark, toggle } = useDarkMode()
+  const { showToast } = useToast()
+
+  // `logout` limpia la sesión local pase lo que pase —lo hace en un `finally`—, así que
+  // aquí siempre se acaba fuera. Lo que puede fallar es avisar al servidor de que revoque
+  // el token de refresco, y eso hay que decirlo: quedarse con `void logout()` descartaba
+  // la promesa y un corte de red producía un *unhandled rejection* mudo.
+  const handleLogout = () => {
+    logout().catch(() => {
+      showToast({
+        tone: 'info',
+        message: 'Se cerró la sesión en este dispositivo, pero no se pudo avisar al servidor. '
+          + 'Si no fuiste tú quien la abrió en otro sitio, cierra todas las sesiones desde tu perfil.',
+      })
+    })
+  }
 
   return (
     <div className="app-shell">
@@ -70,7 +86,7 @@ export default function AppLayout() {
               </button>
               <button
                 className="button button--ghost"
-                onClick={() => void logout()}
+                onClick={handleLogout}
                 type="button"
               >
                 Salir

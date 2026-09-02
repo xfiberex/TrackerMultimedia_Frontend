@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { ToastProvider } from '@/shared/components/ToastProvider'
 import type { User } from '@/features/auth/schemas/authSchema'
 
 const logoutMock = vi.hoisted(() => vi.fn())
@@ -17,22 +18,25 @@ import AppLayout from './AppLayout'
 
 function renderAppLayout(initialEntry = '/library') {
   return render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
-        <Route path="/" element={<AppLayout />}>
-          <Route path="library" element={<div>Library content</div>} />
-          <Route path="categories" element={<div>Categories content</div>} />
-          <Route path="discover" element={<div>Discover content</div>} />
-          <Route path="profile" element={<div>Profile content</div>} />
-        </Route>
-      </Routes>
-    </MemoryRouter>,
+    <ToastProvider>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <Routes>
+          <Route path="/" element={<AppLayout />}>
+            <Route path="library" element={<div>Library content</div>} />
+            <Route path="categories" element={<div>Categories content</div>} />
+            <Route path="discover" element={<div>Discover content</div>} />
+            <Route path="profile" element={<div>Profile content</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </ToastProvider>,
   )
 }
 
 describe('AppLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    logoutMock.mockResolvedValue(undefined)
     authState.user = {
       id: 'user-1',
       email: 'user@test.com',
@@ -62,5 +66,18 @@ describe('AppLayout', () => {
 
     expect(logoutMock).toHaveBeenCalled()
     expect(screen.getByText('Discover content')).toBeInTheDocument()
+  })
+
+  /// T3-16. `onClick={() => void logout()}` descartaba la promesa: un corte de red
+  /// producía un *unhandled rejection* mudo. La sesión local se limpia igualmente
+  /// —`logout` lo hace en un `finally`—, así que lo que hay que contar es lo otro.
+  it('warns when the server could not be told about the sign-out', async () => {
+    const user = userEvent.setup()
+    logoutMock.mockRejectedValue(new Error('Network Error'))
+
+    renderAppLayout('/library')
+    await user.click(screen.getByRole('button', { name: 'Salir' }))
+
+    expect(await screen.findByText(/no se pudo avisar al servidor/i)).toBeInTheDocument()
   })
 })

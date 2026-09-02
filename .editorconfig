@@ -1,0 +1,23 @@
+# Estilo del repositorio. Lo leen VS Code, WebStorm y la mayoría de editores, así que
+# dejan de imponer sus valores por defecto al guardar.
+#
+# Se añadió el 2026-09-02: guardar `vite.config.ts` desde VS Code lo reformateó entero
+# —cuatro espacios, comillas dobles y punto y coma— contra el estilo del resto del
+# proyecto, porque no había nada que arbitrara.
+#
+# Ojo al alcance: EditorConfig cubre sangría, fin de línea y espacios finales.
+# **No** cubre comillas ni punto y coma; para eso hace falta Prettier, que este
+# proyecto todavía no tiene (registrado como T3-22).
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+# En Markdown, dos espacios al final son un salto de línea, no basura.
+trim_trailing_whitespace = false
