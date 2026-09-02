@@ -34,6 +34,7 @@ const oauthErrorMessages: Record<string, string> = {
   create_failed: 'No se pudo crear tu cuenta con el proveedor.',
   missing_tokens: 'La respuesta del proveedor no incluyó la sesión esperada.',
   session_error: 'No se pudo abrir la sesión devuelta por el proveedor.',
+  account_unavailable: 'No se pudo iniciar sesión con esa cuenta. Comprueba tu correo o inténtalo más tarde.',
 }
 
 // ── Funciones de extracción ──────────────────────────────────────────────────
@@ -119,13 +120,16 @@ export function normalizeError(err: unknown): AppError {
 }
 
 /**
- * Obtiene el mensaje de error OAuth desde código y mensaje.
+ * Traduce un código de error OAuth al texto que ve el usuario.
+ *
+ * **Solo acepta códigos de la tabla de arriba, nunca texto libre.** Antes había
+ * un segundo parámetro `oauth_error_message` que, si venía en la URL, se mostraba
+ * tal cual y tenía prioridad sobre el código. Eso convertía la página de login en
+ * un lienzo: bastaba enviar un enlace con
+ * `?oauth_error_message=Tu+cuenta+fue+suspendida,+llama+al+900...` para que ese
+ * texto apareciera en el sitio legítimo, con su dominio y su candado.
  */
-export function getOAuthErrorMessage(errorCode: string | null, errorMessage: string | null): string | null {
-  if (errorMessage && errorMessage.trim().length > 0) {
-    return errorMessage.trim()
-  }
-
+export function getOAuthErrorMessage(errorCode: string | null): string | null {
   if (!errorCode) {
     return null
   }

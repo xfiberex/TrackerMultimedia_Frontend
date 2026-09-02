@@ -36,10 +36,7 @@ export default function LoginView() {
   // Extraer error OAuth de la URL al montar el componente
   const oauthError = useMemo(() => {
     const searchParams = new URLSearchParams(location.search)
-    return getOAuthErrorMessage(
-      searchParams.get('oauth_error'),
-      searchParams.get('oauth_error_message'),
-    )
+    return getOAuthErrorMessage(searchParams.get('oauth_error'))
   }, [location.search])
 
   const emailError = useMemo(() => {
