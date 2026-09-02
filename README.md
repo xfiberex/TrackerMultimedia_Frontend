@@ -7,8 +7,8 @@ Conecta con la API de [Jikan](https://jikan.moe/) para búsquedas externas.
 
 - [Node.js](https://nodejs.org/) 20 o superior
 - [.NET 10 SDK](https://dotnet.microsoft.com/download) — para el backend
-- [Docker](https://www.docker.com/products/docker-desktop/) — la base de datos corre en un
-  contenedor; **no hace falta instalar PostgreSQL en la máquina**
+- [PostgreSQL](https://www.postgresql.org/) 17, instalado en la máquina y escuchando en el
+  **puerto 5433**
 - [`dotnet-ef` tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet): `dotnet tool install --global dotnet-ef`
 
 ---
@@ -29,20 +29,21 @@ git clone <url-del-repositorio-backend>
 cd TrackerMultimedia_Backend
 ```
 
-#### 1. Levantar la base de datos
+#### 1. Preparar la base de datos
 
-PostgreSQL corre en Docker, definido por el `docker-compose.yml` del repositorio del
-backend. Copia `.env.example` a `.env`, pon una contraseña, y arranca:
+PostgreSQL 17 está instalado en la máquina y escucha en el **puerto 5433**, no en el 5432
+por defecto. En Windows es el servicio `postgresql-x64-17`; si su arranque está en *Manual*,
+inícialo antes de levantar el backend o la conexión fallará.
 
-```bash
-cp .env.example .env         # y rellena POSTGRES_PASSWORD
-docker compose up -d         # PostgreSQL en 127.0.0.1:5433
-docker compose ps            # debe decir "healthy" antes de seguir
+Crear la base una sola vez:
+
+```powershell
+psql -U postgres -p 5433 -c "CREATE DATABASE \"trackerMultimedia\";"
 ```
 
-El puerto es el **5433**, no el 5432, para no chocar con una instalación nativa de
-PostgreSQL. Los datos viven en un volumen con nombre: `docker compose down` los conserva y
-`docker compose down -v` los borra.
+Las comillas dobles alrededor del nombre son necesarias: PostgreSQL pasa a minúsculas
+cualquier identificador sin comillar, y crearía `trackermultimedia`, que no es la que espera
+la cadena de conexión.
 
 #### 2. Configurar los secretos
 
@@ -53,8 +54,8 @@ dobles, PowerShell expande lo que empiece por `$` y deja la clave vacía sin avi
 ```powershell
 dotnet user-secrets init
 
-# Base de datos: puerto y nombre los fija docker-compose.yml; la contraseña, tu .env
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" 'Host=localhost;Port=5433;Database=trackerMultimedia;Username=postgres;Password=<la-de-tu-.env>;'
+# Base de datos: el servicio local escucha en el 5433
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" 'Host=localhost;Port=5433;Database=trackerMultimedia;Username=postgres;Password=<la-de-tu-postgres>;'
 
 # JWT, generado sin que aparezca en pantalla
 $bytes = New-Object byte[] 48
@@ -201,9 +202,6 @@ excluye `coverage/`, `.vitest/`, `test-results/` y los reportes `junit*.xml`.
 ### Backend
 
 ```bash
-docker compose up -d                  # Levantar PostgreSQL (127.0.0.1:5433)
-docker compose down                   # Pararlo, conservando los datos
-docker compose down -v                # Pararlo y BORRAR los datos
 dotnet build                          # Compilar
 dotnet run                            # Iniciar en desarrollo
 dotnet test TrackerMultimedia_Backend.slnx   # Suite de integración (105 pruebas)
@@ -216,9 +214,13 @@ dotnet user-secrets list              # Ver secretos configurados (imprime los v
 Tras tocar el modelo o una migración, comprueba el esquema desde cero. Es lo único que
 detecta una migración que no se aplica, porque las pruebas usan SQLite y se las saltan:
 
-```bash
-docker compose down -v && docker compose up -d && dotnet ef database update
+```powershell
+dotnet ef database drop --force       # ⚠️ BORRA la base local y sus datos
+dotnet ef database update
 ```
+
+Si no quieres perder lo que tengas en local, hazlo sobre una base aparte; el README del
+backend explica cómo.
 
 ### Frontend
 
