@@ -445,7 +445,6 @@ export default function DiscoverView() {
         <SidePanelDialog
           open={selectedItem !== null}
           ariaLabel={`Importar ${selectedItem.title}`}
-          scrimLabel="Cerrar importación rápida"
           disableClose={addMutation.isPending}
           onClose={closeQuickAdd}
         >

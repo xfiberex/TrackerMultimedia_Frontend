@@ -352,16 +352,26 @@ describe('LibraryView', () => {
 
     renderLibraryView('/library')
 
-    await user.click(await screen.findByRole('button', { name: 'Nuevo registro' }))
+    const trigger = await screen.findByRole('button', { name: 'Nuevo registro' })
+    await user.click(trigger)
 
-    expect(screen.getByRole('dialog', { name: 'Crear elemento de biblioteca' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Cerrar panel del editor' })).toBeInTheDocument()
+    const dialog = screen.getByRole('dialog', { name: 'Crear elemento de biblioteca' })
+    expect(dialog).toBeInTheDocument()
+
+    // Al abrirse, el foco entra en el diálogo: si se quedara en el botón de
+    // fondo, el teclado seguiría navegando por el listado que hay detrás.
+    await waitFor(() => {
+      expect(dialog).toContainElement(document.activeElement as HTMLElement)
+    })
 
     await user.keyboard('{Escape}')
 
     await waitFor(() => {
       expect(screen.queryByRole('dialog', { name: 'Crear elemento de biblioteca' })).not.toBeInTheDocument()
     })
+
+    // Y al cerrarse vuelve al botón que lo abrió, no al principio de la página.
+    expect(trigger).toHaveFocus()
   })
 
   it('creates a manual media item from the library editor', async () => {

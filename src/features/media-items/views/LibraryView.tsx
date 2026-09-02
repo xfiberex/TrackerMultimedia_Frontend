@@ -636,7 +636,6 @@ export default function LibraryView() {
         <SidePanelDialog
           open={isEditorOpen}
           ariaLabel={editingItem ? `Editar ${editingItem.title}` : 'Crear elemento de biblioteca'}
-          scrimLabel="Cerrar panel del editor"
           variant="centered"
           onClose={closeEditor}
         >
