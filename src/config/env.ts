@@ -6,7 +6,7 @@ import { z } from 'zod'
  *   - Ruta relativa, como `/api` (lo habitual y el valor por defecto). El navegador la
  *     resuelve contra el host desde el que se sirvió la página, y el proxy de Vite la
  *     reenvía al backend. Es la única forma que funciona igual en `localhost` y al
- *     servir con `vite --host` desde otro dispositivo de la red.
+ *     servir con `npm run dev:lan` desde otro dispositivo de la red.
  *   - URL absoluta, como `http://localhost:5218/api`, para apuntar a un backend que no
  *     esté detrás del proxy.
  */
@@ -32,9 +32,9 @@ const apiUrl = (configuredApiUrl && configuredApiUrl.length > 0 ? configuredApiU
   '',
 )
 
+// Solo `apiUrl`. `dev`, `prod` e `isProduction` estaban aquí sin que nadie los leyera:
+// quien necesita saber el modo usa `import.meta.env.DEV` directamente, que además Vite
+// sustituye en tiempo de compilación y permite eliminar el código muerto del bundle.
 export const env = {
   apiUrl,
-  dev: import.meta.env.DEV,
-  prod: import.meta.env.PROD,
-  isProduction: import.meta.env.PROD,
 }

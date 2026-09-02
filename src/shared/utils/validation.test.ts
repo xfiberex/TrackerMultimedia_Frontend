@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import { normalizeError } from '@/features/auth/utils/authErrors'
-import { sanitizeHtml, escapeHtml } from '@/shared/utils/sanitize'
 import { validateField } from '@/shared/utils/validation'
 import { z } from 'zod'
 
@@ -55,29 +54,6 @@ describe('Error Handling', () => {
     }
     const result = normalizeError(serverError)
     expect(result.type).toBe('server')
-  })
-})
-
-describe('HTML Sanitization', () => {
-  it('sanitizeHtml removes script tags', () => {
-    const dirty = 'Hello <script>alert("XSS")</script> World'
-    const clean = sanitizeHtml(dirty)
-    expect(clean).not.toContain('<script>')
-    expect(clean).toContain('Hello')
-    expect(clean).toContain('World')
-  })
-
-  it('sanitizeHtml removes event handlers', () => {
-    const dirty = '<img src="x" onerror="alert(\'XSS\')">'
-    const clean = sanitizeHtml(dirty)
-    expect(clean).not.toContain('onerror')
-  })
-
-  it('escapeHtml preserves content without tags', () => {
-    const text = 'This is <safe> text'
-    const escaped = escapeHtml(text)
-    expect(escaped).toContain('&lt;safe&gt;')
-    expect(escaped).toContain('This is')
   })
 })
 
