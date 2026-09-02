@@ -106,47 +106,6 @@ export type PagedResponse<T> = {
 }
 export type MediaItemsFilters = z.infer<typeof mediaItemsFiltersSchema>
 
-export interface ContentKindStat {
-  contentKind: ContentKind
-  count: number
-}
-
-export interface MediaSourceStat {
-  sourceType: MediaItemSourceType
-  count: number
-}
-
-export interface CategoryStat {
-  categoryId: string
-  categoryName: string
-  color: string | null
-  count: number
-}
-
-export interface ContentKindAverageScoreStat {
-  contentKind: ContentKind
-  averagePersonalScore: number
-  scoredItemsCount: number
-}
-
-export interface MediaItemsStatsResponse {
-  totalCount: number
-  plannedCount: number
-  inProgressCount: number
-  completedCount: number
-  onHoldCount: number
-  droppedCount: number
-  startedThisMonthCount: number
-  completedThisMonthCount: number
-  backlogWithoutStartCount: number
-  averagePersonalScore: number | null
-  scoredItemsCount: number
-  contentKindBreakdown: ContentKindStat[]
-  sourceBreakdown: MediaSourceStat[]
-  categoryBreakdown: CategoryStat[]
-  averageScoreByContentKind: ContentKindAverageScoreStat[]
-}
-
 export interface LibraryImportResponse {
   format: LibraryTransferFormat
   itemsProcessed: number

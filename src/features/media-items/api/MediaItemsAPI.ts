@@ -6,7 +6,6 @@ import type {
   LibraryTransferFormat,
   MediaItem,
   MediaItemsFilters,
-  MediaItemsStatsResponse,
   PagedResponse,
   UpdateMediaItemInput,
 } from '@/features/media-items/schemas/mediaItemSchema'
@@ -33,11 +32,6 @@ export const MediaItemsApi = {
     const queryString = buildQueryString(filters)
     const requestPath = queryString.length > 0 ? `/media-items?${queryString}` : '/media-items'
     const { data } = await api.get<PagedResponse<MediaItem>>(requestPath, { signal })
-    return data
-  },
-
-  getStats: async (signal?: AbortSignal): Promise<MediaItemsStatsResponse> => {
-    const { data } = await api.get<MediaItemsStatsResponse>('/media-items/stats', { signal })
     return data
   },
 

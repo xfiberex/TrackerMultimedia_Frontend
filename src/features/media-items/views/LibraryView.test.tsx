@@ -4,11 +4,10 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { ToastProvider } from '@/shared/components/ToastProvider'
 import type { Category } from '@/features/categories/schemas/categorySchema'
-import type { LibraryImportResponse, MediaItem, MediaItemsStatsResponse, PagedResponse } from '../schemas/mediaItemSchema'
+import type { LibraryImportResponse, MediaItem, PagedResponse } from '../schemas/mediaItemSchema'
 
 const getAllCategoriesMock = vi.hoisted(() => vi.fn())
 const getAllMock = vi.hoisted(() => vi.fn())
-const getStatsMock = vi.hoisted(() => vi.fn())
 const createMock = vi.hoisted(() => vi.fn())
 const updateMock = vi.hoisted(() => vi.fn())
 const removeMock = vi.hoisted(() => vi.fn())
@@ -24,7 +23,6 @@ vi.mock('@/features/categories/api/CategoriesAPI', () => ({
 vi.mock('../api/MediaItemsAPI', () => ({
   MediaItemsApi: {
     getAll: getAllMock,
-    getStats: getStatsMock,
     create: createMock,
     update: updateMock,
     remove: removeMock,
@@ -104,24 +102,6 @@ const libraryItem: MediaItem = {
   updatedAtUtc: '2026-05-06T12:00:00.000Z',
 }
 
-const stats: MediaItemsStatsResponse = {
-  totalCount: 1,
-  plannedCount: 0,
-  inProgressCount: 1,
-  completedCount: 0,
-  onHoldCount: 0,
-  droppedCount: 0,
-  startedThisMonthCount: 1,
-  completedThisMonthCount: 0,
-  backlogWithoutStartCount: 0,
-  averagePersonalScore: 9.5,
-  scoredItemsCount: 1,
-  contentKindBreakdown: [{ contentKind: 'Series', count: 1 }],
-  sourceBreakdown: [{ sourceType: 'Jikan', count: 1 }],
-  categoryBreakdown: [{ categoryId: 'cat-1', categoryName: 'Backlog', color: '#336699', count: 1 }],
-  averageScoreByContentKind: [{ contentKind: 'Series', averagePersonalScore: 9.5, scoredItemsCount: 1 }],
-}
-
 function buildPagedResponse(overrides: Partial<PagedResponse<MediaItem>> = {}): PagedResponse<MediaItem> {
   return {
     items: [libraryItem],
@@ -138,7 +118,6 @@ describe('LibraryView', () => {
     vi.clearAllMocks()
     getAllCategoriesMock.mockResolvedValue(categories)
     getAllMock.mockResolvedValue(buildPagedResponse())
-    getStatsMock.mockResolvedValue(stats)
     createMock.mockResolvedValue(libraryItem)
     updateMock.mockResolvedValue(libraryItem)
     removeMock.mockResolvedValue(undefined)

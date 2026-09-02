@@ -17,7 +17,6 @@ export const queryKeys = {
   mediaItems: {
     root: ['media-items'] as const,
     list: (filters: MediaItemsFilters) => ['media-items', 'list', filters] as const,
-    stats: () => ['media-items', 'stats'] as const,
   },
   search: {
     root: ['search'] as const,

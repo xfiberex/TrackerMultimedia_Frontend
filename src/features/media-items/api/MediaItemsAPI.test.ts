@@ -1,7 +1,6 @@
 import type {
   CreateMediaItemInput,
   MediaItem,
-  MediaItemsStatsResponse,
   PagedResponse,
   UpdateMediaItemInput,
 } from '../schemas/mediaItemSchema'
@@ -44,31 +43,6 @@ describe('MediaItemsApi', () => {
     expect(apiMock.get).toHaveBeenNthCalledWith(2, '/media-items?search=frieren&status=InProgress&categoryIds=cat-1&categoryIds=cat-2&page=2&pageSize=24', {
       signal,
     })
-  })
-
-  it('gets library stats with the provided abort signal', async () => {
-    const stats: MediaItemsStatsResponse = {
-      totalCount: 12,
-      plannedCount: 4,
-      inProgressCount: 3,
-      completedCount: 2,
-      onHoldCount: 1,
-      droppedCount: 2,
-      startedThisMonthCount: 5,
-      completedThisMonthCount: 2,
-      backlogWithoutStartCount: 3,
-      averagePersonalScore: 7.5,
-      scoredItemsCount: 5,
-      contentKindBreakdown: [{ contentKind: 'Series', count: 8 }],
-      sourceBreakdown: [{ sourceType: 'Jikan', count: 7 }],
-      categoryBreakdown: [{ categoryId: 'cat-1', categoryName: 'Backlog', color: '#336699', count: 4 }],
-      averageScoreByContentKind: [{ contentKind: 'Series', averagePersonalScore: 8.2, scoredItemsCount: 5 }],
-    }
-    const signal = new AbortController().signal
-    apiMock.get.mockResolvedValue({ data: stats })
-
-    await expect(MediaItemsApi.getStats(signal)).resolves.toEqual(stats)
-    expect(apiMock.get).toHaveBeenCalledWith('/media-items/stats', { signal })
   })
 
   it('creates a media item and returns the created payload', async () => {
