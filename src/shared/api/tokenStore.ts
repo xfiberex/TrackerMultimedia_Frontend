@@ -10,11 +10,14 @@
  * - Desventaja: Se pierde al recargar (pero se recupera con el refresh token).
  * - Ubicación: Módulo scope privado (_accessToken).
  *
- * Refresh Token (opaco): Persistido en localStorage con SameSite=Strict.
+ * Refresh Token (opaco): Persistido en localStorage, legible por cualquier JS del origen.
  * - Ventaja: Permite recuperación de sesión tras recargas.
- * - Desventaja: Potencialmente vulnerable a XSS, pero la expiración corta y SameSite mitigan riesgo.
+ * - Desventaja: expuesto a XSS. Un script inyectado puede leerlo y usarlo hasta que caduque.
  * - Ubicación: localStorage (necesario para recuperar sesión).
- * - Consideración: Rotar refresh tokens en cada uso (lo hace el backend).
+ * - Mitigaciones REALES hoy: el servidor guarda solo el hash SHA-256, rota el token en cada
+ *   uso y, si alguien presenta uno ya rotado, revoca todas las sesiones del usuario.
+ * - NO hay mitigación de cookie: `SameSite` es un atributo de cookie y no existe en
+ *   localStorage. Una versión anterior de este comentario lo afirmaba; era falso.
  *
  * ── MEJORA FUTURO (OPCIONAL) ──
  *
