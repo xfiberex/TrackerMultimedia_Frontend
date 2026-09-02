@@ -96,6 +96,8 @@ describe('SidePanelDialog', () => {
             {/* React aplica autoFocus durante el commit, antes de los efectos.
                 Si el hook leyera `document.activeElement` al abrir, guardaría este
                 campo como «foco anterior» y al cerrarse ya no existiría. */}
+            {/* eslint-disable-next-line jsx-a11y/no-autofocus -- el autoFocus es
+                justo lo que este test comprueba: que no le gana la carrera al hook. */}
             <input aria-label="Título" autoFocus />
             <button type="button">Guardar</button>
           </SidePanelDialog>

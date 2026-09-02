@@ -138,6 +138,11 @@ export default function LoginView() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
+              // Página de un solo propósito: el formulario ES el contenido, así que
+              // llevar el foco a su primer campo no se salta nada que el usuario
+              // necesite antes. La regla apunta al autoFocus en medio de una página
+              // con contenido, que sí desorienta.
+              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               aria-describedby={emailError ? 'email-error' : undefined}
             />

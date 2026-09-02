@@ -381,7 +381,7 @@ function CategoriesSection() {
                 value={draft.name}
                 onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
                 required
-                autoFocus
+                data-dialog-autofocus
               />
             </div>
 
@@ -617,7 +617,7 @@ function FormatsSection() {
                 value={draft.name}
                 onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
                 required
-                autoFocus
+                data-dialog-autofocus
                 placeholder="Ej: OVA, Novela visual, Cortometraje…"
               />
             </div>

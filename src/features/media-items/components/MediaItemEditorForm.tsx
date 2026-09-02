@@ -177,7 +177,7 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
             value={draft.title}
             onChange={(event) => updateField('title', event.target.value)}
             required
-            autoFocus
+            data-dialog-autofocus
           />
         </div>
 

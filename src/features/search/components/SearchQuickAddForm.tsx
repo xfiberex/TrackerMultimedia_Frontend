@@ -121,7 +121,7 @@ export default function SearchQuickAddForm({
             className="select"
             value={draft.status}
             onChange={(event) => updateField('status', event.target.value as SearchQuickAddDraft['status'])}
-            autoFocus
+            data-dialog-autofocus
           >
             {mediaTrackingStatuses.map((status) => (
               <option key={status} value={status}>

@@ -81,6 +81,11 @@ export default function LinkAccountView() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
+              // Página de un solo propósito: el formulario ES el contenido, así que
+              // llevar el foco a su primer campo no se salta nada que el usuario
+              // necesite antes. La regla apunta al autoFocus en medio de una página
+              // con contenido, que sí desorienta.
+              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
             />
           </div>
