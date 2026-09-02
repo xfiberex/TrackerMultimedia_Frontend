@@ -128,14 +128,19 @@ La interfaz queda disponible en `http://localhost:5173`, y el proxy de Vite reen
 que empiece por `/api` al backend en el 5218. Por eso `VITE_API_URL` es una **ruta relativa**
 y no una URL absoluta: el navegador la resuelve contra el host desde el que cargó la página.
 
+`npm run dev` escucha **solo en este equipo**. Es el modo por defecto a propósito: exponer
+la aplicación a la red es una decisión que se toma en el momento, no algo que ocurra sin
+pedirlo.
+
 ### Abrirlo desde otro dispositivo de la red
 
 ```bash
-npm run dev -- --host
+npm run dev:lan
 ```
 
-Vite imprime entonces una segunda dirección del tipo `http://192.168.x.x:5173`, accesible
-desde el móvil o desde otro ordenador de la misma red. Funciona sin tocar nada más
+Es `vite --host`, en un script aparte para que se vea en la orden que se escribe qué se está
+haciendo. Vite imprime entonces una segunda dirección del tipo `http://192.168.x.x:5173`,
+accesible desde el móvil o desde otro ordenador de la misma red. Funciona sin tocar nada más
 precisamente porque `VITE_API_URL=/api` es relativa: con una URL absoluta a `localhost`,
 el otro dispositivo intentaría hablar con **su propio** localhost y no encontraría nada.
 
@@ -149,12 +154,12 @@ Dos cosas que conviene saber antes de usarlo así:
 
 ### Pruebas
 
-124 pruebas de componente con Vitest y Testing Library. No necesitan backend ni base de
+140 pruebas de componente con Vitest y Testing Library. No necesitan backend ni base de
 datos: las llamadas a la API van simuladas.
 
 ```bash
-npm run test -- --run        # una pasada, ~9 s
-npm run test                 # modo watch
+npm run test                 # una pasada, ~10 s
+npm run test:watch           # modo watch
 ```
 
 **No hay integración continua y no va a haberla** (proyecto de un solo desarrollador), así
