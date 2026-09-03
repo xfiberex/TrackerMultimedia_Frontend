@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "preview:lan": "vite preview --host",
     "test": "vitest run",
     "test:watch": "vitest"
   },

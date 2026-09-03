@@ -139,7 +139,12 @@ npm run dev:lan
 ```
 
 Es `vite --host`, en un script aparte para que se vea en la orden que se escribe qué se está
-haciendo. Vite imprime entonces una segunda dirección del tipo `http://192.168.x.x:5173`,
+haciendo. Para previsualizar el build de producción desde otro dispositivo, el equivalente es
+`npm run preview:lan`.
+
+**No pongas `server.host` en `vite.config.ts`.** La opción del archivo se aplica siempre, y
+entonces `npm run dev` también queda expuesto: la diferencia entre los dos scripts
+desaparece y la aplicación acaba en la red sin que nadie lo haya pedido. Vite imprime entonces una segunda dirección del tipo `http://192.168.x.x:5173`,
 accesible desde el móvil o desde otro ordenador de la misma red. Funciona sin tocar nada más
 precisamente porque `VITE_API_URL=/api` es relativa: con una URL absoluta a `localhost`,
 el otro dispositivo intentaría hablar con **su propio** localhost y no encontraría nada.
