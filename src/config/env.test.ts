@@ -73,4 +73,40 @@ describe('config/env', () => {
     expect(alerta!.textContent).toContain('VITE_API_URL')
     expect(alerta!.textContent).toContain('.env')
   })
+
+  /**
+   * T3-23. El repaso que dejó abierto T3-17: comprobar que ninguna validación es más
+   * estricta que el código que consume el valor. Cada variable, en sus dos formas de
+   * "no la he configurado" —ausente y vacía— y con espacios de sobra.
+   */
+  it('acepta que las variables no estén declaradas en absoluto', async () => {
+    vi.stubEnv('VITE_API_URL', undefined as unknown as string)
+    vi.stubEnv('VITE_ENABLE_GOOGLE_AUTH', undefined as unknown as string)
+    vi.stubEnv('VITE_ENABLE_GITHUB_AUTH', undefined as unknown as string)
+
+    const { env } = await import('./env')
+
+    expect(env.apiUrl).toBe('/api')
+    expect(env.enableGoogleAuth).toBe(true)
+    expect(env.enableGitHubAuth).toBe(true)
+  })
+
+  it('tolera espacios de sobra alrededor de los valores', async () => {
+    // El esquema validaba el valor sin recortar mientras que `apiUrl` lo recortaba
+    // diez líneas más abajo: un `VITE_API_URL= /api` con un espacio de más tumbaba
+    // la aplicación entera, igual que hacía la cadena vacía.
+    vi.stubEnv('VITE_API_URL', '  /api  ')
+    vi.stubEnv('VITE_ENABLE_GOOGLE_AUTH', '  false  ')
+
+    const { env } = await import('./env')
+
+    expect(env.apiUrl).toBe('/api')
+    expect(env.enableGoogleAuth).toBe(false)
+  })
+
+  it('sigue rechazando un valor que no es ni ruta ni URL, aunque venga con espacios', async () => {
+    vi.stubEnv('VITE_API_URL', '  esto no vale  ')
+
+    await expect(import('./env')).rejects.toThrow(/Variables de entorno inválidas/)
+  })
 })

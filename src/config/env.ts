@@ -23,7 +23,7 @@ const flagSchema = z
   .refine(
     (value) =>
       value.length === 0 || ['true', 'false', '1', '0'].includes(value.trim().toLowerCase()),
-    'debe ser "true" o "false"',
+    'debe ser "true", "false", "1" o "0"',
   )
   .optional()
 
@@ -31,11 +31,15 @@ const envSchema = z.object({
   VITE_API_URL: z
     .string()
     .refine(
-      // La cadena vacía se acepta y cae al valor por defecto más abajo. Es lo que
-      // deja un `VITE_API_URL=` sin valor en el .env, y el código que resuelve
-      // `apiUrl` ya contemplaba ese caso (`length > 0`); el esquema lo rechazaba
-      // antes de llegar ahí, así que una línea vacía tumbaba la aplicación entera.
-      (value) => value.length === 0 || value.startsWith('/') || URL.canParse(value),
+      // Se valida el valor **recortado**, que es el que se va a usar: diez líneas
+      // más abajo `apiUrl` hace `.trim()`, y validar sin recortar dejaba al esquema
+      // más estricto que el consumidor. Dos formas del mismo fallo, y las dos
+      // tumbaban la aplicación entera antes de que React montara: `VITE_API_URL=`
+      // sin valor y `VITE_API_URL= /api` con un espacio de más.
+      (value) => {
+        const normalized = value.trim()
+        return normalized.length === 0 || normalized.startsWith('/') || URL.canParse(normalized)
+      },
       'VITE_API_URL debe ser una URL absoluta o una ruta que empiece por "/"',
     )
     .optional(),
