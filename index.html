@@ -9,7 +9,7 @@
       http-equiv="Content-Security-Policy"
       content="
         default-src 'self';
-        script-src 'self' 'wasm-unsafe-eval';
+        script-src 'self' 'wasm-unsafe-eval' 'sha256-IYTexaBW2P/TU5+vvdhnoCk+pMTN/aTLipMzPptvHeo=';
         style-src 'self' 'unsafe-inline' fonts.googleapis.com;
         font-src 'self' fonts.gstatic.com;
         img-src 'self' data: https:;
@@ -28,6 +28,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <script>
+      // Se ejecuta antes de pintar nada. Sin esto, el tema lo aplicaba React en su
+      // primer render y en modo oscuro se veía un destello claro en cada carga.
+      // Mantener en paralelo con src/shared/hooks/useDarkMode.ts: misma clave y
+      // mismos valores. Es duplicación consciente — no hay forma de importar el
+      // hook aquí sin volver a introducir el destello que esto elimina.
+      (function () {
+        try {
+          var stored = localStorage.getItem('tm-theme');
+          var dark = stored === 'dark' || (stored !== 'light' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (e) {
+          // Sin localStorage se pinta el tema claro y el hook ya ajustará.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

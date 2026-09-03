@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Solo las dos rutas públicas. El resto de la aplicación vive tras autenticación y
+  está excluido en robots.txt: un sitemap que las listara estaría pidiendo
+  justamente lo contrario.
+
+  El dominio es el del despliegue de Netlify, hoy deshabilitado. Si alguna vez se
+  publica en otro sitio, hay que cambiarlo aquí y en la línea Sitemap de robots.txt.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://trackermultimedia.netlify.app/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://trackermultimedia.netlify.app/register</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

@@ -159,7 +159,7 @@ Dos cosas que conviene saber antes de usarlo así:
 
 ### Pruebas
 
-140 pruebas de componente con Vitest y Testing Library. No necesitan backend ni base de
+148 pruebas de componente con Vitest y Testing Library. No necesitan backend ni base de
 datos: las llamadas a la API van simuladas.
 
 ```bash
@@ -214,7 +214,7 @@ excluye `coverage/`, `.vitest/`, `test-results/` y los reportes `junit*.xml`.
 ```bash
 dotnet build                          # Compilar
 dotnet run                            # Iniciar en desarrollo
-dotnet test TrackerMultimedia_Backend.slnx   # Suite de integración (105 pruebas)
+dotnet test TrackerMultimedia_Backend.slnx   # Suite de integración (124 pruebas)
 dotnet ef migrations add <Nombre>     # Crear una nueva migración
 dotnet ef database update             # Aplicar migraciones pendientes
 dotnet ef migrations list             # Ver cuáles existen y cuáles están aplicadas
@@ -248,17 +248,27 @@ npm run preview  # Vista previa del build
 ```
 TrackerMultimedia_Frontend/
 ├── public/                     # Estáticos servidos tal cual
-├── index.html                  # Punto de entrada de Vite
-├── netlify.toml                # Blueprint de despliegue
+│   ├── _redirects              # Reescritura SPA de Netlify
+│   ├── robots.txt              # Qué se puede indexar; excluye las rutas privadas
+│   └── sitemap.xml             # Solo /login y /register
+├── index.html                  # Punto de entrada de Vite, CSP y script de tema previo al pintado
+├── netlify.toml                # Blueprint de despliegue (inactivo)
+├── .editorconfig               # Sangría y fin de línea; no cubre comillas (ver T3-22)
 ├── vite.config.ts              # Build, proxy de desarrollo y configuración de tests
 └── src/
-    ├── config/                 # Variables de entorno y configuración global
+    ├── main.tsx                # Monta la aplicación; el ErrorBoundary va aquí, fuera de los proveedores
+    ├── router.tsx              # Rutas públicas y protegidas por AuthGuard
+    ├── index.css               # Hoja de estilos única, con el modo oscuro por [data-theme]
+    ├── assets/                 # Imágenes e iconos propios
+    ├── config/                 # env.ts: valida las variables de entorno al importarse
     ├── features/               # Funcionalidades por dominio
-    │   ├── auth/               # Autenticación: contexto, API, vistas, hooks
-    │   ├── media-items/        # Biblioteca: API, componentes, vistas
+    │   ├── auth/               # Autenticación: contexto, API, vistas, utilidades
+    │   ├── catalog/            # Catálogo del usuario
+    │   ├── categories/         # Categorías: API, componentes, vistas
+    │   ├── media-items/        # Biblioteca: API, esquemas, componentes, vistas
     │   └── search/             # Descubrimiento: API, componentes, vistas
     ├── layouts/                # Shell de la aplicación
-    ├── shared/                 # API base, componentes y utilidades comunes
+    ├── shared/                 # api/ components/ constants/ context/ hooks/ utils/
     └── test/                   # Configuración de Vitest y utilidades de test
 ```
 
