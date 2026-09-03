@@ -77,7 +77,8 @@ export default function LibraryFilters({
         <div>
           <h2 className="panel__title">Filtros de biblioteca</h2>
           <p className="panel__description">
-            Busca por título, ordena por fecha o puntuación y segmenta por formato, estado, categorías y origen.
+            Busca por título, ordena por fecha o puntuación y segmenta por formato, estado,
+            categorías y origen.
           </p>
         </div>
         <div className="panel__header-actions">
@@ -167,7 +168,9 @@ export default function LibraryFilters({
       </div>
 
       <div className="control" role="group" aria-labelledby="library-categories-label">
-        <span className="control__label" id="library-categories-label">Categorías</span>
+        <span className="control__label" id="library-categories-label">
+          Categorías
+        </span>
         {categories.length > 0 ? (
           <div className="category-pills">
             {categories.map((category) => {
@@ -207,7 +210,8 @@ export default function LibraryFilters({
           <div>
             <span className="filters-advanced__title">Más filtros y orden</span>
             <span className="filters-advanced__hint">
-              Ajusta puntuación, fechas, orden y densidad del listado sin saturar la vista principal.
+              Ajusta puntuación, fechas, orden y densidad del listado sin saturar la vista
+              principal.
             </span>
           </div>
           <span className="hero-chip">
@@ -239,7 +243,9 @@ export default function LibraryFilters({
               id="library-sort-direction"
               className="select"
               value={filters.sortDirection ?? 'Desc'}
-              onChange={(event) => onFilterChange({ sortDirection: event.target.value || undefined })}
+              onChange={(event) =>
+                onFilterChange({ sortDirection: event.target.value || undefined })
+              }
             >
               {sortDirections.map((direction) => (
                 <option key={direction} value={direction}>
@@ -261,7 +267,8 @@ export default function LibraryFilters({
               value={filters.minPersonalScore ?? ''}
               onChange={(event) =>
                 onFilterChange({
-                  minPersonalScore: event.target.value.trim().length > 0 ? Number(event.target.value) : undefined,
+                  minPersonalScore:
+                    event.target.value.trim().length > 0 ? Number(event.target.value) : undefined,
                 })
               }
             />
@@ -279,7 +286,8 @@ export default function LibraryFilters({
               value={filters.maxPersonalScore ?? ''}
               onChange={(event) =>
                 onFilterChange({
-                  maxPersonalScore: event.target.value.trim().length > 0 ? Number(event.target.value) : undefined,
+                  maxPersonalScore:
+                    event.target.value.trim().length > 0 ? Number(event.target.value) : undefined,
                 })
               }
             />

@@ -42,8 +42,9 @@ export default function AppLayout() {
     logout().catch(() => {
       showToast({
         tone: 'info',
-        message: 'Se cerró la sesión en este dispositivo, pero no se pudo avisar al servidor. '
-          + 'Si no fuiste tú quien la abrió en otro sitio, cierra todas las sesiones desde tu perfil.',
+        message:
+          'Se cerró la sesión en este dispositivo, pero no se pudo avisar al servidor. ' +
+          'Si no fuiste tú quien la abrió en otro sitio, cierra todas las sesiones desde tu perfil.',
       })
     })
   }
@@ -61,17 +62,11 @@ export default function AppLayout() {
           <div className="app-shell__topbar">
             <div className="brand">
               <span className="brand__title">TrackerMultimedia</span>
-              <span className="brand__subtitle">
-                Gestiona y descubre tu contenido multimedia.
-              </span>
+              <span className="brand__subtitle">Gestiona y descubre tu contenido multimedia.</span>
             </div>
 
             <div className="user-menu">
-              <NavLink
-                to="/profile"
-                className="user-menu__name"
-                title={user?.email}
-              >
+              <NavLink to="/profile" className="user-menu__name" title={user?.email}>
                 <UserCircleIcon width={16} height={16} />
                 {user?.displayName}
               </NavLink>
@@ -84,11 +79,7 @@ export default function AppLayout() {
               >
                 {isDark ? <SunIcon width={18} height={18} /> : <MoonIcon width={18} height={18} />}
               </button>
-              <button
-                className="button button--ghost"
-                onClick={handleLogout}
-                type="button"
-              >
+              <button className="button button--ghost" onClick={handleLogout} type="button">
                 Salir
               </button>
             </div>

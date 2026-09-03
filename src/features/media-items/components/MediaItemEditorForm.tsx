@@ -91,7 +91,15 @@ function toOptionalUtcDateString(value: string): string | null {
   return new Date(`${normalized}T00:00:00.000Z`).toISOString()
 }
 
-export default function MediaItemEditorForm({ item, availableCategories, availableFormats, error, isPending, onCancel, onSubmit }: MediaItemEditorFormProps) {
+export default function MediaItemEditorForm({
+  item,
+  availableCategories,
+  availableFormats,
+  error,
+  isPending,
+  onCancel,
+  onSubmit,
+}: MediaItemEditorFormProps) {
   const isEditing = item !== null
   const [draft, setDraft] = useState<MediaItemDraft>(() => createDraft(item))
   const progressUnit = item?.progressUnit ?? defaultProgressUnitByContentKind[draft.contentKind]
@@ -115,7 +123,8 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
 
     const progressCurrent = toRequiredInteger(draft.progressCurrent, 0)
     const currentSeason = toRequiredInteger(draft.currentSeason, 1)
-    const preservedLegacyType = item?.type != null && item.contentKind === draft.contentKind ? item.type : null
+    const preservedLegacyType =
+      item?.type != null && item.contentKind === draft.contentKind ? item.type : null
 
     onSubmit({
       title: draft.title.trim(),
@@ -147,17 +156,25 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
   }
 
   return (
-    <form className="filters-form media-editor" aria-label="Editor de biblioteca" onSubmit={handleSubmit}>
+    <form
+      className="filters-form media-editor"
+      aria-label="Editor de biblioteca"
+      onSubmit={handleSubmit}
+    >
       <div className="media-editor__header">
         <div>
-          <h2 className="panel__title">{isEditing ? 'Editar elemento' : 'Nuevo elemento manual'}</h2>
+          <h2 className="panel__title">
+            {isEditing ? 'Editar elemento' : 'Nuevo elemento manual'}
+          </h2>
           <p className="panel__description">
             {isEditing
               ? 'Ajusta el formato base, el progreso flexible y los metadatos visibles del elemento seleccionado.'
               : 'Crea un registro manual con el nuevo modelo flexible, sin depender del buscador externo.'}
           </p>
           {item !== null && item.sourceType !== 'Manual' ? (
-            <p className="panel__description">El origen externo y sus identificadores se conservarán al guardar.</p>
+            <p className="panel__description">
+              El origen externo y sus identificadores se conservarán al guardar.
+            </p>
           ) : null}
         </div>
 
@@ -166,7 +183,11 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
         </button>
       </div>
 
-      {error ? <div className="auth-error" role="alert">{error}</div> : null}
+      {error ? (
+        <div className="auth-error" role="alert">
+          {error}
+        </div>
+      ) : null}
 
       <div className="control-grid">
         <div className="control control--span-full">
@@ -212,7 +233,9 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
               id="editor-format"
               className="select"
               value={draft.contentKind}
-              onChange={(event) => updateField('contentKind', event.target.value as MediaItemDraft['contentKind'])}
+              onChange={(event) =>
+                updateField('contentKind', event.target.value as MediaItemDraft['contentKind'])
+              }
             >
               {contentKinds.map((contentKind) => (
                 <option key={contentKind} value={contentKind}>
@@ -229,7 +252,9 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
             id="editor-status"
             className="select"
             value={draft.status}
-            onChange={(event) => updateField('status', event.target.value as MediaItemDraft['status'])}
+            onChange={(event) =>
+              updateField('status', event.target.value as MediaItemDraft['status'])
+            }
           >
             {mediaTrackingStatuses.map((status) => (
               <option key={status} value={status}>
@@ -239,8 +264,14 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
           </select>
         </div>
 
-        <div className="control control--span-full" role="group" aria-labelledby="editor-categories-label">
-          <span className="control__label" id="editor-categories-label">Categorías</span>
+        <div
+          className="control control--span-full"
+          role="group"
+          aria-labelledby="editor-categories-label"
+        >
+          <span className="control__label" id="editor-categories-label">
+            Categorías
+          </span>
           {availableCategories.length > 0 ? (
             <div className="category-pills">
               {availableCategories.map((category) => {
@@ -265,7 +296,9 @@ export default function MediaItemEditorForm({ item, availableCategories, availab
               })}
             </div>
           ) : (
-            <p className="category-empty">Aún no tienes categorías. Créalas desde la sección Catálogo.</p>
+            <p className="category-empty">
+              Aún no tienes categorías. Créalas desde la sección Catálogo.
+            </p>
           )}
         </div>
 

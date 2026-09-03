@@ -8,7 +8,9 @@ function Escenario({ tone = 'default' as 'default' | 'danger', onConfirm = () =>
 
   return (
     <div>
-      <button type="button" onClick={() => setOpen(true)}>Eliminar elemento</button>
+      <button type="button" onClick={() => setOpen(true)}>
+        Eliminar elemento
+      </button>
       <ConfirmDialog
         open={open}
         title="¿Eliminar el elemento?"
@@ -74,7 +76,8 @@ describe('ConfirmDialog', () => {
 
     await user.click(screen.getByRole('button', { name: 'Eliminar elemento' }))
 
-    expect(screen.getByRole('alertdialog', { name: '¿Eliminar el elemento?' }))
-      .toHaveAccessibleDescription('Esta acción no se puede deshacer.')
+    expect(
+      screen.getByRole('alertdialog', { name: '¿Eliminar el elemento?' }),
+    ).toHaveAccessibleDescription('Esta acción no se puede deshacer.')
   })
 })

@@ -101,11 +101,7 @@ export default function ProfileView() {
   return (
     <div className="profile-page">
       <div className="profile-page__header">
-        <button
-          type="button"
-          className="button button--ghost"
-          onClick={() => navigate(-1)}
-        >
+        <button type="button" className="button button--ghost" onClick={() => navigate(-1)}>
           ← Volver
         </button>
         <h1>Mi perfil</h1>
@@ -145,13 +141,13 @@ export default function ProfileView() {
               />
             </div>
 
-            {profileError ? <div className="auth-error" role="alert">{profileError}</div> : null}
+            {profileError ? (
+              <div className="auth-error" role="alert">
+                {profileError}
+              </div>
+            ) : null}
 
-            <button
-              type="submit"
-              className="button button--primary"
-              disabled={isProfilePending}
-            >
+            <button type="submit" className="button button--primary" disabled={isProfilePending}>
               {isProfilePending ? 'Guardando…' : 'Guardar cambios'}
             </button>
           </form>
@@ -207,13 +203,13 @@ export default function ProfileView() {
               />
             </div>
 
-            {pwError ? <div className="auth-error" role="alert">{pwError}</div> : null}
+            {pwError ? (
+              <div className="auth-error" role="alert">
+                {pwError}
+              </div>
+            ) : null}
 
-            <button
-              type="submit"
-              className="button button--primary"
-              disabled={isPwPending}
-            >
+            <button type="submit" className="button button--primary" disabled={isPwPending}>
               {isPwPending ? 'Actualizando…' : 'Cambiar contraseña'}
             </button>
           </form>
@@ -222,7 +218,8 @@ export default function ProfileView() {
         <section className="profile-card">
           <h2 className="profile-card__title">Sesiones</h2>
           <p className="results-subtitle" style={{ marginBottom: '1rem' }}>
-            Revoca todos los refresh tokens y fuerza un nuevo inicio de sesión en todos tus dispositivos.
+            Revoca todos los refresh tokens y fuerza un nuevo inicio de sesión en todos tus
+            dispositivos.
           </p>
 
           <button

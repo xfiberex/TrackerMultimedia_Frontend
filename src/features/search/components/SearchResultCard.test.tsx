@@ -64,7 +64,10 @@ describe('SearchResultCard', () => {
       vi.fn(),
     )
 
-    expect(screen.getByRole('img', { name: 'Naruto' })).toHaveAttribute('src', 'https://img.test/naruto.jpg')
+    expect(screen.getByRole('img', { name: 'Naruto' })).toHaveAttribute(
+      'src',
+      'https://img.test/naruto.jpg',
+    )
     expect(screen.getByText('ナルト')).toBeInTheDocument()
     expect(screen.getByText('Activo')).toBeInTheDocument()
     expect(screen.getByText('2002')).toBeInTheDocument()
@@ -72,7 +75,9 @@ describe('SearchResultCard', () => {
 
     // El enlace externo solo contiene un icono decorativo: su nombre accesible
     // tiene que venir del aria-label, o se anuncia como «enlace» sin más.
-    expect(screen.getByRole('link', { name: /abrir naruto/i }))
-      .toHaveAttribute('href', 'https://example.com/naruto')
+    expect(screen.getByRole('link', { name: /abrir naruto/i })).toHaveAttribute(
+      'href',
+      'https://example.com/naruto',
+    )
   })
 })

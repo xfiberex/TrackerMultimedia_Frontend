@@ -51,12 +51,12 @@ function renderDiscoverView(initialEntry = '/discover') {
           <Routes>
             <Route
               path="/discover"
-              element={(
+              element={
                 <>
                   <DiscoverView />
                   <LocationProbe />
                 </>
-              )}
+              }
             />
           </Routes>
         </MemoryRouter>
@@ -103,7 +103,9 @@ describe('DiscoverView', () => {
     renderDiscoverView()
 
     expect(screen.getByText('Empieza con una búsqueda')).toBeInTheDocument()
-    expect(screen.getByText('Escribe al menos 2 caracteres para iniciar la búsqueda.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Escribe al menos 2 caracteres para iniciar la búsqueda.'),
+    ).toBeInTheDocument()
     expect(searchMock).not.toHaveBeenCalled()
     expect(getProvidersMock).toHaveBeenCalledWith(expect.any(AbortSignal))
   })
@@ -192,6 +194,8 @@ describe('DiscoverView', () => {
       })
     })
 
-    expect(await screen.findByText('"Naruto" fue agregado a tu biblioteca con estado Completado.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('"Naruto" fue agregado a tu biblioteca con estado Completado.'),
+    ).toBeInTheDocument()
   })
 })

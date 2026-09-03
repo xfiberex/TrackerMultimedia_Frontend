@@ -97,7 +97,12 @@ function TransferActionMenu({
       >
         {icon}
         <span className="action-menu__label">{label}</span>
-        <ChevronDownIcon className="action-menu__chevron" width={16} height={16} aria-hidden="true" />
+        <ChevronDownIcon
+          className="action-menu__chevron"
+          width={16}
+          height={16}
+          aria-hidden="true"
+        />
       </button>
 
       {isMenuOpen ? (
@@ -199,10 +204,14 @@ function resolveFilters(searchParams: URLSearchParams): MediaItemsFilters {
     sourceType: (searchParams.get('sourceType') as MediaItemSourceType | null) ?? undefined,
     createdFrom: searchParams.get('createdFrom') || undefined,
     createdTo: searchParams.get('createdTo') || undefined,
-    minPersonalScore: searchParams.get('minPersonalScore') ? Number(searchParams.get('minPersonalScore')) : undefined,
-    maxPersonalScore: searchParams.get('maxPersonalScore') ? Number(searchParams.get('maxPersonalScore')) : undefined,
-    sortBy: ((searchParams.get('sortBy') as MediaItemsSortField | null) ?? 'CreatedAt'),
-    sortDirection: ((searchParams.get('sortDirection') as SortDirection | null) ?? 'Desc'),
+    minPersonalScore: searchParams.get('minPersonalScore')
+      ? Number(searchParams.get('minPersonalScore'))
+      : undefined,
+    maxPersonalScore: searchParams.get('maxPersonalScore')
+      ? Number(searchParams.get('maxPersonalScore'))
+      : undefined,
+    sortBy: (searchParams.get('sortBy') as MediaItemsSortField | null) ?? 'CreatedAt',
+    sortDirection: (searchParams.get('sortDirection') as SortDirection | null) ?? 'Desc',
     page: toPositiveInt(searchParams.get('page'), 1),
     pageSize: toPositiveInt(searchParams.get('pageSize'), 12),
   }
@@ -241,7 +250,13 @@ export default function LibraryView() {
   })
 
   const saveMutation = useMutation({
-    mutationFn: async ({ itemId, payload }: { itemId: string | null, payload: CreateMediaItemInput }) => {
+    mutationFn: async ({
+      itemId,
+      payload,
+    }: {
+      itemId: string | null
+      payload: CreateMediaItemInput
+    }) => {
       if (itemId) {
         return MediaItemsApi.update(itemId, payload)
       }
@@ -311,13 +326,17 @@ export default function LibraryView() {
     onError: (error, format) => {
       showToast({
         tone: 'danger',
-        message: extractApiError(error, `No se pudo exportar la biblioteca en ${getTransferFormatLabel(format)}.`),
+        message: extractApiError(
+          error,
+          `No se pudo exportar la biblioteca en ${getTransferFormatLabel(format)}.`,
+        ),
       })
     },
   })
 
   const importMutation = useMutation({
-    mutationFn: ({ format, file }: { format: LibraryTransferFormat; file: File }) => MediaItemsApi.importLibrary(format, file),
+    mutationFn: ({ format, file }: { format: LibraryTransferFormat; file: File }) =>
+      MediaItemsApi.importLibrary(format, file),
     onSuccess: (result) => {
       showToast({
         tone: 'success',
@@ -329,7 +348,10 @@ export default function LibraryView() {
     onError: (error, variables) => {
       showToast({
         tone: 'danger',
-        message: extractApiError(error, `No se pudo importar el archivo ${getTransferFormatLabel(variables.format)}.`),
+        message: extractApiError(
+          error,
+          `No se pudo importar el archivo ${getTransferFormatLabel(variables.format)}.`,
+        ),
       })
     },
   })
@@ -404,16 +426,17 @@ export default function LibraryView() {
     importCsvInputRef.current?.click()
   }
 
-  const handleImportFileChange = (format: LibraryTransferFormat) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.currentTarget.files?.[0]
-    event.currentTarget.value = ''
+  const handleImportFileChange =
+    (format: LibraryTransferFormat) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.currentTarget.files?.[0]
+      event.currentTarget.value = ''
 
-    if (!file) {
-      return
+      if (!file) {
+        return
+      }
+
+      importMutation.mutate({ format, file })
     }
-
-    importMutation.mutate({ format, file })
-  }
 
   const handleSearchSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault()
@@ -520,7 +543,9 @@ export default function LibraryView() {
           {categoriesQuery.isError ? (
             <div className="status-banner status-banner--warning" role="status">
               <strong>Las categorías no se cargaron.</strong>
-              <span>El editor y los filtros seguirán sin categorías hasta que vuelva la conexión.</span>
+              <span>
+                El editor y los filtros seguirán sin categorías hasta que vuelva la conexión.
+              </span>
             </div>
           ) : null}
         </div>
@@ -622,7 +647,9 @@ export default function LibraryView() {
               </span>
               <button
                 className="button button--secondary"
-                onClick={() => goToPage(Math.min((response?.page ?? 1) + 1, response?.totalPages ?? 1))}
+                onClick={() =>
+                  goToPage(Math.min((response?.page ?? 1) + 1, response?.totalPages ?? 1))
+                }
                 disabled={!response || response.page >= response.totalPages}
               >
                 Siguiente

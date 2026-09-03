@@ -53,12 +53,12 @@ function renderLibraryView(initialEntry = '/library') {
           <Routes>
             <Route
               path="/library"
-              element={(
+              element={
                 <>
                   <LibraryView />
                   <LocationProbe />
                 </>
-              )}
+              }
             />
           </Routes>
         </MemoryRouter>
@@ -102,7 +102,9 @@ const libraryItem: MediaItem = {
   updatedAtUtc: '2026-05-06T12:00:00.000Z',
 }
 
-function buildPagedResponse(overrides: Partial<PagedResponse<MediaItem>> = {}): PagedResponse<MediaItem> {
+function buildPagedResponse(
+  overrides: Partial<PagedResponse<MediaItem>> = {},
+): PagedResponse<MediaItem> {
   return {
     items: [libraryItem],
     page: 1,
@@ -280,7 +282,9 @@ describe('LibraryView', () => {
     })
 
     expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
-    expect(new URLSearchParams(screen.getByTestId('location-search').textContent ?? '').get('page')).toBe('3')
+    expect(
+      new URLSearchParams(screen.getByTestId('location-search').textContent ?? '').get('page'),
+    ).toBe('3')
   })
 
   it('exports the library from the transfer dropdown', async () => {
@@ -298,7 +302,9 @@ describe('LibraryView', () => {
 
     expect(URL.createObjectURL).toHaveBeenCalled()
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:library-export')
-    expect(await screen.findByText('Se descargó tu biblioteca en formato JSON.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Se descargó tu biblioteca en formato JSON.'),
+    ).toBeInTheDocument()
 
     clickSpy.mockRestore()
   })
@@ -322,7 +328,9 @@ describe('LibraryView', () => {
     })
 
     expect(
-      await screen.findByText('Importación JSON completada: 2 creados, 1 actualizado y 1 categoría nueva.'),
+      await screen.findByText(
+        'Importación JSON completada: 2 creados, 1 actualizado y 1 categoría nueva.',
+      ),
     ).toBeInTheDocument()
   })
 
@@ -346,7 +354,9 @@ describe('LibraryView', () => {
     await user.keyboard('{Escape}')
 
     await waitFor(() => {
-      expect(screen.queryByRole('dialog', { name: 'Crear elemento de biblioteca' })).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('dialog', { name: 'Crear elemento de biblioteca' }),
+      ).not.toBeInTheDocument()
     })
 
     // Y al cerrarse vuelve al botón que lo abrió, no al principio de la página.
@@ -443,7 +453,11 @@ describe('LibraryView', () => {
       progressTotal: 28,
       personalScore: 9.8,
       notes: 'Gran cierre',
-      categories: categories.map((category) => ({ id: category.id, name: category.name, color: category.color })),
+      categories: categories.map((category) => ({
+        id: category.id,
+        name: category.name,
+        color: category.color,
+      })),
     })
 
     renderLibraryView('/library')
@@ -493,7 +507,9 @@ describe('LibraryView', () => {
       })
     })
 
-    expect(await screen.findByText('"Frieren Final" se actualizó correctamente.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('"Frieren Final" se actualizó correctamente.'),
+    ).toBeInTheDocument()
   })
 
   it('toggles category filters and persists repeated query params', async () => {

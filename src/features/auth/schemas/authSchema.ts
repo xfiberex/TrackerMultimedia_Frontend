@@ -4,7 +4,11 @@ import { z } from 'zod'
 
 const emailSchema = z.string().email('Email inválido')
 const passwordSchema = z.string().min(8, 'Contraseña: mínimo 8 caracteres')
-const displayNameSchema = z.string().min(1, 'Nombre requerido').max(100, 'Máximo 100 caracteres').optional()
+const displayNameSchema = z
+  .string()
+  .min(1, 'Nombre requerido')
+  .max(100, 'Máximo 100 caracteres')
+  .optional()
 
 export const userSchema = z.object({
   id: z.string(),
@@ -100,4 +104,3 @@ export type AuthMethodsResponse = z.infer<typeof authMethodsResponseSchema>
 export type OAuthInitResponse = z.infer<typeof oauthInitResponseSchema>
 export type OAuthLinkRequired = z.infer<typeof oauthLinkRequiredSchema>
 export type OAuthLinkConfirmPayload = z.infer<typeof oauthLinkConfirmPayloadSchema>
-

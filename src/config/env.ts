@@ -21,7 +21,8 @@ import { z } from 'zod'
 const flagSchema = z
   .string()
   .refine(
-    (value) => value.length === 0 || ['true', 'false', '1', '0'].includes(value.trim().toLowerCase()),
+    (value) =>
+      value.length === 0 || ['true', 'false', '1', '0'].includes(value.trim().toLowerCase()),
     'debe ser "true" o "false"',
   )
   .optional()
@@ -95,10 +96,9 @@ const parsed = result.data
 const defaultApiUrl = '/api'
 const configuredApiUrl = parsed.VITE_API_URL?.trim()
 
-const apiUrl = (configuredApiUrl && configuredApiUrl.length > 0 ? configuredApiUrl : defaultApiUrl).replace(
-  /\/$/,
-  '',
-)
+const apiUrl = (
+  configuredApiUrl && configuredApiUrl.length > 0 ? configuredApiUrl : defaultApiUrl
+).replace(/\/$/, '')
 
 function parseFlag(value: string | undefined, fallback: boolean): boolean {
   const normalized = value?.trim().toLowerCase()

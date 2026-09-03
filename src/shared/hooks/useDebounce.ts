@@ -24,7 +24,10 @@ export function useDebounce<T>(value: T, delay: number = 500): T {
  * Ejecuta una función como máximo una vez cada `delay` ms.
  * Útil para eventos de scroll, resize, o acciones repetitivas.
  */
-export function useThrottle<T extends (...args: unknown[]) => unknown>(callback: T, delay: number = 500) {
+export function useThrottle<T extends (...args: unknown[]) => unknown>(
+  callback: T,
+  delay: number = 500,
+) {
   const [lastCall, setLastCall] = useState<number>(0)
 
   return ((...args: Parameters<T>) => {

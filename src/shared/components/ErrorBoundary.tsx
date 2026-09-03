@@ -59,8 +59,8 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
         <section className="error-boundary__panel">
           <h1 className="error-boundary__title">Algo se ha roto por nuestra parte</h1>
           <p className="error-boundary__text">
-            La página no ha podido mostrarse. No has perdido nada de lo que tengas guardado:
-            el fallo está en la interfaz, no en tus datos.
+            La página no ha podido mostrarse. No has perdido nada de lo que tengas guardado: el
+            fallo está en la interfaz, no en tus datos.
           </p>
 
           <div className="error-boundary__actions">

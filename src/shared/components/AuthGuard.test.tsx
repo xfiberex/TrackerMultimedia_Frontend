@@ -10,7 +10,8 @@ vi.mock('@/features/auth/context/useAuth', () => ({
 
 function LoginProbe() {
   const location = useLocation()
-  const fromPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? 'none'
+  const fromPath =
+    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? 'none'
   return <div data-testid="login-probe">from:{fromPath}</div>
 }
 

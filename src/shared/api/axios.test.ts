@@ -1,4 +1,6 @@
-type MockHandler<TArgs extends unknown[] = unknown[], TResult = unknown> = (...args: TArgs) => TResult
+type MockHandler<TArgs extends unknown[] = unknown[], TResult = unknown> = (
+  ...args: TArgs
+) => TResult
 
 interface MockAxiosInstance extends ReturnType<typeof vi.fn> {
   post: ReturnType<typeof vi.fn>
@@ -153,7 +155,9 @@ describe('shared api axios client', () => {
       }),
     ).resolves.toEqual({ data: 'retried-response' })
 
-    expect(refreshClient.post).toHaveBeenCalledWith('/auth/refresh', { refreshToken: 'old-refresh' })
+    expect(refreshClient.post).toHaveBeenCalledWith('/auth/refresh', {
+      refreshToken: 'old-refresh',
+    })
     expect(tokenStore.get()).toBe('new-access')
     expect(localStorage.getItem('refreshToken')).toBe('new-refresh')
     expect(apiClient).toHaveBeenCalledWith(
@@ -224,11 +228,15 @@ describe('shared api axios client', () => {
     expect(refreshClient.post).toHaveBeenCalledTimes(1)
     expect(apiClient).toHaveBeenNthCalledWith(
       1,
-      expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer queued-access' }) }),
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer queued-access' }),
+      }),
     )
     expect(apiClient).toHaveBeenNthCalledWith(
       2,
-      expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer queued-access' }) }),
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer queued-access' }),
+      }),
     )
   })
 

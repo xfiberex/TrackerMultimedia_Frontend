@@ -212,7 +212,10 @@ function CategoriesSection() {
     },
     onError: (err, variables) => {
       setFormError(
-        extractApiError(err, variables.id ? 'No se pudo actualizar la categoría.' : 'No se pudo crear la categoría.'),
+        extractApiError(
+          err,
+          variables.id ? 'No se pudo actualizar la categoría.' : 'No se pudo crear la categoría.',
+        ),
       )
     },
   })
@@ -230,7 +233,10 @@ function CategoriesSection() {
     },
     onError: (err) => {
       setDeleteCandidate(null)
-      showToast({ tone: 'danger', message: extractApiError(err, 'No se pudo eliminar la categoría.') })
+      showToast({
+        tone: 'danger',
+        message: extractApiError(err, 'No se pudo eliminar la categoría.'),
+      })
     },
   })
 
@@ -273,7 +279,8 @@ function CategoriesSection() {
               Categorías
             </h2>
             <p className="catalog-section__description">
-              Etiquetas personales para organizar tu biblioteca. Colores opcionales para diferenciar grupos.
+              Etiquetas personales para organizar tu biblioteca. Colores opcionales para diferenciar
+              grupos.
             </p>
           </div>
           <button className="button button--primary" type="button" onClick={openCreate}>
@@ -287,7 +294,11 @@ function CategoriesSection() {
             title="No se pudieron cargar las categorías"
             message="Recarga la vista o revisa la conexión con el backend."
             action={
-              <button className="button button--primary" type="button" onClick={() => categoriesQuery.refetch()}>
+              <button
+                className="button button--primary"
+                type="button"
+                onClick={() => categoriesQuery.refetch()}
+              >
                 Reintentar
               </button>
             }
@@ -331,7 +342,11 @@ function CategoriesSection() {
                     </td>
                     <td className="search-row__actions-cell">
                       <div className="search-row__actions">
-                        <button className="button button--secondary" type="button" onClick={() => openEdit(cat)}>
+                        <button
+                          className="button button--secondary"
+                          type="button"
+                          onClick={() => openEdit(cat)}
+                        >
                           <PencilSquareIcon width={16} height={16} />
                           Editar
                         </button>
@@ -365,13 +380,21 @@ function CategoriesSection() {
             <h3 className="catalog-modal__title">
               {editingCategory ? `Editar "${editingCategory.name}"` : 'Nueva categoría'}
             </h3>
-            <button type="button" className="button button--ghost" onClick={() => setIsModalOpen(false)}>
+            <button
+              type="button"
+              className="button button--ghost"
+              onClick={() => setIsModalOpen(false)}
+            >
               Cancelar
             </button>
           </div>
 
           <form className="filters-form" onSubmit={handleSubmit}>
-            {formError ? <div className="auth-error" role="alert">{formError}</div> : null}
+            {formError ? (
+              <div className="auth-error" role="alert">
+                {formError}
+              </div>
+            ) : null}
 
             <div className="control">
               <label htmlFor="cat-name">Nombre</label>
@@ -387,7 +410,9 @@ function CategoriesSection() {
 
             <div className="control">
               {/* Widget compuesto, no un control único: se nombra por aria-labelledby. */}
-              <span className="control__label" id="format-color-label">Color</span>
+              <span className="control__label" id="format-color-label">
+                Color
+              </span>
               <ColorPickerDropdown
                 labelId="format-color-label"
                 value={draft.color}
@@ -396,8 +421,16 @@ function CategoriesSection() {
             </div>
 
             <div className="catalog-modal__actions">
-              <button type="submit" className="button button--primary" disabled={saveMutation.isPending}>
-                {saveMutation.isPending ? 'Guardando…' : editingCategory ? 'Guardar cambios' : 'Crear categoría'}
+              <button
+                type="submit"
+                className="button button--primary"
+                disabled={saveMutation.isPending}
+              >
+                {saveMutation.isPending
+                  ? 'Guardando…'
+                  : editingCategory
+                    ? 'Guardar cambios'
+                    : 'Crear categoría'}
               </button>
             </div>
           </form>
@@ -413,7 +446,9 @@ function CategoriesSection() {
         tone="danger"
         isPending={deleteMutation.isPending}
         onClose={() => setDeleteCandidate(null)}
-        onConfirm={() => { if (deleteCandidate) deleteMutation.mutate(deleteCandidate) }}
+        onConfirm={() => {
+          if (deleteCandidate) deleteMutation.mutate(deleteCandidate)
+        }}
       />
     </>
   )
@@ -460,7 +495,10 @@ function FormatsSection() {
     },
     onError: (err, variables) => {
       setFormError(
-        extractApiError(err, variables.id ? 'No se pudo actualizar el formato.' : 'No se pudo crear el formato.'),
+        extractApiError(
+          err,
+          variables.id ? 'No se pudo actualizar el formato.' : 'No se pudo crear el formato.',
+        ),
       )
     },
   })
@@ -477,7 +515,10 @@ function FormatsSection() {
     },
     onError: (err) => {
       setDeleteCandidate(null)
-      showToast({ tone: 'danger', message: extractApiError(err, 'No se pudo eliminar el formato.') })
+      showToast({
+        tone: 'danger',
+        message: extractApiError(err, 'No se pudo eliminar el formato.'),
+      })
     },
   })
 
@@ -520,7 +561,8 @@ function FormatsSection() {
               Formatos
             </h2>
             <p className="catalog-section__description">
-              Etiquetas personales para clasificar el contenido de tu biblioteca: Anime, Serie, Película, Manga, etc.
+              Etiquetas personales para clasificar el contenido de tu biblioteca: Anime, Serie,
+              Película, Manga, etc.
             </p>
           </div>
           <button className="button button--primary" type="button" onClick={openCreate}>
@@ -534,7 +576,11 @@ function FormatsSection() {
             title="No se pudieron cargar los formatos"
             message="Recarga la vista o revisa la conexión con el backend."
             action={
-              <button className="button button--primary" type="button" onClick={() => formatsQuery.refetch()}>
+              <button
+                className="button button--primary"
+                type="button"
+                onClick={() => formatsQuery.refetch()}
+              >
                 Reintentar
               </button>
             }
@@ -567,7 +613,11 @@ function FormatsSection() {
                     </td>
                     <td className="search-row__actions-cell">
                       <div className="search-row__actions">
-                        <button className="button button--secondary" type="button" onClick={() => openEdit(fmt)}>
+                        <button
+                          className="button button--secondary"
+                          type="button"
+                          onClick={() => openEdit(fmt)}
+                        >
                           <PencilSquareIcon width={16} height={16} />
                           Editar
                         </button>
@@ -601,13 +651,21 @@ function FormatsSection() {
             <h3 className="catalog-modal__title">
               {editingFormat ? `Editar "${editingFormat.name}"` : 'Nuevo formato'}
             </h3>
-            <button type="button" className="button button--ghost" onClick={() => setIsModalOpen(false)}>
+            <button
+              type="button"
+              className="button button--ghost"
+              onClick={() => setIsModalOpen(false)}
+            >
               Cancelar
             </button>
           </div>
 
           <form className="filters-form" onSubmit={handleSubmit}>
-            {formError ? <div className="auth-error" role="alert">{formError}</div> : null}
+            {formError ? (
+              <div className="auth-error" role="alert">
+                {formError}
+              </div>
+            ) : null}
 
             <div className="control">
               <label htmlFor="fmt-name">Nombre del formato</label>
@@ -623,8 +681,16 @@ function FormatsSection() {
             </div>
 
             <div className="catalog-modal__actions">
-              <button type="submit" className="button button--primary" disabled={saveMutation.isPending}>
-                {saveMutation.isPending ? 'Guardando…' : editingFormat ? 'Guardar cambios' : 'Crear formato'}
+              <button
+                type="submit"
+                className="button button--primary"
+                disabled={saveMutation.isPending}
+              >
+                {saveMutation.isPending
+                  ? 'Guardando…'
+                  : editingFormat
+                    ? 'Guardar cambios'
+                    : 'Crear formato'}
               </button>
             </div>
           </form>
@@ -640,7 +706,9 @@ function FormatsSection() {
         tone="danger"
         isPending={deleteMutation.isPending}
         onClose={() => setDeleteCandidate(null)}
-        onConfirm={() => { if (deleteCandidate) deleteMutation.mutate(deleteCandidate) }}
+        onConfirm={() => {
+          if (deleteCandidate) deleteMutation.mutate(deleteCandidate)
+        }}
       />
     </>
   )
@@ -662,7 +730,8 @@ export default function CatalogView() {
         </span>
         <h1 className="hero-panel__title">Tu catálogo personal</h1>
         <p className="hero-panel__description">
-          Administra las categorías y formatos que usas para organizar y clasificar tu biblioteca multimedia.
+          Administra las categorías y formatos que usas para organizar y clasificar tu biblioteca
+          multimedia.
         </p>
       </section>
 

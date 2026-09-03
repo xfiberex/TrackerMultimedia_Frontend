@@ -29,10 +29,16 @@ export default function LinkAccountView() {
     return (
       <div className="auth-shell">
         <div className="auth-card">
-          <div className="auth-brand"><span className="brand__title">TrackerMultimedia</span></div>
+          <div className="auth-brand">
+            <span className="brand__title">TrackerMultimedia</span>
+          </div>
           <h1 className="auth-card__title">Enlace inválido</h1>
-          <p className="auth-card__subtitle">El enlace de vinculación no es válido o ha expirado.</p>
-          <p className="auth-footer"><Link to="/login">Volver al inicio de sesión</Link></p>
+          <p className="auth-card__subtitle">
+            El enlace de vinculación no es válido o ha expirado.
+          </p>
+          <p className="auth-footer">
+            <Link to="/login">Volver al inicio de sesión</Link>
+          </p>
         </div>
       </div>
     )
@@ -64,11 +70,15 @@ export default function LinkAccountView() {
 
         <h1 className="auth-card__title">Vincular cuenta</h1>
         <p className="auth-card__subtitle">
-          Ya existe una cuenta con el correo <strong>{email}</strong>.
-          Ingresa tu contraseña para vincular tu cuenta de {providerLabel}.
+          Ya existe una cuenta con el correo <strong>{email}</strong>. Ingresa tu contraseña para
+          vincular tu cuenta de {providerLabel}.
         </p>
 
-        {error ? <div className="auth-error" role="alert">{error}</div> : null}
+        {error ? (
+          <div className="auth-error" role="alert">
+            {error}
+          </div>
+        ) : null}
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="control">

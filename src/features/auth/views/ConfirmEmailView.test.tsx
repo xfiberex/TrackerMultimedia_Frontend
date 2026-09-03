@@ -49,7 +49,9 @@ describe('ConfirmEmailView', () => {
     renderConfirmEmailView('/confirm-email?email=user%40test.com')
 
     expect(await screen.findByText('Enlace no válido')).toBeInTheDocument()
-    expect(screen.getByRole('alert')).toHaveTextContent('El enlace de confirmación no es válido o ha expirado.')
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'El enlace de confirmación no es válido o ha expirado.',
+    )
     expect(confirmEmailMock).not.toHaveBeenCalled()
   })
 
@@ -59,6 +61,8 @@ describe('ConfirmEmailView', () => {
     renderConfirmEmailView('/confirm-email?email=user%40test.com&token=confirm-token')
 
     expect(await screen.findByText('Enlace no válido')).toBeInTheDocument()
-    expect(screen.getByRole('alert')).toHaveTextContent('El enlace de confirmación no es válido o ha expirado.')
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'El enlace de confirmación no es válido o ha expirado.',
+    )
   })
 })

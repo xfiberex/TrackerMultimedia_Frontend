@@ -1,8 +1,4 @@
-import {
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { AuthAPI } from '../api/AuthAPI'
 import type {
   AuthResponse,
@@ -144,11 +140,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoading, methods, login, register, logout, logoutAll, refreshUser, completeSession, loginWithOAuth, linkConfirm }}
+      value={{
+        user,
+        isLoading,
+        methods,
+        login,
+        register,
+        logout,
+        logoutAll,
+        refreshUser,
+        completeSession,
+        loginWithOAuth,
+        linkConfirm,
+      }}
     >
       {children}
     </AuthContext.Provider>
   )
 }
-
-

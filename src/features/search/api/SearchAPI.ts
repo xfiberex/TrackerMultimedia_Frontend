@@ -1,6 +1,10 @@
 import api from '@/shared/api/axios'
 import { buildQueryString } from '@/shared/utils'
-import type { DiscoverProvider, SearchMediaItem, SearchMediaItemsFilters } from '@/features/search/schemas/searchSchema'
+import type {
+  DiscoverProvider,
+  SearchMediaItem,
+  SearchMediaItemsFilters,
+} from '@/features/search/schemas/searchSchema'
 
 export const SearchApi = {
   getProviders: async (signal?: AbortSignal): Promise<DiscoverProvider[]> => {

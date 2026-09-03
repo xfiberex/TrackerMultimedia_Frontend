@@ -1,6 +1,6 @@
 /**
  * API Response Validation Hook
- * 
+ *
  * Wrapper para axios que valida todas las respuestas del API contra schemas Zod.
  * Previene errores causados por cambios en contratos backend.
  */
@@ -54,7 +54,7 @@ export function validateApiResponse<T>(response: AxiosResponse<unknown>, schema:
 export async function apiGet<T>(
   url: string,
   schema: ZodSchema,
-  config?: Parameters<typeof axios.get>[1]
+  config?: Parameters<typeof axios.get>[1],
 ): Promise<T> {
   const response = await axios.get(url, config)
   return validateApiResponse<T>(response, schema)
@@ -67,7 +67,7 @@ export async function apiPost<T>(
   url: string,
   data: unknown,
   schema: ZodSchema,
-  config?: Parameters<typeof axios.post>[2]
+  config?: Parameters<typeof axios.post>[2],
 ): Promise<T> {
   const response = await axios.post(url, data, config)
   return validateApiResponse<T>(response, schema)
@@ -80,7 +80,7 @@ export async function apiPut<T>(
   url: string,
   data: unknown,
   schema: ZodSchema,
-  config?: Parameters<typeof axios.put>[2]
+  config?: Parameters<typeof axios.put>[2],
 ): Promise<T> {
   const response = await axios.put(url, data, config)
   return validateApiResponse<T>(response, schema)
@@ -88,7 +88,7 @@ export async function apiPut<T>(
 
 /**
  * Ejemplo de uso en AuthAPI:
- * 
+ *
  * export const AuthAPI = {
  *   me: () => apiGet<User>('/auth/me', userSchema),
  *   login: (payload) => apiPost<AuthResponse>('/auth/login', payload, authResponseSchema),

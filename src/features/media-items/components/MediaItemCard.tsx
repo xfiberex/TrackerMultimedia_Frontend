@@ -53,7 +53,12 @@ function getSeasonLabel(item: MediaItem): string | null {
   return `Temporada ${item.currentSeason}`
 }
 
-export default function MediaItemCard({ item, isDeleting = false, onDelete, onEdit }: MediaItemCardProps) {
+export default function MediaItemCard({
+  item,
+  isDeleting = false,
+  onDelete,
+  onEdit,
+}: MediaItemCardProps) {
   const statusClassName = `badge badge--${item.status.toLowerCase()}`
   const categories = item.categories ?? []
   const metadata = [
@@ -65,7 +70,12 @@ export default function MediaItemCard({ item, isDeleting = false, onDelete, onEd
   return (
     <article className="media-card">
       {item.coverImageUrl ? (
-        <img className="media-card__cover" src={item.coverImageUrl} alt={item.title} loading="lazy" />
+        <img
+          className="media-card__cover"
+          src={item.coverImageUrl}
+          alt={item.title}
+          loading="lazy"
+        />
       ) : (
         <div className="media-card__placeholder" aria-hidden="true">
           <TvIcon width={36} height={36} />
@@ -80,7 +90,9 @@ export default function MediaItemCard({ item, isDeleting = false, onDelete, onEd
           <span className="badge">{getKindLabel(item)}</span>
           <span className={statusClassName}>{mediaTrackingStatusLabels[item.status]}</span>
           <span className="badge badge--source">{mediaSourceLabels[item.sourceType]}</span>
-          {item.externalStatusLabel ? <span className="badge">{item.externalStatusLabel}</span> : null}
+          {item.externalStatusLabel ? (
+            <span className="badge">{item.externalStatusLabel}</span>
+          ) : null}
         </div>
 
         {categories.length > 0 ? (
@@ -115,7 +127,11 @@ export default function MediaItemCard({ item, isDeleting = false, onDelete, onEd
           {onEdit || onDelete ? (
             <div className="card-actions__buttons">
               {onEdit ? (
-                <button className="button button--secondary" type="button" onClick={() => onEdit(item)}>
+                <button
+                  className="button button--secondary"
+                  type="button"
+                  onClick={() => onEdit(item)}
+                >
                   <PencilSquareIcon width={18} height={18} />
                   Editar
                 </button>

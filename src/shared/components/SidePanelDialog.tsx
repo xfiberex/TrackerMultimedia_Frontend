@@ -67,7 +67,9 @@ export default function SidePanelDialog({
     'side-panel-layer',
     isCentered ? 'side-panel-layer--centered' : '',
     isActuallyClosing ? 'side-panel-layer--closing' : '',
-  ].filter(Boolean).join(' ')
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <div className={layerClass} role="presentation">

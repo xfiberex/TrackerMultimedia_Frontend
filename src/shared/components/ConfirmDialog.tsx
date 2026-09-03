@@ -71,7 +71,10 @@ export default function ConfirmDialog({
   }
 
   return (
-    <div className={`confirm-dialog-layer${isActuallyClosing ? ' confirm-dialog-layer--closing' : ''}`} role="presentation">
+    <div
+      className={`confirm-dialog-layer${isActuallyClosing ? ' confirm-dialog-layer--closing' : ''}`}
+      role="presentation"
+    >
       {/* El fondo cierra al hacer clic, pero no entra en el orden de tabulación:
           quedaba fuera del diálogo, así que el teclado llegaba a él mientras los
           lectores de pantalla lo ocultaban por `aria-modal`. */}
@@ -95,8 +98,12 @@ export default function ConfirmDialog({
         tabIndex={-1}
       >
         <div className="confirm-dialog__body">
-          <h2 id={titleId} className="confirm-dialog__title">{title}</h2>
-          <p id={messageId} className="confirm-dialog__message">{message}</p>
+          <h2 id={titleId} className="confirm-dialog__title">
+            {title}
+          </h2>
+          <p id={messageId} className="confirm-dialog__message">
+            {message}
+          </p>
         </div>
 
         <div className="confirm-dialog__actions">

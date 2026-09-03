@@ -36,13 +36,26 @@ describe('MediaItemsApi', () => {
 
     await expect(MediaItemsApi.getAll({}, signal)).resolves.toEqual(pagedResult)
     await expect(
-      MediaItemsApi.getAll({ search: 'frieren', status: 'InProgress', categoryIds: ['cat-1', 'cat-2'], page: 2, pageSize: 24 }, signal),
+      MediaItemsApi.getAll(
+        {
+          search: 'frieren',
+          status: 'InProgress',
+          categoryIds: ['cat-1', 'cat-2'],
+          page: 2,
+          pageSize: 24,
+        },
+        signal,
+      ),
     ).resolves.toEqual(pagedResult)
 
     expect(apiMock.get).toHaveBeenNthCalledWith(1, '/media-items', { signal })
-    expect(apiMock.get).toHaveBeenNthCalledWith(2, '/media-items?search=frieren&status=InProgress&categoryIds=cat-1&categoryIds=cat-2&page=2&pageSize=24', {
-      signal,
-    })
+    expect(apiMock.get).toHaveBeenNthCalledWith(
+      2,
+      '/media-items?search=frieren&status=InProgress&categoryIds=cat-1&categoryIds=cat-2&page=2&pageSize=24',
+      {
+        signal,
+      },
+    )
   })
 
   it('creates a media item and returns the created payload', async () => {

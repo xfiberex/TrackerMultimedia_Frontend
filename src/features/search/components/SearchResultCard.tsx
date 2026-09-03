@@ -1,8 +1,4 @@
-import {
-  ArrowTopRightOnSquareIcon,
-  PlusIcon,
-  SparklesIcon,
-} from '@heroicons/react/24/outline'
+import { ArrowTopRightOnSquareIcon, PlusIcon, SparklesIcon } from '@heroicons/react/24/outline'
 import { mediaSourceLabels } from '@/features/media-items/schemas/mediaItemSchema'
 import type { SearchMediaItem } from '@/features/search/schemas/searchSchema'
 import { formatScore } from '@/shared/utils'
@@ -18,7 +14,12 @@ export default function SearchResultCard({ item, isPending, onAdd }: SearchResul
     <tr className="search-row">
       <td className="search-row__cover-cell">
         {item.coverImageUrl ? (
-          <img className="search-row__thumb" src={item.coverImageUrl} alt={item.title} loading="lazy" />
+          <img
+            className="search-row__thumb"
+            src={item.coverImageUrl}
+            alt={item.title}
+            loading="lazy"
+          />
         ) : (
           <div className="search-row__thumb-placeholder" aria-hidden="true">
             <SparklesIcon width={20} height={20} />
@@ -38,7 +39,11 @@ export default function SearchResultCard({ item, isPending, onAdd }: SearchResul
       <td className="search-row__meta-cell">{formatScore(item.externalScore)}</td>
       <td className="search-row__actions-cell">
         <div className="search-row__actions">
-          <button className="button button--primary" onClick={() => onAdd(item)} disabled={isPending}>
+          <button
+            className="button button--primary"
+            onClick={() => onAdd(item)}
+            disabled={isPending}
+          >
             <PlusIcon width={16} height={16} />
             {isPending ? 'Guardando...' : 'Importar'}
           </button>

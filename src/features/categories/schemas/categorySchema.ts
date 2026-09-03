@@ -2,7 +2,11 @@ import { z } from 'zod'
 
 export const createCategoryInputSchema = z.object({
   name: z.string().min(1, 'Nombre requerido').max(100, 'Máximo 100 caracteres'),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Color inválido').nullable().optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i, 'Color inválido')
+    .nullable()
+    .optional(),
 })
 
 export const updateCategoryInputSchema = createCategoryInputSchema

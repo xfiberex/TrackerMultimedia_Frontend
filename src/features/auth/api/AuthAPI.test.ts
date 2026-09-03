@@ -60,7 +60,9 @@ describe('AuthAPI', () => {
     }
     apiMock.post.mockResolvedValue({ data: authResponse })
 
-    await expect(AuthAPI.login({ email: 'user@test.com', password: 'Pass123$' })).resolves.toEqual(authResponse)
+    await expect(AuthAPI.login({ email: 'user@test.com', password: 'Pass123$' })).resolves.toEqual(
+      authResponse,
+    )
     await expect(AuthAPI.refresh('refresh-token')).resolves.toEqual(authResponse)
 
     expect(apiMock.post).toHaveBeenNthCalledWith(1, '/auth/login', {
@@ -81,10 +83,16 @@ describe('AuthAPI', () => {
       AuthAPI.changePassword({ currentPassword: 'Old123$', newPassword: 'New123$' }),
     ).resolves.toBeUndefined()
     await expect(
-      AuthAPI.resetPassword({ email: 'user@test.com', token: 'reset-token', newPassword: 'New123$' }),
+      AuthAPI.resetPassword({
+        email: 'user@test.com',
+        token: 'reset-token',
+        newPassword: 'New123$',
+      }),
     ).resolves.toBeUndefined()
 
-    expect(apiMock.post).toHaveBeenNthCalledWith(1, '/auth/logout', { refreshToken: 'refresh-token' })
+    expect(apiMock.post).toHaveBeenNthCalledWith(1, '/auth/logout', {
+      refreshToken: 'refresh-token',
+    })
     expect(apiMock.post).toHaveBeenNthCalledWith(2, '/auth/logout-all')
     expect(apiMock.post).toHaveBeenNthCalledWith(3, '/auth/change-password', {
       currentPassword: 'Old123$',
@@ -125,14 +133,18 @@ describe('AuthAPI', () => {
     await expect(AuthAPI.forgotPassword({ email: 'user@test.com' })).resolves.toEqual({
       message: 'Recovery email sent.',
     })
-    await expect(AuthAPI.confirmEmail({ email: 'user@test.com', token: 'token-1' })).resolves.toEqual({
+    await expect(
+      AuthAPI.confirmEmail({ email: 'user@test.com', token: 'token-1' }),
+    ).resolves.toEqual({
       message: 'Email confirmed.',
     })
     await expect(AuthAPI.resendConfirmation({ email: 'user@test.com' })).resolves.toEqual({
       message: 'Confirmation resent.',
     })
 
-    expect(apiMock.post).toHaveBeenNthCalledWith(1, '/auth/forgot-password', { email: 'user@test.com' })
+    expect(apiMock.post).toHaveBeenNthCalledWith(1, '/auth/forgot-password', {
+      email: 'user@test.com',
+    })
     expect(apiMock.post).toHaveBeenNthCalledWith(2, '/auth/confirm-email', {
       email: 'user@test.com',
       token: 'token-1',
@@ -157,7 +169,10 @@ describe('AuthAPI', () => {
     await expect(AuthAPI.getOAuthUrl('google', '/profile settings')).resolves.toEqual(oauthInit)
 
     expect(apiMock.get).toHaveBeenNthCalledWith(1, '/auth/methods')
-    expect(apiMock.get).toHaveBeenNthCalledWith(2, '/auth/google/init?returnPath=%2Fprofile%20settings')
+    expect(apiMock.get).toHaveBeenNthCalledWith(
+      2,
+      '/auth/google/init?returnPath=%2Fprofile%20settings',
+    )
   })
 
   it('posts the link confirmation payload and returns a session', async () => {
@@ -177,7 +192,12 @@ describe('AuthAPI', () => {
     apiMock.post.mockResolvedValue({ data: authResponse })
 
     await expect(
-      AuthAPI.linkConfirm({ provider: 'github', email: 'linked@test.com', linkToken: 'oauth-token', password: 'Pass123$' }),
+      AuthAPI.linkConfirm({
+        provider: 'github',
+        email: 'linked@test.com',
+        linkToken: 'oauth-token',
+        password: 'Pass123$',
+      }),
     ).resolves.toEqual(authResponse)
 
     expect(apiMock.post).toHaveBeenCalledWith('/auth/link-confirm', {

@@ -27,7 +27,9 @@ export default function ResetPasswordView() {
 
     try {
       await AuthAPI.resetPassword({ email, token, newPassword })
-      navigate('/login', { state: { message: 'Contraseña actualizada. Ya puedes iniciar sesión.' } })
+      navigate('/login', {
+        state: { message: 'Contraseña actualizada. Ya puedes iniciar sesión.' },
+      })
     } catch (err) {
       setError(extractApiError(err, 'El enlace de recuperación no es válido o ha expirado.'))
     } finally {
@@ -45,7 +47,11 @@ export default function ResetPasswordView() {
         <h1 className="auth-card__title">Nueva contraseña</h1>
         <p className="auth-card__subtitle">Introduce tu nueva contraseña.</p>
 
-        {error ? <div className="auth-error" role="alert">{error}</div> : null}
+        {error ? (
+          <div className="auth-error" role="alert">
+            {error}
+          </div>
+        ) : null}
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           {/* Email y token se rellenan desde URL; se muestran como ocultos/readonly */}
@@ -110,11 +116,7 @@ export default function ResetPasswordView() {
             />
           </div>
 
-          <button
-            type="submit"
-            className="button button--primary"
-            disabled={isPending}
-          >
+          <button type="submit" className="button button--primary" disabled={isPending}>
             {isPending ? 'Actualizando…' : 'Establecer nueva contraseña'}
           </button>
         </form>

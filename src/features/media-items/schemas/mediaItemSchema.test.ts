@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { mediaItemSchema, mediaItemsFiltersSchema } from '@/features/media-items/schemas/mediaItemSchema'
+import {
+  mediaItemSchema,
+  mediaItemsFiltersSchema,
+} from '@/features/media-items/schemas/mediaItemSchema'
 
 describe('MediaItem Schemas', () => {
   it('validates correct media item data', () => {

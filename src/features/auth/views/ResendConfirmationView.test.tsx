@@ -45,7 +45,11 @@ describe('ResendConfirmationView', () => {
 
     expect(await screen.findByText('Correo enviado')).toBeInTheDocument()
     expect(screen.getByText('user@test.com')).toBeInTheDocument()
-    expect(screen.getByText('Si existe una cuenta sin confirmar para user@test.com, enviaremos un nuevo enlace.')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Si existe una cuenta sin confirmar para user@test.com, enviaremos un nuevo enlace.',
+      ),
+    ).toBeInTheDocument()
   })
 
   it('shows the extracted API error when resending fails', async () => {

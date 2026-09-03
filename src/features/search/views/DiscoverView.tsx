@@ -1,7 +1,4 @@
-import {
-  MagnifyingGlassIcon,
-  SparklesIcon,
-} from '@heroicons/react/24/outline'
+import { MagnifyingGlassIcon, SparklesIcon } from '@heroicons/react/24/outline'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -44,17 +41,24 @@ function loadEnabledProviders(): string[] {
         return parsed.filter((v): v is string => typeof v === 'string')
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return ['anilist']
 }
 
 function saveEnabledProviders(keys: string[]): void {
   try {
     localStorage.setItem(PROVIDER_STORAGE_KEY, JSON.stringify(keys))
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
-function getActiveProviders(providers: DiscoverProvider[], type: MediaSearchType): DiscoverProvider[] {
+function getActiveProviders(
+  providers: DiscoverProvider[],
+  type: MediaSearchType,
+): DiscoverProvider[] {
   return providers.filter((provider) => provider.supportedTypes.includes(type))
 }
 
@@ -66,12 +70,15 @@ function formatProviderSupport(provider: DiscoverProvider): string {
 function resolveSearchFilters(searchParams: URLSearchParams): SearchMediaItemsFilters {
   return {
     query: searchParams.get('query') ?? '',
-    type: ((searchParams.get('type') as MediaSearchType | null) ?? 'All'),
+    type: (searchParams.get('type') as MediaSearchType | null) ?? 'All',
     limit: toPositiveInt(searchParams.get('limit'), 8),
   }
 }
 
-function mapSearchResultToCreatePayload(item: SearchMediaItem, overrides: SearchQuickAddInput): CreateMediaItemInput {
+function mapSearchResultToCreatePayload(
+  item: SearchMediaItem,
+  overrides: SearchQuickAddInput,
+): CreateMediaItemInput {
   return {
     title: item.title,
     alternativeTitle: item.alternativeTitle,
@@ -147,7 +154,13 @@ export default function DiscoverView() {
   })
 
   const addMutation = useMutation({
-    mutationFn: async ({ item, overrides }: { item: SearchMediaItem, overrides: SearchQuickAddInput }) => {
+    mutationFn: async ({
+      item,
+      overrides,
+    }: {
+      item: SearchMediaItem
+      overrides: SearchQuickAddInput
+    }) => {
       setPendingExternalId(item.externalId)
       return MediaItemsApi.create(mapSearchResultToCreatePayload(item, overrides))
     },
@@ -162,7 +175,10 @@ export default function DiscoverView() {
     },
     onError: (error) => {
       setQuickAddError(
-        extractApiError(error, 'No pudimos agregar el título a tu biblioteca. Vuelve a intentarlo en unos segundos.'),
+        extractApiError(
+          error,
+          'No pudimos agregar el título a tu biblioteca. Vuelve a intentarlo en unos segundos.',
+        ),
       )
     },
     onSettled: () => {
@@ -218,15 +234,18 @@ export default function DiscoverView() {
 
   const results = searchQuery.data ?? []
   const discoverProviders = providersQuery.data ?? []
-  const activeProviders = getActiveProviders(discoverProviders, filters.type ?? 'All')
-    .filter((p) => enabledProviderKeys.includes(p.key))
+  const activeProviders = getActiveProviders(discoverProviders, filters.type ?? 'All').filter((p) =>
+    enabledProviderKeys.includes(p.key),
+  )
   const isSearchReady = queryInput.trim().length >= 2
-  const activeProvidersLabel = activeProviders.length > 0
-    ? activeProviders.map((provider) => provider.displayName).join(' · ')
-    : 'Sin proveedores activos'
-  const searchLoaderTitle = activeProviders.length === 1
-    ? `Consultando ${activeProviders[0].displayName}`
-    : 'Consultando catálogos externos'
+  const activeProvidersLabel =
+    activeProviders.length > 0
+      ? activeProviders.map((provider) => provider.displayName).join(' · ')
+      : 'Sin proveedores activos'
+  const searchLoaderTitle =
+    activeProviders.length === 1
+      ? `Consultando ${activeProviders[0].displayName}`
+      : 'Consultando catálogos externos'
   const availableCategories = categoriesQuery.data ?? []
   const categoriesHelpText = categoriesQuery.isError
     ? 'Las categorías no están disponibles ahora mismo. Puedes importar igual y clasificarlas después desde Biblioteca.'
@@ -241,11 +260,14 @@ export default function DiscoverView() {
         </span>
         <h1 className="hero-panel__title">Descubrir contenido</h1>
         <p className="hero-panel__description">
-          Busca en los catálogos externos disponibles y prepara cada importación antes de llevarla a tu biblioteca.
+          Busca en los catálogos externos disponibles y prepara cada importación antes de llevarla a
+          tu biblioteca.
         </p>
         <div className="hero-panel__meta">
           <span className="hero-chip">{mediaSearchTypeLabels[filters.type ?? 'All']}</span>
-          <span className="hero-chip">{filters.query ? `"${filters.query}"` : 'Sin búsqueda activa'}</span>
+          <span className="hero-chip">
+            {filters.query ? `"${filters.query}"` : 'Sin búsqueda activa'}
+          </span>
           <span className="hero-chip">{activeProvidersLabel}</span>
           <span className="hero-chip">
             {filters.query.trim().length >= 2 && !searchQuery.isLoading
@@ -261,7 +283,8 @@ export default function DiscoverView() {
             <div>
               <h2 className="panel__title">Catálogos externos</h2>
               <p className="panel__description">
-                Elige el formato, revisa los proveedores activos y abre una importación asistida cuando un resultado merezca entrar.
+                Elige el formato, revisa los proveedores activos y abre una importación asistida
+                cuando un resultado merezca entrar.
               </p>
             </div>
           </div>
@@ -289,10 +312,18 @@ export default function DiscoverView() {
           </div>
 
           <div className="control-grid">
-            <div className="control control--span-full" role="group" aria-labelledby="discover-providers-label">
-              <span className="control__label" id="discover-providers-label">Proveedores</span>
+            <div
+              className="control control--span-full"
+              role="group"
+              aria-labelledby="discover-providers-label"
+            >
+              <span className="control__label" id="discover-providers-label">
+                Proveedores
+              </span>
               {providersQuery.isError ? (
-                <p className="category-empty">No se pudo cargar la lista de proveedores disponibles.</p>
+                <p className="category-empty">
+                  No se pudo cargar la lista de proveedores disponibles.
+                </p>
               ) : discoverProviders.length > 0 ? (
                 <div className="provider-cards">
                   {discoverProviders.map((provider) => {
@@ -305,7 +336,9 @@ export default function DiscoverView() {
                       >
                         <div className="provider-card__info">
                           <span className="provider-card__name">{provider.displayName}</span>
-                          <span className="provider-card__types">{formatProviderSupport(provider)}</span>
+                          <span className="provider-card__types">
+                            {formatProviderSupport(provider)}
+                          </span>
                         </div>
                         <label
                           className="toggle-switch"
@@ -369,13 +402,17 @@ export default function DiscoverView() {
           <div>
             <h2 className="results-title">Resultados de catálogos externos</h2>
             <p className="results-subtitle">
-              {results.length} {results.length === 1 ? 'resultado' : 'resultados'} listos para importar.
+              {results.length} {results.length === 1 ? 'resultado' : 'resultados'} listos para
+              importar.
             </p>
           </div>
         </div>
 
         {searchQuery.isLoading ? (
-          <Loader title={searchLoaderTitle} message="Buscando en los catálogos externos activos..." />
+          <Loader
+            title={searchLoaderTitle}
+            message="Buscando en los catálogos externos activos..."
+          />
         ) : null}
 
         {!searchQuery.isLoading && enabledProviderKeys.length === 0 ? (
@@ -385,7 +422,9 @@ export default function DiscoverView() {
           />
         ) : null}
 
-        {!searchQuery.isLoading && enabledProviderKeys.length > 0 && filters.query.trim().length < 2 ? (
+        {!searchQuery.isLoading &&
+        enabledProviderKeys.length > 0 &&
+        filters.query.trim().length < 2 ? (
           <EmptyState
             title="Empieza con una búsqueda"
             message="Escribe al menos 2 caracteres para iniciar la búsqueda."
@@ -404,7 +443,11 @@ export default function DiscoverView() {
           />
         ) : null}
 
-        {!searchQuery.isLoading && !searchQuery.isError && results.length === 0 && filters.query.trim().length >= 2 && enabledProviderKeys.length > 0 ? (
+        {!searchQuery.isLoading &&
+        !searchQuery.isError &&
+        results.length === 0 &&
+        filters.query.trim().length >= 2 &&
+        enabledProviderKeys.length > 0 ? (
           <EmptyState
             title="Sin resultados"
             message="Prueba con otro nombre o cambia el tipo de búsqueda para ampliar el alcance."
@@ -454,7 +497,8 @@ export default function DiscoverView() {
               Importación asistida
             </span>
             <p className="side-panel__hint">
-              Ajusta el estado inicial y etiqueta el contenido antes de guardarlo. El resto de metadatos llegará desde el catálogo externo.
+              Ajusta el estado inicial y etiqueta el contenido antes de guardarlo. El resto de
+              metadatos llegará desde el catálogo externo.
             </p>
           </div>
 

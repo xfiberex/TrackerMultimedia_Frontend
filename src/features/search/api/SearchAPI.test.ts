@@ -51,8 +51,12 @@ describe('SearchApi', () => {
     const signal = new AbortController().signal
     apiMock.get.mockResolvedValue({ data: results })
 
-    await expect(SearchApi.search({ query: 'naruto', type: 'Anime', limit: 5 }, signal)).resolves.toEqual(results)
+    await expect(
+      SearchApi.search({ query: 'naruto', type: 'Anime', limit: 5 }, signal),
+    ).resolves.toEqual(results)
 
-    expect(apiMock.get).toHaveBeenCalledWith('/discover/search?query=naruto&type=Anime&limit=5', { signal })
+    expect(apiMock.get).toHaveBeenCalledWith('/discover/search?query=naruto&type=Anime&limit=5', {
+      signal,
+    })
   })
 })

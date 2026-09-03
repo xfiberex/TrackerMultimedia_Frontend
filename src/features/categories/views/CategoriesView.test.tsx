@@ -108,7 +108,9 @@ describe('CategoriesView', () => {
 
     const deleteButtons = await screen.findAllByRole('button', { name: 'Eliminar' })
     await user.click(deleteButtons[0])
-    expect(screen.getByRole('alertdialog', { name: 'Eliminar la categoría "Backlog"' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('alertdialog', { name: 'Eliminar la categoría "Backlog"' }),
+    ).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Eliminar categoría' }))
 
     await waitFor(() => {

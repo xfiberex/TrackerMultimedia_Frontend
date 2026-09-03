@@ -37,7 +37,9 @@ describe('OAuthCallbackView', () => {
     render(<OAuthCallbackView />)
 
     await waitFor(() => {
-      expect(navigateMock).toHaveBeenCalledWith('/login?oauth_error=provider_denied', { replace: true })
+      expect(navigateMock).toHaveBeenCalledWith('/login?oauth_error=provider_denied', {
+        replace: true,
+      })
     })
     expect(completeSessionMock).not.toHaveBeenCalled()
     expect(refreshUserMock).not.toHaveBeenCalled()
@@ -49,21 +51,25 @@ describe('OAuthCallbackView', () => {
     render(<OAuthCallbackView />)
 
     await waitFor(() => {
-      expect(navigateMock).toHaveBeenCalledWith('/login?oauth_error=missing_tokens', { replace: true })
+      expect(navigateMock).toHaveBeenCalledWith('/login?oauth_error=missing_tokens', {
+        replace: true,
+      })
     })
     expect(completeSessionMock).not.toHaveBeenCalled()
     expect(refreshUserMock).not.toHaveBeenCalled()
   })
 
   it('completes the session from the callback payload and redirects to the requested path', async () => {
-    const encodedUser = encodeURIComponent(JSON.stringify({
-      id: 'oauth-user',
-      email: 'oauth@test.com',
-      displayName: 'OAuth User',
-      emailConfirmed: true,
-      hasPassword: false,
-      linkedProviders: ['google'],
-    }))
+    const encodedUser = encodeURIComponent(
+      JSON.stringify({
+        id: 'oauth-user',
+        email: 'oauth@test.com',
+        displayName: 'OAuth User',
+        emailConfirmed: true,
+        hasPassword: false,
+        linkedProviders: ['google'],
+      }),
+    )
 
     window.history.replaceState(
       {},
@@ -100,7 +106,11 @@ describe('OAuthCallbackView', () => {
 
   it('falls back to the legacy refresh flow when the embedded user is absent', async () => {
     refreshUserMock.mockResolvedValue(undefined)
-    window.history.replaceState({}, '', '/oauth-callback#access_token=oauth-access&refresh_token=oauth%2Brefresh%2Fvalue%3D')
+    window.history.replaceState(
+      {},
+      '',
+      '/oauth-callback#access_token=oauth-access&refresh_token=oauth%2Brefresh%2Fvalue%3D',
+    )
 
     render(<OAuthCallbackView />)
 
@@ -114,7 +124,11 @@ describe('OAuthCallbackView', () => {
 
   it('falls back to a session error when the legacy refresh flow fails', async () => {
     refreshUserMock.mockRejectedValue(new Error('refresh failed'))
-    window.history.replaceState({}, '', '/oauth-callback#access_token=oauth-access&refresh_token=oauth%2Brefresh%2Fvalue%3D')
+    window.history.replaceState(
+      {},
+      '',
+      '/oauth-callback#access_token=oauth-access&refresh_token=oauth%2Brefresh%2Fvalue%3D',
+    )
 
     render(<OAuthCallbackView />)
 
@@ -123,7 +137,9 @@ describe('OAuthCallbackView', () => {
     })
 
     await waitFor(() => {
-      expect(navigateMock).toHaveBeenCalledWith('/login?oauth_error=session_error', { replace: true })
+      expect(navigateMock).toHaveBeenCalledWith('/login?oauth_error=session_error', {
+        replace: true,
+      })
     })
   })
 })

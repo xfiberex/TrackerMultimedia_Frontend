@@ -45,7 +45,8 @@ export default function ResendConfirmationView() {
           </div>
           <h1 className="auth-card__title">Correo enviado</h1>
           <p className="auth-card__subtitle">
-            Si existe una cuenta sin confirmar para <strong>{email}</strong>, recibirás el enlace de confirmación.
+            Si existe una cuenta sin confirmar para <strong>{email}</strong>, recibirás el enlace de
+            confirmación.
           </p>
           <p className="auth-footer">
             <Link to="/login">Volver al inicio de sesión</Link>
@@ -67,7 +68,11 @@ export default function ResendConfirmationView() {
           Ingresa tu correo y te enviaremos un nuevo enlace de confirmación.
         </p>
 
-        {error ? <div className="auth-error" role="alert">{error}</div> : null}
+        {error ? (
+          <div className="auth-error" role="alert">
+            {error}
+          </div>
+        ) : null}
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="control">

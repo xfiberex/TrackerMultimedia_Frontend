@@ -26,9 +26,10 @@ export default function ConfirmEmailView() {
     const email = searchParams.get('email') ?? ''
     const token = searchParams.get('token') ?? ''
 
-    const doConfirm = !email || !token
-      ? Promise.reject(new Error('invalid_params'))
-      : AuthAPI.confirmEmail({ email, token })
+    const doConfirm =
+      !email || !token
+        ? Promise.reject(new Error('invalid_params'))
+        : AuthAPI.confirmEmail({ email, token })
 
     doConfirm
       .then((res) => {
@@ -41,7 +42,9 @@ export default function ConfirmEmailView() {
         setStatus('error')
       })
 
-    return () => { called.current = false }
+    return () => {
+      called.current = false
+    }
   }, [searchParams, showToast])
 
   return (
@@ -63,7 +66,11 @@ export default function ConfirmEmailView() {
             <h1 className="auth-card__title">¡Cuenta confirmada!</h1>
             <p className="auth-card__subtitle">{message}</p>
             <p className="auth-footer">
-              <Link to="/login" className="button button--primary" style={{ display: 'inline-block', marginTop: '1rem' }}>
+              <Link
+                to="/login"
+                className="button button--primary"
+                style={{ display: 'inline-block', marginTop: '1rem' }}
+              >
                 Iniciar sesión
               </Link>
             </p>
@@ -73,7 +80,9 @@ export default function ConfirmEmailView() {
         {status === 'error' && (
           <>
             <h1 className="auth-card__title">Enlace no válido</h1>
-            <div className="auth-error" role="alert">{message}</div>
+            <div className="auth-error" role="alert">
+              {message}
+            </div>
             <p className="auth-footer">
               <Link to="/resend-confirmation">Solicitar un nuevo enlace</Link>
             </p>

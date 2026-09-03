@@ -48,7 +48,9 @@ describe('LinkAccountView', () => {
     const user = userEvent.setup()
     linkConfirmMock.mockResolvedValue(undefined)
 
-    renderLinkAccountView('/link-account?link_token=link-token&provider=google&email=user%40test.com')
+    renderLinkAccountView(
+      '/link-account?link_token=link-token&provider=google&email=user%40test.com',
+    )
 
     await user.type(screen.getByLabelText('Contraseña actual'), 'Pass123$')
     await user.click(screen.getByRole('button', { name: 'Vincular con Google' }))
@@ -69,7 +71,9 @@ describe('LinkAccountView', () => {
     const user = userEvent.setup()
     linkConfirmMock.mockRejectedValue({ response: { data: 'Contraseña incorrecta.' } })
 
-    renderLinkAccountView('/link-account?link_token=link-token&provider=github&email=user%40test.com')
+    renderLinkAccountView(
+      '/link-account?link_token=link-token&provider=github&email=user%40test.com',
+    )
 
     await user.type(screen.getByLabelText('Contraseña actual'), 'wrong-pass')
     await user.click(screen.getByRole('button', { name: 'Vincular con Github' }))

@@ -262,7 +262,9 @@ describe('AuthProvider', () => {
     await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('false'))
     await user.click(screen.getByRole('button', { name: 'register' }))
 
-    await waitFor(() => expect(screen.getByTestId('registered-email')).toHaveTextContent(registerPayload.email))
+    await waitFor(() =>
+      expect(screen.getByTestId('registered-email')).toHaveTextContent(registerPayload.email),
+    )
     expect(authApiMocks.register).toHaveBeenCalledWith(registerPayload)
   })
 
@@ -303,10 +305,14 @@ describe('AuthProvider', () => {
       </AuthProvider>,
     )
 
-    await waitFor(() => expect(screen.getByTestId('display-name')).toHaveTextContent(baseUser.displayName))
+    await waitFor(() =>
+      expect(screen.getByTestId('display-name')).toHaveTextContent(baseUser.displayName),
+    )
     await user.click(screen.getByRole('button', { name: 'refresh-user' }))
 
-    await waitFor(() => expect(screen.getByTestId('display-name')).toHaveTextContent(updatedUser.displayName))
+    await waitFor(() =>
+      expect(screen.getByTestId('display-name')).toHaveTextContent(updatedUser.displayName),
+    )
     expect(authApiMocks.me).toHaveBeenCalledTimes(1)
   })
 
@@ -349,7 +355,9 @@ describe('AuthProvider', () => {
     await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('false'))
     await user.click(screen.getByRole('button', { name: 'link-confirm' }))
 
-    await waitFor(() => expect(screen.getByTestId('user-email')).toHaveTextContent(linkPayload.email))
+    await waitFor(() =>
+      expect(screen.getByTestId('user-email')).toHaveTextContent(linkPayload.email),
+    )
     expect(authApiMocks.linkConfirm).toHaveBeenCalledWith(linkPayload)
     expect(tokenStore.get()).toBe('linked-access')
     expect(localStorage.getItem('refreshToken')).toBe('linked-refresh')

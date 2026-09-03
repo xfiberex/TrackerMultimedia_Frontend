@@ -46,8 +46,7 @@ export const AuthAPI = {
   resetPassword: (payload: ResetPasswordPayload) =>
     api.post<void>('/auth/reset-password', payload).then(() => {}),
 
-  logoutAll: () =>
-    api.post<void>('/auth/logout-all').then(() => {}),
+  logoutAll: () => api.post<void>('/auth/logout-all').then(() => {}),
 
   // ── Confirmación de email ──────────────────────────────────────────────────
 
@@ -59,21 +58,17 @@ export const AuthAPI = {
 
   // ── Métodos disponibles ────────────────────────────────────────────────────
 
-  getMethods: () =>
-    api.get<AuthMethodsResponse>('/auth/methods').then((r) => r.data),
+  getMethods: () => api.get<AuthMethodsResponse>('/auth/methods').then((r) => r.data),
 
   // ── OAuth ──────────────────────────────────────────────────────────────────
 
   /** Obtiene la URL de autorización para iniciar el flujo OAuth del proveedor indicado. */
   getOAuthUrl: (provider: 'google' | 'github', returnPath?: string) => {
     const params = returnPath ? `?returnPath=${encodeURIComponent(returnPath)}` : ''
-    return api
-      .get<OAuthInitResponse>(`/auth/${provider}/init${params}`)
-      .then((r) => r.data)
+    return api.get<OAuthInitResponse>(`/auth/${provider}/init${params}`).then((r) => r.data)
   },
 
   /** Finaliza la vinculación explícita cuando el email ya pertenece a una cuenta manual. */
   linkConfirm: (payload: OAuthLinkConfirmPayload) =>
     api.post<AuthResponse>('/auth/link-confirm', payload).then((r) => r.data),
 }
-

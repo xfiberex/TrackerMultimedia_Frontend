@@ -67,15 +67,20 @@ describe('MediaItemCard', () => {
           personalScore: 9.2,
           categories: [{ id: 'cat-1', name: 'Backlog', color: '#336699' }],
         }}
-      />, 
+      />,
     )
 
-    expect(screen.getByRole('img', { name: 'Frieren' })).toHaveAttribute('src', 'https://img.test/frieren.jpg')
+    expect(screen.getByRole('img', { name: 'Frieren' })).toHaveAttribute(
+      'src',
+      'https://img.test/frieren.jpg',
+    )
     expect(screen.getByText('En progreso')).toBeInTheDocument()
     expect(screen.getByText('Jikan')).toBeInTheDocument()
     expect(screen.getByText('Activo')).toBeInTheDocument()
     expect(screen.getByText('Backlog')).toBeInTheDocument()
-    expect(screen.getByText('Estreno 2023 · Progreso 12/24 episodios · Temporada 2')).toBeInTheDocument()
+    expect(
+      screen.getByText('Estreno 2023 · Progreso 12/24 episodios · Temporada 2'),
+    ).toBeInTheDocument()
     expect(screen.getByText('9.2')).toBeInTheDocument()
   })
 })

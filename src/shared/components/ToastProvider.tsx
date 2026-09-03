@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ToastContext, type ShowToastOptions, type ToastTone } from '@/shared/context/ToastContext'
 
 const TOAST_EXIT_DURATION_MS = 220
@@ -49,9 +44,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       dismissTimeoutIdsRef.current.delete(toastId)
     }
 
-    setToasts((current) => current.map((toast) => (
-      toast.id === toastId ? { ...toast, isClosing: true } : toast
-    )))
+    setToasts((current) =>
+      current.map((toast) => (toast.id === toastId ? { ...toast, isClosing: true } : toast)),
+    )
 
     const removalTimeoutId = window.setTimeout(() => {
       removeToastImmediately(toastId)

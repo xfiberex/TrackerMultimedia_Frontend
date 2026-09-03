@@ -15,7 +15,7 @@ describe('useDebounce', () => {
   it('debounces value changes', async () => {
     const { result, rerender } = renderHook(
       ({ value }: { value: string }) => useDebounce(value, 300),
-      { initialProps: { value: 'initial' } }
+      { initialProps: { value: 'initial' } },
     )
 
     expect(result.current).toBe('initial')
@@ -30,10 +30,9 @@ describe('useDebounce', () => {
   })
 
   it('clears timer on unmount', () => {
-    const { unmount } = renderHook(
-      ({ value }: { value: string }) => useDebounce(value, 300),
-      { initialProps: { value: 'test' } }
-    )
+    const { unmount } = renderHook(({ value }: { value: string }) => useDebounce(value, 300), {
+      initialProps: { value: 'test' },
+    })
 
     unmount()
     // Should not throw

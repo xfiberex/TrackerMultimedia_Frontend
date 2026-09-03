@@ -63,7 +63,10 @@ export default function SearchQuickAddForm({
 }: SearchQuickAddFormProps) {
   const [draft, setDraft] = useState<SearchQuickAddDraft>(() => createDraft())
 
-  const updateField = <K extends keyof SearchQuickAddDraft>(field: K, value: SearchQuickAddDraft[K]) => {
+  const updateField = <K extends keyof SearchQuickAddDraft>(
+    field: K,
+    value: SearchQuickAddDraft[K],
+  ) => {
     setDraft((current) => ({ ...current, [field]: value }))
   }
 
@@ -88,12 +91,24 @@ export default function SearchQuickAddForm({
   }
 
   return (
-    <form className="filters-form search-quick-add" aria-label="Importación rápida" onSubmit={handleSubmit}>
+    <form
+      className="filters-form search-quick-add"
+      aria-label="Importación rápida"
+      onSubmit={handleSubmit}
+    >
       <div className="search-quick-add__preview">
         {item.coverImageUrl ? (
-          <img className="search-quick-add__cover" src={item.coverImageUrl} alt={item.title} loading="lazy" />
+          <img
+            className="search-quick-add__cover"
+            src={item.coverImageUrl}
+            alt={item.title}
+            loading="lazy"
+          />
         ) : (
-          <div className="search-quick-add__cover search-quick-add__cover--placeholder" aria-hidden="true">
+          <div
+            className="search-quick-add__cover search-quick-add__cover--placeholder"
+            aria-hidden="true"
+          >
             {item.suggestedType}
           </div>
         )}
@@ -107,11 +122,17 @@ export default function SearchQuickAddForm({
             <span className="badge">{item.externalStatusLabel ?? 'Estado editorial sin dato'}</span>
             <span className="badge">{item.releaseYear ?? 'Año sin dato'}</span>
           </div>
-          <p className="search-card__footer">Puntuación externa: {formatScore(item.externalScore)}</p>
+          <p className="search-card__footer">
+            Puntuación externa: {formatScore(item.externalScore)}
+          </p>
         </div>
       </div>
 
-      {error ? <div className="auth-error" role="alert">{error}</div> : null}
+      {error ? (
+        <div className="auth-error" role="alert">
+          {error}
+        </div>
+      ) : null}
 
       <div className="control-grid search-quick-add__grid">
         <div className="control">
@@ -120,7 +141,9 @@ export default function SearchQuickAddForm({
             id="quick-add-status"
             className="select"
             value={draft.status}
-            onChange={(event) => updateField('status', event.target.value as SearchQuickAddDraft['status'])}
+            onChange={(event) =>
+              updateField('status', event.target.value as SearchQuickAddDraft['status'])
+            }
             data-dialog-autofocus
           >
             {mediaTrackingStatuses.map((status) => (
@@ -146,8 +169,14 @@ export default function SearchQuickAddForm({
           />
         </div>
 
-        <div className="control control--span-full" role="group" aria-labelledby="quickadd-categories-label">
-          <span className="control__label" id="quickadd-categories-label">Categorías</span>
+        <div
+          className="control control--span-full"
+          role="group"
+          aria-labelledby="quickadd-categories-label"
+        >
+          <span className="control__label" id="quickadd-categories-label">
+            Categorías
+          </span>
           {categories.length > 0 ? (
             <div className="category-pills">
               {categories.map((category) => {
@@ -173,7 +202,8 @@ export default function SearchQuickAddForm({
             </div>
           ) : (
             <p className={`category-empty${categoriesHelpText ? ' category-empty--warning' : ''}`}>
-              {categoriesHelpText ?? 'Todavía no tienes categorías para clasificar esta importación.'}
+              {categoriesHelpText ??
+                'Todavía no tienes categorías para clasificar esta importación.'}
             </p>
           )}
         </div>
@@ -191,7 +221,12 @@ export default function SearchQuickAddForm({
       </div>
 
       <div className="search-quick-add__actions">
-        <button type="button" className="button button--ghost" onClick={onCancel} disabled={isPending}>
+        <button
+          type="button"
+          className="button button--ghost"
+          onClick={onCancel}
+          disabled={isPending}
+        >
           Cancelar
         </button>
         <button type="submit" className="button button--primary" disabled={isPending}>

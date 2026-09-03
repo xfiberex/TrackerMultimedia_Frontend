@@ -99,7 +99,9 @@ describe('ProfileView', () => {
     await user.type(screen.getByLabelText('Confirmar nueva contraseña'), 'OtherPass123$')
     await user.click(screen.getByRole('button', { name: 'Cambiar contraseña' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Las contraseñas nuevas no coinciden.')
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Las contraseñas nuevas no coinciden.',
+    )
     expect(changePasswordMock).not.toHaveBeenCalled()
   })
 
@@ -138,14 +140,18 @@ describe('ProfileView', () => {
     renderProfileView()
 
     await user.click(screen.getByRole('button', { name: 'Cerrar todas las sesiones' }))
-    expect(screen.getByRole('alertdialog', { name: 'Cerrar todas las sesiones' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('alertdialog', { name: 'Cerrar todas las sesiones' }),
+    ).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Sí, cerrar todas' }))
 
     await waitFor(() => {
       expect(logoutAllMock).toHaveBeenCalledTimes(1)
     })
 
-    expect(await screen.findByText('Se cerraron todas tus sesiones correctamente.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Se cerraron todas tus sesiones correctamente.'),
+    ).toBeInTheDocument()
     expect(navigateMock).toHaveBeenCalledWith('/login', { replace: true })
   })
 })

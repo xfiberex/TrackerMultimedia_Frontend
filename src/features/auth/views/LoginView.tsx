@@ -19,10 +19,8 @@ export default function LoginView() {
   const location = useLocation()
   const consumedFlashRef = useRef<string | null>(null)
   const from =
-    (location.state as { from?: { pathname: string } } | null)?.from?.pathname ??
-    '/library'
-  const flashMessage =
-    (location.state as { message?: string } | null)?.message ?? null
+    (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/library'
+  const flashMessage = (location.state as { message?: string } | null)?.message ?? null
 
   // Debounced email para validación en tiempo real
   const debouncedEmail = useDebounce(email, 300)
@@ -93,7 +91,11 @@ export default function LoginView() {
         <h1 className="auth-card__title">Iniciar sesión</h1>
         <p className="auth-card__subtitle">Bienvenido de vuelta.</p>
 
-        {displayError ? <div className="auth-error" role="alert">{displayError}</div> : null}
+        {displayError ? (
+          <div className="auth-error" role="alert">
+            {displayError}
+          </div>
+        ) : null}
 
         {/* Botones OAuth — solo si el backend los tiene habilitados */}
         {(methods?.googleEnabled || methods?.gitHubEnabled) && (
@@ -147,7 +149,9 @@ export default function LoginView() {
               aria-describedby={emailError ? 'email-error' : undefined}
             />
             {emailError && (
-              <span id="email-error" className="field-error" role="alert">{emailError}</span>
+              <span id="email-error" className="field-error" role="alert">
+                {emailError}
+              </span>
             )}
           </div>
 
@@ -164,14 +168,17 @@ export default function LoginView() {
             />
           </div>
 
-          <button type="submit" className="button button--primary" disabled={isPending || oauthPending !== null || !!emailError}>
+          <button
+            type="submit"
+            className="button button--primary"
+            disabled={isPending || oauthPending !== null || !!emailError}
+          >
             {isPending ? 'Iniciando sesión…' : 'Iniciar sesión'}
           </button>
         </form>
 
         <p className="auth-footer">
-          ¿Aún no tienes cuenta?{' '}
-          <Link to="/register">Regístrate</Link>
+          ¿Aún no tienes cuenta? <Link to="/register">Regístrate</Link>
         </p>
         <p className="auth-footer">
           <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
@@ -183,4 +190,3 @@ export default function LoginView() {
     </div>
   )
 }
-

@@ -90,7 +90,12 @@ interface UseModalDialogOptions {
  * `data-dialog-autofocus`. Si no hay ninguno, se enfoca el primer elemento
  * enfocable, y si tampoco lo hay, el propio diálogo.
  */
-export function useModalDialog({ open, rendered, closeDisabled = false, onClose }: UseModalDialogOptions) {
+export function useModalDialog({
+  open,
+  rendered,
+  closeDisabled = false,
+  onClose,
+}: UseModalDialogOptions) {
   const containerRef = useRef<HTMLElement | null>(null)
   const previouslyFocusedRef = useRef<HTMLElement | null>(null)
 
@@ -106,7 +111,8 @@ export function useModalDialog({ open, rendered, closeDisabled = false, onClose 
     }
 
     const activeElement = document.activeElement
-    const activeIsOutside = activeElement instanceof HTMLElement && !container.contains(activeElement)
+    const activeIsOutside =
+      activeElement instanceof HTMLElement && !container.contains(activeElement)
     previouslyFocusedRef.current = activeIsOutside ? activeElement : lastFocusOutsideDialog
 
     const preferred = container.querySelector<HTMLElement>('[data-dialog-autofocus]')

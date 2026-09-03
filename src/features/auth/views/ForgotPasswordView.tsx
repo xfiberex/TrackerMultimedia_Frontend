@@ -63,7 +63,11 @@ export default function ForgotPasswordView() {
           Introduce tu correo y te enviaremos las instrucciones.
         </p>
 
-        {error ? <div className="auth-error" role="alert">{error}</div> : null}
+        {error ? (
+          <div className="auth-error" role="alert">
+            {error}
+          </div>
+        ) : null}
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="control">
@@ -85,11 +89,7 @@ export default function ForgotPasswordView() {
             />
           </div>
 
-          <button
-            type="submit"
-            className="button button--primary"
-            disabled={isPending}
-          >
+          <button type="submit" className="button button--primary" disabled={isPending}>
             {isPending ? 'Enviando…' : 'Enviar instrucciones'}
           </button>
         </form>

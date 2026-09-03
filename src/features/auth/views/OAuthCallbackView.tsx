@@ -87,11 +87,13 @@ export default function OAuthCallbackView() {
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
 
     // Actualizar el estado global del usuario
-    void refreshUser().then(() => {
-      navigate(returnPath, { replace: true })
-    }).catch(() => {
-      navigate('/login?oauth_error=session_error', { replace: true })
-    })
+    void refreshUser()
+      .then(() => {
+        navigate(returnPath, { replace: true })
+      })
+      .catch(() => {
+        navigate('/login?oauth_error=session_error', { replace: true })
+      })
   }, [navigate, refreshUser, completeSession])
 
   return <Loader />

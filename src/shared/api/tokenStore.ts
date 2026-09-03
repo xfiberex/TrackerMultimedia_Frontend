@@ -35,4 +35,3 @@ export const tokenStore = {
     _accessToken = token
   },
 }
-

@@ -19,7 +19,10 @@ export function extractZodErrors(error: ZodError): Record<string, string> {
  * Hook-like function para validar un objeto contra un schema Zod.
  * Retorna [isValid, errors].
  */
-export function validateWithZod(schema: ZodSchema, data: unknown): [boolean, Record<string, string>] {
+export function validateWithZod(
+  schema: ZodSchema,
+  data: unknown,
+): [boolean, Record<string, string>] {
   const result = schema.safeParse(data)
 
   if (!result.success) {

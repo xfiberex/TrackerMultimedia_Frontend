@@ -103,13 +103,11 @@ function makeShader(gl: WebGLRenderingContext, type: number, src: string) {
 }
 
 function initGL(canvas: HTMLCanvasElement) {
-  const gl = (
-    canvas.getContext('webgl') ??
-    canvas.getContext('experimental-webgl')
-  ) as WebGLRenderingContext | null
+  const gl = (canvas.getContext('webgl') ??
+    canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null
   if (!gl) return null
 
-  const vert = makeShader(gl, gl.VERTEX_SHADER,   VERT_SRC)
+  const vert = makeShader(gl, gl.VERTEX_SHADER, VERT_SRC)
   const frag = makeShader(gl, gl.FRAGMENT_SHADER, FRAG_SRC)
   if (!vert || !frag) return null
 
@@ -120,19 +118,15 @@ function initGL(canvas: HTMLCanvasElement) {
   gl.linkProgram(prog)
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null
 
-  const posLoc  = gl.getAttribLocation(prog, 'a_position')
+  const posLoc = gl.getAttribLocation(prog, 'a_position')
   const timeLoc = gl.getUniformLocation(prog, 'u_time')
-  const resLoc  = gl.getUniformLocation(prog, 'u_resolution')
-  const ptrLoc  = gl.getUniformLocation(prog, 'u_pointer')
+  const resLoc = gl.getUniformLocation(prog, 'u_resolution')
+  const ptrLoc = gl.getUniformLocation(prog, 'u_pointer')
   const darkLoc = gl.getUniformLocation(prog, 'u_dark')
 
   const buf = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, buf)
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    new Float32Array([-1, -1,  1, -1,  -1, 1,  1, 1]),
-    gl.STATIC_DRAW,
-  )
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW)
 
   return { gl, prog, buf, posLoc, timeLoc, resLoc, ptrLoc, darkLoc }
 }
@@ -141,10 +135,10 @@ function initGL(canvas: HTMLCanvasElement) {
 
 export default function AmbientBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [failed,  setFailed]  = useState(false)
-  const ptrRef    = useRef({ x: 0, y: 0 })
-  const rafRef    = useRef(0)
-  const t0Ref     = useRef(0)
+  const [failed, setFailed] = useState(false)
+  const ptrRef = useRef({ x: 0, y: 0 })
+  const rafRef = useRef(0)
+  const t0Ref = useRef(0)
   const isDarkRef = useRef(document.documentElement.getAttribute('data-theme') === 'dark')
 
   useEffect(() => {
@@ -160,7 +154,7 @@ export default function AmbientBackground() {
     const { gl, prog, buf, posLoc, timeLoc, resLoc, ptrLoc, darkLoc } = state
 
     const resize = () => {
-      canvas.width  = window.innerWidth
+      canvas.width = window.innerWidth
       canvas.height = window.innerHeight
       gl.viewport(0, 0, canvas.width, canvas.height)
     }
@@ -175,7 +169,10 @@ export default function AmbientBackground() {
     const observer = new MutationObserver(() => {
       isDarkRef.current = document.documentElement.getAttribute('data-theme') === 'dark'
     })
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    })
 
     t0Ref.current = performance.now()
 
@@ -186,8 +183,8 @@ export default function AmbientBackground() {
       gl.enableVertexAttribArray(posLoc)
       gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0)
       gl.uniform1f(timeLoc, t)
-      gl.uniform2f(resLoc,  canvas.width, canvas.height)
-      gl.uniform2f(ptrLoc,  ptrRef.current.x, ptrRef.current.y)
+      gl.uniform2f(resLoc, canvas.width, canvas.height)
+      gl.uniform2f(ptrLoc, ptrRef.current.x, ptrRef.current.y)
       gl.uniform1f(darkLoc, isDarkRef.current ? 1.0 : 0.0)
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
       rafRef.current = requestAnimationFrame(frame)
@@ -206,11 +203,5 @@ export default function AmbientBackground() {
     return <div className="ambient-bg--fallback" aria-hidden="true" />
   }
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="ambient-bg--canvas"
-      aria-hidden="true"
-    />
-  )
+  return <canvas ref={canvasRef} className="ambient-bg--canvas" aria-hidden="true" />
 }

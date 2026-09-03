@@ -95,7 +95,7 @@ describe('LoginView', () => {
       () => {
         expect(screen.getByText(/email inválido/i)).toBeInTheDocument()
       },
-      { timeout: 1000 }
+      { timeout: 1000 },
     )
 
     // Submit button should be disabled
@@ -144,15 +144,18 @@ describe('LoginView', () => {
   it('shows the oauth error returned in the query string', async () => {
     renderLoginView('/login?oauth_error=profile_error')
 
-    expect(await screen.findByRole('alert'))
-      .toHaveTextContent('No se pudo completar el acceso con el proveedor.')
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No se pudo completar el acceso con el proveedor.',
+    )
   })
 
   it('ignores free text passed in the query string as an oauth error', async () => {
     // Antes, `oauth_error_message` se mostraba tal cual y tenía prioridad sobre el
     // código: bastaba enviar un enlace para poner cualquier texto en la página de
     // login legítima, con su dominio y su candado. Solo se aceptan códigos conocidos.
-    renderLoginView('/login?oauth_error=profile_error&oauth_error_message=Tu%20cuenta%20fue%20suspendida%2C%20llama%20al%20900123456')
+    renderLoginView(
+      '/login?oauth_error=profile_error&oauth_error_message=Tu%20cuenta%20fue%20suspendida%2C%20llama%20al%20900123456',
+    )
 
     const alerta = await screen.findByRole('alert')
     expect(alerta).toHaveTextContent('No se pudo completar el acceso con el proveedor.')
@@ -162,8 +165,9 @@ describe('LoginView', () => {
   it('falls back to a generic message for an unknown oauth error code', async () => {
     renderLoginView('/login?oauth_error=codigo_que_no_existe')
 
-    expect(await screen.findByRole('alert'))
-      .toHaveTextContent('No se pudo completar el acceso con el proveedor.')
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No se pudo completar el acceso con el proveedor.',
+    )
   })
 
   it('renders OAuth methods and shows an error when an OAuth start fails', async () => {

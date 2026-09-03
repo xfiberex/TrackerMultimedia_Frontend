@@ -1,5 +1,9 @@
 import api from '@/shared/api/axios'
-import type { Category, CreateCategoryInput, UpdateCategoryInput } from '@/features/categories/schemas/categorySchema'
+import type {
+  Category,
+  CreateCategoryInput,
+  UpdateCategoryInput,
+} from '@/features/categories/schemas/categorySchema'
 
 export const CategoriesApi = {
   getAll: async (signal?: AbortSignal): Promise<Category[]> => {

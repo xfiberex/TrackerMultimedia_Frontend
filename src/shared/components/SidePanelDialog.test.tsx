@@ -13,7 +13,9 @@ function Escenario({ disableClose = false }: { disableClose?: boolean } = {}) {
 
   return (
     <div>
-      <button type="button" onClick={() => setOpen(true)}>Abrir panel</button>
+      <button type="button" onClick={() => setOpen(true)}>
+        Abrir panel
+      </button>
       <button type="button">Botón del fondo</button>
 
       <SidePanelDialog
@@ -91,7 +93,9 @@ describe('SidePanelDialog', () => {
       const [open, setOpen] = useState(false)
       return (
         <div>
-          <button type="button" onClick={() => setOpen(true)}>Abrir panel</button>
+          <button type="button" onClick={() => setOpen(true)}>
+            Abrir panel
+          </button>
           <SidePanelDialog open={open} ariaLabel="Panel con campo" onClose={() => setOpen(false)}>
             {/* React aplica autoFocus durante el commit, antes de los efectos.
                 Si el hook leyera `document.activeElement` al abrir, guardaría este

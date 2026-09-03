@@ -44,7 +44,11 @@ describe('ForgotPasswordView', () => {
     })
 
     expect(await screen.findByText('Revisa tu correo')).toBeInTheDocument()
-    expect(screen.getByText('Si el correo existe, te enviaremos instrucciones para recuperar tu cuenta.')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Si el correo existe, te enviaremos instrucciones para recuperar tu cuenta.',
+      ),
+    ).toBeInTheDocument()
   })
 
   it('shows the extracted API error when the request fails', async () => {

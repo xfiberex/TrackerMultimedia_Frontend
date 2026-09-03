@@ -1,8 +1,4 @@
-import {
-  PencilSquareIcon,
-  TrashIcon,
-  TvIcon,
-} from '@heroicons/react/24/outline'
+import { PencilSquareIcon, TrashIcon, TvIcon } from '@heroicons/react/24/outline'
 import {
   contentKindLabels,
   mediaSourceLabels,
@@ -33,7 +29,12 @@ function getProgressLabel(item: MediaItem): string {
   return `${unit} ${current}`
 }
 
-export default function MediaItemRow({ item, isDeleting = false, onDelete, onEdit }: MediaItemRowProps) {
+export default function MediaItemRow({
+  item,
+  isDeleting = false,
+  onDelete,
+  onEdit,
+}: MediaItemRowProps) {
   const statusClassName = `badge badge--${item.status.toLowerCase()}`
   const categories = item.categories ?? []
 
@@ -41,7 +42,12 @@ export default function MediaItemRow({ item, isDeleting = false, onDelete, onEdi
     <tr className="search-row">
       <td className="search-row__cover-cell">
         {item.coverImageUrl ? (
-          <img className="search-row__thumb" src={item.coverImageUrl} alt={item.title} loading="lazy" />
+          <img
+            className="search-row__thumb"
+            src={item.coverImageUrl}
+            alt={item.title}
+            loading="lazy"
+          />
         ) : (
           <div className="search-row__thumb-placeholder" aria-hidden="true">
             <TvIcon width={20} height={20} />
@@ -51,7 +57,9 @@ export default function MediaItemRow({ item, isDeleting = false, onDelete, onEdi
 
       <td className="search-row__title-cell">
         <span className="search-row__title">{item.title}</span>
-        {item.alternativeTitle ? <span className="search-row__alt">{item.alternativeTitle}</span> : null}
+        {item.alternativeTitle ? (
+          <span className="search-row__alt">{item.alternativeTitle}</span>
+        ) : null}
         {categories.length > 0 ? (
           <div className="row-categories">
             {categories.map((category) => (

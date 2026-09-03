@@ -49,10 +49,15 @@ export const MediaItemsApi = {
     await api.delete(`/media-items/${id}`)
   },
 
-  exportLibrary: async (format: LibraryTransferFormat): Promise<{ blob: Blob; fileName: string }> => {
-    const response = await api.get<Blob>(`/media-items/export?format=${encodeURIComponent(format)}`, {
-      responseType: 'blob',
-    })
+  exportLibrary: async (
+    format: LibraryTransferFormat,
+  ): Promise<{ blob: Blob; fileName: string }> => {
+    const response = await api.get<Blob>(
+      `/media-items/export?format=${encodeURIComponent(format)}`,
+      {
+        responseType: 'blob',
+      },
+    )
 
     return {
       blob: response.data,
@@ -63,7 +68,10 @@ export const MediaItemsApi = {
     }
   },
 
-  importLibrary: async (format: LibraryTransferFormat, file: File): Promise<LibraryImportResponse> => {
+  importLibrary: async (
+    format: LibraryTransferFormat,
+    file: File,
+  ): Promise<LibraryImportResponse> => {
     const { data } = await api.postForm<LibraryImportResponse>(
       `/media-items/import?format=${encodeURIComponent(format)}`,
       { file },

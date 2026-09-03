@@ -34,7 +34,8 @@ const oauthErrorMessages: Record<string, string> = {
   create_failed: 'No se pudo crear tu cuenta con el proveedor.',
   missing_tokens: 'La respuesta del proveedor no incluyó la sesión esperada.',
   session_error: 'No se pudo abrir la sesión devuelta por el proveedor.',
-  account_unavailable: 'No se pudo iniciar sesión con esa cuenta. Comprueba tu correo o inténtalo más tarde.',
+  account_unavailable:
+    'No se pudo iniciar sesión con esa cuenta. Comprueba tu correo o inténtalo más tarde.',
 }
 
 // ── Funciones de extracción ──────────────────────────────────────────────────

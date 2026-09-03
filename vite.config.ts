@@ -38,10 +38,7 @@ const config = {
     restoreMocks: true,
     clearMocks: true,
   },
-  plugins: [
-    react(),
-    babel({ presets: [reactCompilerPreset()] })
-  ],
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
 }
 
 export default defineConfig(config)

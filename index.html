@@ -22,12 +22,27 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta name="description" content="Gestiona y descubre tu anime, manga, manhwa y más contenido multimedia." />
+    <meta
+      name="description"
+      content="Gestiona y descubre tu anime, manga, manhwa y más contenido multimedia."
+    />
     <title>TrackerMultimedia</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <!--
+      El hash SHA-256 de la CSP se calcula sobre el texto EXACTO de este script.
+      Reformatearlo lo invalida, y entonces el navegador lo bloquea en silencio: no
+      falla nada a la vista, simplemente vuelve el destello. De ahí el prettier-ignore
+      de abajo, que tiene que ir solo —Prettier solo reconoce la directiva si el
+      comentario no lleva nada más— y el test de index-csp.test.ts, que comprueba que
+      hash y contenido siguen cuadrando.
+    -->
+    <!-- prettier-ignore -->
     <script>
       // Se ejecuta antes de pintar nada. Sin esto, el tema lo aplicaba React en su
       // primer render y en modo oscuro se veía un destello claro en cada carga.

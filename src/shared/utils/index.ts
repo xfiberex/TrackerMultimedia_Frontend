@@ -1,9 +1,9 @@
-export function buildQueryString<T extends object>(
-  params: T,
-): string {
+export function buildQueryString<T extends object>(params: T): string {
   const searchParams = new URLSearchParams()
 
-  Object.entries(params as Record<string, string | number | Array<string | number> | undefined | null>).forEach(([key, value]) => {
+  Object.entries(
+    params as Record<string, string | number | Array<string | number> | undefined | null>,
+  ).forEach(([key, value]) => {
     if (Array.isArray(value)) {
       value.forEach((entry) => {
         if (entry === undefined || entry === null || entry === '') {

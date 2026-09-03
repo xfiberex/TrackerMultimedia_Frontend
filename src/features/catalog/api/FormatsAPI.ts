@@ -1,5 +1,9 @@
 import api from '@/shared/api/axios'
-import type { CreateFormatInput, UpdateFormatInput, UserFormat } from '@/features/catalog/schemas/formatsSchema'
+import type {
+  CreateFormatInput,
+  UpdateFormatInput,
+  UserFormat,
+} from '@/features/catalog/schemas/formatsSchema'
 
 export const FormatsApi = {
   getAll: async (signal?: AbortSignal): Promise<UserFormat[]> => {

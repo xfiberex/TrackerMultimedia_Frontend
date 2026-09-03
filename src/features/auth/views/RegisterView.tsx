@@ -63,8 +63,8 @@ export default function RegisterView() {
           </div>
           <h1 className="auth-card__title">¡Cuenta creada!</h1>
           <p className="auth-card__subtitle">
-            Te hemos enviado un correo a <strong>{email}</strong>.
-            Abre el enlace de confirmación para activar tu cuenta.
+            Te hemos enviado un correo a <strong>{email}</strong>. Abre el enlace de confirmación
+            para activar tu cuenta.
           </p>
           <p className="auth-footer">
             <Link to="/resend-confirmation">¿No recibiste el correo?</Link>
@@ -87,7 +87,11 @@ export default function RegisterView() {
         <h1 className="auth-card__title">Crear cuenta</h1>
         <p className="auth-card__subtitle">Comienza a gestionar tu contenido multimedia.</p>
 
-        {error ? <div className="auth-error" role="alert">{error}</div> : null}
+        {error ? (
+          <div className="auth-error" role="alert">
+            {error}
+          </div>
+        ) : null}
 
         {/* Botones OAuth */}
         {(methods?.googleEnabled || methods?.gitHubEnabled) && (
@@ -143,8 +147,7 @@ export default function RegisterView() {
 
           <div className="control">
             <label htmlFor="displayName">
-              Nombre visible{' '}
-              <span className="control__optional">(opcional)</span>
+              Nombre visible <span className="control__optional">(opcional)</span>
             </label>
             <input
               id="displayName"
@@ -184,17 +187,19 @@ export default function RegisterView() {
             />
           </div>
 
-          <button type="submit" className="button button--primary" disabled={isPending || oauthPending !== null}>
+          <button
+            type="submit"
+            className="button button--primary"
+            disabled={isPending || oauthPending !== null}
+          >
             {isPending ? 'Creando cuenta…' : 'Crear cuenta'}
           </button>
         </form>
 
         <p className="auth-footer">
-          ¿Ya tienes cuenta?{' '}
-          <Link to="/login">Inicia sesión</Link>
+          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
         </p>
       </div>
     </div>
   )
 }
-

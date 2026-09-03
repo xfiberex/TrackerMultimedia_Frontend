@@ -77,7 +77,7 @@ function ColorPickerDropdown({
       >
         <span
           className="color-picker-trigger__swatch"
-          style={{ backgroundColor: isValidHex ? displayColor ?? 'transparent' : 'transparent' }}
+          style={{ backgroundColor: isValidHex ? (displayColor ?? 'transparent') : 'transparent' }}
         />
         <span className="color-picker-trigger__value" id={`${labelId}-value`}>
           {value.trim() || 'Sin color'}
@@ -208,7 +208,13 @@ export default function CategoriesView() {
   })
 
   const saveMutation = useMutation({
-    mutationFn: async ({ categoryId, payload }: { categoryId: string | null, payload: CreateCategoryInput }) => {
+    mutationFn: async ({
+      categoryId,
+      payload,
+    }: {
+      categoryId: string | null
+      payload: CreateCategoryInput
+    }) => {
       if (categoryId) {
         return CategoriesApi.update(categoryId, payload)
       }
@@ -232,7 +238,9 @@ export default function CategoriesView() {
       setError(
         extractCategoriesError(
           mutationError,
-          variables.categoryId ? 'No se pudo actualizar la categoría.' : 'No se pudo crear la categoría.',
+          variables.categoryId
+            ? 'No se pudo actualizar la categoría.'
+            : 'No se pudo crear la categoría.',
         ),
       )
     },
@@ -320,7 +328,8 @@ export default function CategoriesView() {
         </span>
         <h1 className="hero-panel__title">Tus categorías</h1>
         <p className="hero-panel__description">
-          Crea, renombra y elimina categorías personales para organizar tu biblioteca con tus propias reglas.
+          Crea, renombra y elimina categorías personales para organizar tu biblioteca con tus
+          propias reglas.
         </p>
         <div className="hero-panel__meta">
           <span className="hero-chip">{categories.length} categorías</span>
@@ -338,7 +347,9 @@ export default function CategoriesView() {
         <div className="status-stack">
           <div className="status-banner status-banner--warning" role="status">
             <strong>La taxonomía no se pudo sincronizar.</strong>
-            <span>Puedes seguir preparando el editor, pero la lista no se refrescó correctamente.</span>
+            <span>
+              Puedes seguir preparando el editor, pero la lista no se refrescó correctamente.
+            </span>
           </div>
         </div>
       ) : null}
@@ -348,7 +359,8 @@ export default function CategoriesView() {
           <div>
             <h2 className="panel__title">Editor de categorías</h2>
             <p className="panel__description">
-              Usa colores opcionales para distinguir grupos como backlog, favoritos, pendientes o temporadas.
+              Usa colores opcionales para distinguir grupos como backlog, favoritos, pendientes o
+              temporadas.
             </p>
           </div>
           {!isEditing ? (
@@ -359,8 +371,16 @@ export default function CategoriesView() {
           ) : null}
         </div>
 
-        <form className="filters-form category-form" aria-label="Formulario de categorías" onSubmit={handleSubmit}>
-          {error ? <div className="auth-error" role="alert">{error}</div> : null}
+        <form
+          className="filters-form category-form"
+          aria-label="Formulario de categorías"
+          onSubmit={handleSubmit}
+        >
+          {error ? (
+            <div className="auth-error" role="alert">
+              {error}
+            </div>
+          ) : null}
 
           <div className="control-grid">
             <div className="control">
@@ -377,7 +397,9 @@ export default function CategoriesView() {
             <div className="control">
               {/* No es un <label>: el selector de color es un widget compuesto, no un
                   control único, así que se nombra por aria-labelledby desde el disparador. */}
-              <span className="control__label" id="category-color-label">Color</span>
+              <span className="control__label" id="category-color-label">
+                Color
+              </span>
               <ColorPickerDropdown
                 labelId="category-color-label"
                 value={draft.color}
@@ -393,8 +415,16 @@ export default function CategoriesView() {
               </button>
             ) : null}
 
-            <button type="submit" className="button button--primary" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Guardando…' : isEditing ? 'Guardar cambios' : 'Crear categoría'}
+            <button
+              type="submit"
+              className="button button--primary"
+              disabled={saveMutation.isPending}
+            >
+              {saveMutation.isPending
+                ? 'Guardando…'
+                : isEditing
+                  ? 'Guardar cambios'
+                  : 'Crear categoría'}
             </button>
           </div>
         </form>
@@ -404,7 +434,9 @@ export default function CategoriesView() {
         <div className="results-header">
           <div>
             <h2 className="results-title">Categorías disponibles</h2>
-            <p className="results-subtitle">Cada categoría es privada para tu cuenta y puede asignarse a varios ítems.</p>
+            <p className="results-subtitle">
+              Cada categoría es privada para tu cuenta y puede asignarse a varios ítems.
+            </p>
           </div>
         </div>
 
@@ -413,7 +445,11 @@ export default function CategoriesView() {
             title="No se pudieron cargar las categorías"
             message="Recarga la vista o revisa la conexión con el backend."
             action={
-              <button className="button button--primary" type="button" onClick={() => categoriesQuery.refetch()}>
+              <button
+                className="button button--primary"
+                type="button"
+                onClick={() => categoriesQuery.refetch()}
+              >
                 Reintentar
               </button>
             }
@@ -495,7 +531,9 @@ export default function CategoriesView() {
 
       <ConfirmDialog
         open={deleteCandidate !== null}
-        title={deleteCandidate ? `Eliminar la categoría "${deleteCandidate.name}"` : 'Eliminar categoría'}
+        title={
+          deleteCandidate ? `Eliminar la categoría "${deleteCandidate.name}"` : 'Eliminar categoría'
+        }
         message="Esta categoría desaparecerá de tu taxonomía personal y dejará de estar disponible en Biblioteca y Descubrir."
         confirmLabel="Eliminar categoría"
         cancelLabel="Conservar categoría"

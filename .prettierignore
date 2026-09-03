@@ -9,3 +9,9 @@ package-lock.json
 # Documentos de largo aliento: Prettier reflowaría todos los párrafos y
 # convertiría cualquier cambio futuro de una frase en un diff de página entera.
 *.md
+
+# Archivos de herramientas externas: los gestionan ellas y las reescribirían de vuelta.
+.agents/
+.codegraph/
+.mcp.json
+skills-lock.json
