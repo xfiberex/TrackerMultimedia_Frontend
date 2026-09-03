@@ -10,6 +10,22 @@ import { z } from 'zod'
  *   - URL absoluta, como `http://localhost:5218/api`, para apuntar a un backend que no
  *     esté detrás del proxy.
  */
+/**
+ * Interruptor booleano de .env. Vite entrega todas las variables como cadenas, así que
+ * aquí se acepta la escritura habitual (`true`/`false`, `1`/`0`) sin distinguir mayúsculas,
+ * y la cadena vacía cae al valor por defecto igual que `VITE_API_URL`.
+ *
+ * El valor por defecto es `true`: quien no declare nada en su .env sigue viendo lo mismo
+ * que antes, y solo quien quiera ocultar un proveedor tiene que escribir la variable.
+ */
+const flagSchema = z
+  .string()
+  .refine(
+    (value) => value.length === 0 || ['true', 'false', '1', '0'].includes(value.trim().toLowerCase()),
+    'debe ser "true" o "false"',
+  )
+  .optional()
+
 const envSchema = z.object({
   VITE_API_URL: z
     .string()
@@ -22,6 +38,8 @@ const envSchema = z.object({
       'VITE_API_URL debe ser una URL absoluta o una ruta que empiece por "/"',
     )
     .optional(),
+  VITE_ENABLE_GOOGLE_AUTH: flagSchema,
+  VITE_ENABLE_GITHUB_AUTH: flagSchema,
 })
 
 /**
@@ -60,6 +78,8 @@ function reportEnvError(message: string): void {
 
 const result = envSchema.safeParse({
   VITE_API_URL: import.meta.env.VITE_API_URL,
+  VITE_ENABLE_GOOGLE_AUTH: import.meta.env.VITE_ENABLE_GOOGLE_AUTH,
+  VITE_ENABLE_GITHUB_AUTH: import.meta.env.VITE_ENABLE_GITHUB_AUTH,
 })
 
 if (!result.success) {
@@ -80,9 +100,28 @@ const apiUrl = (configuredApiUrl && configuredApiUrl.length > 0 ? configuredApiU
   '',
 )
 
+function parseFlag(value: string | undefined, fallback: boolean): boolean {
+  const normalized = value?.trim().toLowerCase()
+  if (!normalized) return fallback
+  return normalized === 'true' || normalized === '1'
+}
+
+// Ocultar un proveedor aquí es una decisión del despliegue, no del backend: sirve para
+// escenarios donde el proveedor está configurado y funcionando pero su redirección no
+// puede volver a este origen — servir con `npm run dev:lan` es el caso típico, porque
+// Google solo admite `localhost` o un dominio público https como URI de callback.
+//
+// Es una máscara, nunca un permiso: `AuthContext` la aplica *sobre* lo que responde
+// `/auth/methods`, así que puede apagar un proveedor pero no encender uno que el backend
+// tenga deshabilitado. La autorización sigue viviendo entera en el servidor.
+const enableGoogleAuth = parseFlag(parsed.VITE_ENABLE_GOOGLE_AUTH, true)
+const enableGitHubAuth = parseFlag(parsed.VITE_ENABLE_GITHUB_AUTH, true)
+
 // Solo `apiUrl`. `dev`, `prod` e `isProduction` estaban aquí sin que nadie los leyera:
 // quien necesita saber el modo usa `import.meta.env.DEV` directamente, que además Vite
 // sustituye en tiempo de compilación y permite eliminar el código muerto del bundle.
 export const env = {
   apiUrl,
+  enableGoogleAuth,
+  enableGitHubAuth,
 }

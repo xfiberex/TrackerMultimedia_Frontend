@@ -23,6 +23,18 @@ vi.mock('@/features/auth/api/AuthAPI', () => ({
   AuthAPI: authApiMocks,
 }))
 
+// `env` se lee del `.env` real del equipo, que es un archivo sin versionar. Sin este
+// mock, poner `VITE_ENABLE_GOOGLE_AUTH=false` en el .env de tu máquina ponía esta
+// suite en rojo mientras que en un clon limpio pasaba: el resultado dependía de la
+// configuración local de quien la ejecutara. Aquí los interruptores se declaran.
+const envMock = vi.hoisted(() => ({
+  apiUrl: '/api',
+  enableGoogleAuth: true,
+  enableGitHubAuth: true,
+}))
+
+vi.mock('@/config/env', () => ({ env: envMock }))
+
 const loginPayload = { email: 'user@test.com', password: 'Test1234!' }
 const registerPayload = { email: 'new@test.com', password: 'Test1234!', displayName: 'New User' }
 const linkPayload = {
@@ -131,6 +143,8 @@ describe('AuthProvider', () => {
   afterEach(() => {
     localStorage.clear()
     tokenStore.set(null)
+    envMock.enableGoogleAuth = true
+    envMock.enableGitHubAuth = true
   })
 
   it('loads available auth methods and finishes initialization without refresh token', async () => {
@@ -146,6 +160,41 @@ describe('AuthProvider', () => {
     expect(authApiMocks.refresh).not.toHaveBeenCalled()
     expect(screen.getByTestId('methods')).toHaveTextContent('true-true-false')
     expect(screen.getByTestId('user-email')).toHaveTextContent('anonymous')
+  })
+
+  it('oculta un proveedor que el .env apaga aunque el backend lo ofrezca', async () => {
+    envMock.enableGoogleAuth = false
+
+    render(
+      <AuthProvider>
+        <ContextProbe />
+      </AuthProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('false'))
+    expect(screen.getByTestId('methods')).toHaveTextContent('true-false-false')
+  })
+
+  it('no puede encender un proveedor que el backend tiene deshabilitado', async () => {
+    // La operación es un AND, no un OR: el .env es una máscara de interfaz y la
+    // autorización sigue viviendo entera en el servidor. Si esto llegara a pasar a
+    // OR, el frontend ofrecería un botón que el backend rechaza.
+    authApiMocks.getMethods.mockResolvedValueOnce({
+      manualEnabled: true,
+      googleEnabled: false,
+      gitHubEnabled: false,
+    })
+    envMock.enableGoogleAuth = true
+    envMock.enableGitHubAuth = true
+
+    render(
+      <AuthProvider>
+        <ContextProbe />
+      </AuthProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('false'))
+    expect(screen.getByTestId('methods')).toHaveTextContent('true-false-false')
   })
 
   it('falls back to manual auth methods when loading methods fails', async () => {

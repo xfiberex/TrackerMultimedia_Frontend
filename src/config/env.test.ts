@@ -34,6 +34,34 @@ describe('config/env', () => {
     expect(env.apiUrl).toBe('/api')
   })
 
+  it('muestra los proveedores OAuth cuando las variables no están definidas', async () => {
+    vi.stubEnv('VITE_API_URL', '/api')
+    vi.stubEnv('VITE_ENABLE_GOOGLE_AUTH', '')
+    vi.stubEnv('VITE_ENABLE_GITHUB_AUTH', '')
+    const { env } = await import('./env')
+    expect(env.enableGoogleAuth).toBe(true)
+    expect(env.enableGitHubAuth).toBe(true)
+  })
+
+  it('lee los interruptores OAuth sin distinguir mayúsculas y admite 1/0', async () => {
+    vi.stubEnv('VITE_API_URL', '/api')
+    vi.stubEnv('VITE_ENABLE_GOOGLE_AUTH', 'False')
+    vi.stubEnv('VITE_ENABLE_GITHUB_AUTH', '0')
+    const { env } = await import('./env')
+    expect(env.enableGoogleAuth).toBe(false)
+    expect(env.enableGitHubAuth).toBe(false)
+  })
+
+  it('rechaza un interruptor OAuth que no sea booleano', async () => {
+    vi.stubEnv('VITE_API_URL', '/api')
+    vi.stubEnv('VITE_ENABLE_GOOGLE_AUTH', 'quizá')
+
+    await expect(import('./env')).rejects.toThrow(/Variables de entorno inválidas/)
+
+    const alerta = document.querySelector('[role="alert"]')
+    expect(alerta!.textContent).toContain('VITE_ENABLE_GOOGLE_AUTH')
+  })
+
   it('pinta un mensaje legible en el documento cuando el valor es inválido', async () => {
     vi.stubEnv('VITE_API_URL', 'no-es-una-url-ni-una-ruta')
 

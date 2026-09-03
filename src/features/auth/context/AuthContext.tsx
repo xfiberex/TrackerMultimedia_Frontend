@@ -15,12 +15,31 @@ import type {
 import { tokenStore } from '@/shared/api/tokenStore'
 import { AUTH_LOGOUT_EVENT } from '@/shared/api/axios'
 import { AuthContext } from './authContextDef'
+import { env } from '@/config/env'
 
 // ---------------------------------------------------------------------------
 // Provider  (único export de este archivo)
 // ---------------------------------------------------------------------------
 
 const REFRESH_TOKEN_KEY = 'refreshToken'
+
+/**
+ * Aplica los interruptores de .env sobre lo que responde `/auth/methods`.
+ *
+ * Se hace aquí y no en cada vista porque `methods` es el único sitio del que salen los
+ * botones OAuth: una vista nueva hereda la decisión sin tener que acordarse de ella.
+ *
+ * La operación es un AND, nunca un OR. El .env puede ocultar un proveedor que el backend
+ * ofrece, pero no puede mostrar uno que el backend no tenga habilitado; y aunque lo
+ * mostrara no serviría de nada, porque la autorización la decide el servidor.
+ */
+function applyClientOverrides(response: AuthMethodsResponse): AuthMethodsResponse {
+  return {
+    ...response,
+    googleEnabled: response.googleEnabled && env.enableGoogleAuth,
+    gitHubEnabled: response.gitHubEnabled && env.enableGitHubAuth,
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -36,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Cargar métodos disponibles al montar (independiente de la sesión)
   useEffect(() => {
     void AuthAPI.getMethods()
-      .then(setMethods)
+      .then((response) => setMethods(applyClientOverrides(response)))
       .catch(() => {
         // Si falla, mostrar solo el método manual como fallback seguro
         setMethods({ manualEnabled: true, googleEnabled: false, gitHubEnabled: false })
