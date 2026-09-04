@@ -1,5 +1,5 @@
 import api from '@/shared/api/axios'
-import { buildQueryString } from '@/shared/utils'
+import { buildQueryString, resolveDownloadFileName } from '@/shared/utils'
 import type {
   CreateMediaItemInput,
   LibraryImportResponse,
@@ -9,20 +9,6 @@ import type {
   PagedResponse,
   UpdateMediaItemInput,
 } from '@/features/media-items/schemas/mediaItemSchema'
-
-function resolveDownloadFileName(contentDisposition: string | undefined, fallback: string): string {
-  if (!contentDisposition) {
-    return fallback
-  }
-
-  const utf8FileNameMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)
-  if (utf8FileNameMatch?.[1]) {
-    return decodeURIComponent(utf8FileNameMatch[1])
-  }
-
-  const fileNameMatch = contentDisposition.match(/filename="?([^";]+)"?/i)
-  return fileNameMatch?.[1] ?? fallback
-}
 
 export const MediaItemsApi = {
   getAll: async (

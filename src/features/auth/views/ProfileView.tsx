@@ -4,7 +4,7 @@ import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import { useToast } from '@/shared/hooks/useToast'
 import { AuthAPI } from '../api/AuthAPI'
 import { useAuth } from '../context/useAuth'
-import { extractApiError } from '@/shared/utils'
+import { downloadBlob, extractApiError } from '@/shared/utils'
 
 export default function ProfileView() {
   const { user, refreshUser, logoutAll, deleteAccount } = useAuth()
@@ -39,6 +39,9 @@ export default function ProfileView() {
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
   const [isLogoutAllPending, setIsLogoutAllPending] = useState(false)
 
+  // --- Descarga de datos ---
+  const [isExportPending, setIsExportPending] = useState(false)
+
   // --- Borrado de cuenta ---
   // La confirmación es doble a propósito: primero se escribe la credencial y solo
   // entonces se habilita el botón que abre el diálogo. Un único clic no puede
@@ -55,6 +58,23 @@ export default function ProfileView() {
   const canOpenDeleteDialog = requiresPassword
     ? deleteConfirmation.length > 0
     : deleteConfirmation.trim().toLowerCase() === expectedConfirmation!.toLowerCase()
+
+  const handleExportPersonalData = async () => {
+    setIsExportPending(true)
+
+    try {
+      const { blob, fileName } = await AuthAPI.exportPersonalData()
+      downloadBlob(blob, fileName)
+      showToast({ tone: 'success', message: 'Se descargó el archivo con tus datos.' })
+    } catch (error) {
+      showToast({
+        tone: 'danger',
+        message: extractApiError(error, 'No se pudieron descargar tus datos.'),
+      })
+    } finally {
+      setIsExportPending(false)
+    }
+  }
 
   const handleDeleteAccount = async () => {
     setIsDeletePending(true)
@@ -270,6 +290,24 @@ export default function ProfileView() {
             disabled={isLogoutAllPending}
           >
             {isLogoutAllPending ? 'Cerrando sesiones…' : 'Cerrar todas las sesiones'}
+          </button>
+        </section>
+
+        <section className="profile-card">
+          <h2 className="profile-card__title">Descargar mis datos</h2>
+          <p className="results-subtitle" style={{ marginBottom: '1rem' }}>
+            Un archivo JSON con todo lo que se guarda de ti: los datos de la cuenta, los proveedores
+            que tengas vinculados, tus sesiones abiertas, tus formatos y tu biblioteca completa con
+            sus categorías. No incluye contraseñas ni tokens.
+          </p>
+
+          <button
+            type="button"
+            className="button button--secondary"
+            onClick={() => void handleExportPersonalData()}
+            disabled={isExportPending}
+          >
+            {isExportPending ? 'Preparando la descarga…' : 'Descargar mis datos'}
           </button>
         </section>
 

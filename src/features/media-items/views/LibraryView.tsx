@@ -33,7 +33,7 @@ import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import SidePanelDialog from '@/shared/components/SidePanelDialog'
 import { useToast } from '@/shared/hooks/useToast'
 import { queryKeys } from '@/shared/constants/queryKeys'
-import { extractApiError, toPositiveInt } from '@/shared/utils'
+import { downloadBlob, extractApiError, toPositiveInt } from '@/shared/utils'
 
 type FilterPatch = Partial<Record<keyof MediaItemsFilters, string | number | string[] | undefined>>
 
@@ -164,17 +164,6 @@ function buildImportToastMessage(result: LibraryImportResponse): string {
   }
 
   return `Importación ${getTransferFormatLabel(result.format)} completada: ${joinWithAnd(details)}.`
-}
-
-function downloadLibraryFile(blob: Blob, fileName: string) {
-  const objectUrl = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = objectUrl
-  anchor.download = fileName
-  document.body.append(anchor)
-  anchor.click()
-  anchor.remove()
-  URL.revokeObjectURL(objectUrl)
 }
 
 function countAppliedFilters(filters: MediaItemsFilters): number {
@@ -317,7 +306,7 @@ export default function LibraryView() {
   const exportMutation = useMutation({
     mutationFn: (format: LibraryTransferFormat) => MediaItemsApi.exportLibrary(format),
     onSuccess: ({ blob, fileName }, format) => {
-      downloadLibraryFile(blob, fileName)
+      downloadBlob(blob, fileName)
       showToast({
         tone: 'success',
         message: `Se descargó tu biblioteca en formato ${getTransferFormatLabel(format)}.`,

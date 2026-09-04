@@ -1,4 +1,5 @@
 import api from '@/shared/api/axios'
+import { resolveDownloadFileName } from '@/shared/utils'
 import type {
   AuthMethodsResponse,
   AuthResponse,
@@ -54,6 +55,23 @@ export const AuthAPI = {
   // de cualquier proxy.
   deleteAccount: (payload: DeleteAccountPayload) =>
     api.delete<void>('/auth/account', { data: payload }).then(() => {}),
+
+  /**
+   * Descarga todo lo que el servidor guarda sobre la cuenta. Se pide como blob y no
+   * como JSON porque el navegador tiene que guardarlo en un archivo, no la aplicación
+   * mostrarlo: una biblioteca grande no cabe en pantalla y no hay nada que renderizar.
+   */
+  exportPersonalData: async (): Promise<{ blob: Blob; fileName: string }> => {
+    const response = await api.get<Blob>('/auth/account/export', { responseType: 'blob' })
+
+    return {
+      blob: response.data,
+      fileName: resolveDownloadFileName(
+        response.headers['content-disposition'] as string | undefined,
+        'tracker-datos-personales.json',
+      ),
+    }
+  },
 
   // ── Confirmación de email ──────────────────────────────────────────────────
 

@@ -9,6 +9,7 @@ const updateProfileMock = vi.hoisted(() => vi.fn())
 const changePasswordMock = vi.hoisted(() => vi.fn())
 const logoutAllMock = vi.hoisted(() => vi.fn())
 const deleteAccountMock = vi.hoisted(() => vi.fn())
+const exportPersonalDataMock = vi.hoisted(() => vi.fn())
 const authState = vi.hoisted(() => ({
   user: null as User | null,
   refreshUser: vi.fn(),
@@ -29,6 +30,7 @@ vi.mock('../api/AuthAPI', () => ({
   AuthAPI: {
     updateProfile: updateProfileMock,
     changePassword: changePasswordMock,
+    exportPersonalData: exportPersonalDataMock,
   },
 }))
 
@@ -61,6 +63,41 @@ describe('ProfileView', () => {
       hasPassword: true,
       linkedProviders: ['password'],
     }
+  })
+
+  it('downloads the personal data file and revokes the object URL', async () => {
+    const user = userEvent.setup()
+    const createObjectURL = vi.fn(() => 'blob:datos')
+    const revokeObjectURL = vi.fn()
+    Object.defineProperty(URL, 'createObjectURL', { value: createObjectURL, writable: true })
+    Object.defineProperty(URL, 'revokeObjectURL', { value: revokeObjectURL, writable: true })
+    exportPersonalDataMock.mockResolvedValue({
+      blob: new Blob(['{}'], { type: 'application/json' }),
+      fileName: 'tracker-datos-personales-20260904-120000.json',
+    })
+
+    renderProfileView()
+    await user.click(screen.getByRole('button', { name: 'Descargar mis datos' }))
+
+    await waitFor(() => expect(exportPersonalDataMock).toHaveBeenCalledTimes(1))
+    expect(createObjectURL).toHaveBeenCalled()
+    // Sin revoke, el blob de una biblioteca entera se queda en memoria hasta recargar.
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:datos')
+    expect(await screen.findByText('Se descargó el archivo con tus datos.')).toBeInTheDocument()
+  })
+
+  it('reports the error and re-enables the button when the download fails', async () => {
+    const user = userEvent.setup()
+    exportPersonalDataMock.mockRejectedValue(new Error('boom'))
+
+    renderProfileView()
+    await user.click(screen.getByRole('button', { name: 'Descargar mis datos' }))
+
+    expect(await screen.findByText('No se pudieron descargar tus datos.')).toBeInTheDocument()
+    // El botón vuelve a estar disponible: un fallo de red no debe dejarlo bloqueado.
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Descargar mis datos' })).toBeEnabled(),
+    )
   })
 
   it('navigates back when the back button is pressed', async () => {

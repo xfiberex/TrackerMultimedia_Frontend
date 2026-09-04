@@ -1,3 +1,5 @@
+export * from './download'
+
 export function buildQueryString<T extends object>(params: T): string {
   const searchParams = new URLSearchParams()
 
