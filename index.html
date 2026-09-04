@@ -3,8 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Content Security Policy: previene inyección de scripts e inline code -->
-    <!-- frame-ancestors solo es efectivo como HTTP header; configurarlo en el servidor -->
+    <!--
+      Content Security Policy.
+
+      `connect-src` es solo 'self': los catálogos externos (Jikan, AniList, MangaDex) y
+      los proveedores OAuth los consulta el **backend**, no el navegador. Los tres hosts
+      que había aquí no los llamaba nadie, y el cuarto fijaba el dominio de Render, que
+      habría roto la aplicación al cambiar de despliegue. Una CSP que permite orígenes
+      que no se usan no protege de menos: describe mal el sistema, y quien la lea creerá
+      que el navegador habla con sitios con los que no habla.
+
+      `frame-ancestors` no funciona en un <meta>; va como cabecera en netlify.toml, junto
+      al resto de cabeceras que el HTML no puede declarar.
+    -->
     <meta
       http-equiv="Content-Security-Policy"
       content="
@@ -13,7 +24,7 @@
         style-src 'self' 'unsafe-inline' fonts.googleapis.com;
         font-src 'self' fonts.gstatic.com;
         img-src 'self' data: https:;
-        connect-src 'self' https://*.jikan.moe https://*.googleapis.com https://api.github.com https://trackermultimedia-backend.onrender.com;
+        connect-src 'self';
         base-uri 'self';
         form-action 'self'
       "

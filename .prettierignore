@@ -11,6 +11,7 @@ package-lock.json
 *.md
 
 # Archivos de herramientas externas: los gestionan ellas y las reescribirían de vuelta.
+.claude/
 .agents/
 .codegraph/
 .mcp.json

@@ -44,4 +44,14 @@ describe('CSP de index.html', () => {
     expect(scriptSrc![1]).not.toContain("'unsafe-inline'")
     expect(scriptSrc![1]).toContain("'self'")
   })
+
+  it('no declara orígenes externos que el frontend no usa', () => {
+    const csp = /Content-Security-Policy"[\s\S]*?content="([\s\S]*?)"/.exec(html)
+    const connectSrc = /connect-src([^;]*)/.exec(csp![1])
+    expect(connectSrc).not.toBeNull()
+
+    // Los catálogos externos y los proveedores OAuth los consulta el backend, no el
+    // navegador. Si alguien vuelve a añadirlos aquí, está describiendo mal el sistema.
+    expect(connectSrc![1].trim()).toBe("'self'")
+  })
 })

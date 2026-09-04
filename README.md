@@ -159,7 +159,7 @@ Dos cosas que conviene saber antes de usarlo así:
 
 ### Pruebas
 
-148 pruebas de componente con Vitest y Testing Library. No necesitan backend ni base de
+158 pruebas de componente con Vitest y Testing Library. No necesitan backend ni base de
 datos: las llamadas a la API van simuladas.
 
 ```bash
@@ -214,7 +214,7 @@ excluye `coverage/`, `.vitest/`, `test-results/` y los reportes `junit*.xml`.
 ```bash
 dotnet build                          # Compilar
 dotnet run                            # Iniciar en desarrollo
-dotnet test TrackerMultimedia_Backend.slnx   # Suite de integración (124 pruebas)
+dotnet test TrackerMultimedia_Backend.slnx   # Suite de integración (133 pruebas, necesita PostgreSQL)
 dotnet ef migrations add <Nombre>     # Crear una nueva migración
 dotnet ef database update             # Aplicar migraciones pendientes
 dotnet ef migrations list             # Ver cuáles existen y cuáles están aplicadas

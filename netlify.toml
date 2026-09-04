@@ -12,3 +12,18 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Cabeceras que un <meta> no puede declarar. La política de contenido vive en
+# index.html —una sola fuente, y así el hash del script en línea no puede
+# desincronizarse—; aquí solo va `frame-ancestors`, que el navegador ignora en
+# <meta>. Dos cabeceras CSP se combinan de forma restrictiva, nunca permisiva,
+# así que esto añade una restricción sin relajar la otra.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "frame-ancestors 'none'"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    Cross-Origin-Opener-Policy = "same-origin"
