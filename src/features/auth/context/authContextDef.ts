@@ -2,6 +2,7 @@ import { createContext } from 'react'
 import type {
   AuthResponse,
   AuthMethodsResponse,
+  DeleteAccountPayload,
   LoginPayload,
   OAuthLinkConfirmPayload,
   RegisterPayload,
@@ -16,6 +17,7 @@ export interface AuthContextValue {
   register: (payload: RegisterPayload) => Promise<User>
   logout: () => Promise<void>
   logoutAll: () => Promise<void>
+  deleteAccount: (payload: DeleteAccountPayload) => Promise<void>
   refreshUser: () => Promise<void>
   completeSession: (session: AuthResponse) => void
   /** Redirige al proveedor OAuth indicado para iniciar el flujo. */

@@ -4,6 +4,7 @@ import type {
   AuthResponse,
   ChangePasswordPayload,
   ConfirmEmailPayload,
+  DeleteAccountPayload,
   ForgotPasswordPayload,
   LoginPayload,
   OAuthInitResponse,
@@ -47,6 +48,12 @@ export const AuthAPI = {
     api.post<void>('/auth/reset-password', payload).then(() => {}),
 
   logoutAll: () => api.post<void>('/auth/logout-all').then(() => {}),
+
+  // El cuerpo viaja en un DELETE, que es poco habitual pero es lo correcto aquí: la
+  // reautenticación no puede ir en la URL, donde acabaría en el historial y en los logs
+  // de cualquier proxy.
+  deleteAccount: (payload: DeleteAccountPayload) =>
+    api.delete<void>('/auth/account', { data: payload }).then(() => {}),
 
   // ── Confirmación de email ──────────────────────────────────────────────────
 

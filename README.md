@@ -299,3 +299,18 @@ reescritura que mantiene funcionando el enrutado de React Router.
 La misma URL pública que Netlify asigne a este sitio tiene que quedar registrada en el
 backend, en `App__FrontendBaseUrl` y en `Cors__AllowedOrigins__0`. Si no, el navegador
 bloqueará las peticiones por CORS y los enlaces de los correos apuntarán a otro sitio.
+
+---
+
+## Licencia
+
+[MIT](LICENSE) © 2026 xfiberex.
+
+Dos consecuencias prácticas de elegirla, para que no haya sorpresas: cualquiera puede usar,
+copiar y modificar este código, incluso comercialmente, mientras conserve el aviso de
+copyright; y el software se entrega **sin garantía de ningún tipo**, que es la mitad del
+texto y la que protege a quien lo publica.
+
+El aviso de copyright nombra la identidad de git (`xfiberex`). Si prefieres tu nombre legal
+—que es lo habitual cuando la autoría tiene que poder acreditarse—, cámbialo en el archivo
+`LICENSE` de los dos repositorios.

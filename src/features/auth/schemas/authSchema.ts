@@ -42,6 +42,17 @@ export const changePasswordPayloadSchema = z.object({
   newPassword: passwordSchema,
 })
 
+/**
+ * Reautenticación para borrar la cuenta. Los dos campos son opcionales aquí porque el
+ * backend decide cuál exige según la cuenta tenga contraseña o venga solo de OAuth;
+ * validarlo también en el cliente duplicaría esa regla en dos sitios y dejaría la
+ * puerta abierta a que se separaran.
+ */
+export const deleteAccountPayloadSchema = z.object({
+  password: z.string().optional(),
+  confirmationEmail: z.string().optional(),
+})
+
 export const updateProfilePayloadSchema = z.object({
   displayName: displayNameSchema,
 })
@@ -96,6 +107,7 @@ export type LoginPayload = z.infer<typeof loginPayloadSchema>
 export type RegisterPayload = z.infer<typeof registerPayloadSchema>
 export type ChangePasswordPayload = z.infer<typeof changePasswordPayloadSchema>
 export type UpdateProfilePayload = z.infer<typeof updateProfilePayloadSchema>
+export type DeleteAccountPayload = z.infer<typeof deleteAccountPayloadSchema>
 export type ForgotPasswordPayload = z.infer<typeof forgotPasswordPayloadSchema>
 export type ResetPasswordPayload = z.infer<typeof resetPasswordPayloadSchema>
 export type ConfirmEmailPayload = z.infer<typeof confirmEmailPayloadSchema>

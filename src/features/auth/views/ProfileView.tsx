@@ -7,7 +7,7 @@ import { useAuth } from '../context/useAuth'
 import { extractApiError } from '@/shared/utils'
 
 export default function ProfileView() {
-  const { user, refreshUser, logoutAll } = useAuth()
+  const { user, refreshUser, logoutAll, deleteAccount } = useAuth()
   const navigate = useNavigate()
   const { showToast } = useToast()
 
@@ -38,6 +38,47 @@ export default function ProfileView() {
   // --- Sesiones ---
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
   const [isLogoutAllPending, setIsLogoutAllPending] = useState(false)
+
+  // --- Borrado de cuenta ---
+  // La confirmación es doble a propósito: primero se escribe la credencial y solo
+  // entonces se habilita el botón que abre el diálogo. Un único clic no puede
+  // desencadenar la operación, que es la única del sistema sin vuelta atrás.
+  const [deleteConfirmation, setDeleteConfirmation] = useState('')
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isDeletePending, setIsDeletePending] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  // Una cuenta creada con Google o GitHub no tiene contraseña que pedir, así que
+  // confirma escribiendo su propia dirección. Misma regla que aplica el backend.
+  const requiresPassword = user?.hasPassword ?? true
+  const expectedConfirmation = requiresPassword ? null : (user?.email ?? '')
+  const canOpenDeleteDialog = requiresPassword
+    ? deleteConfirmation.length > 0
+    : deleteConfirmation.trim().toLowerCase() === expectedConfirmation!.toLowerCase()
+
+  const handleDeleteAccount = async () => {
+    setIsDeletePending(true)
+    setDeleteError(null)
+
+    try {
+      await deleteAccount(
+        requiresPassword
+          ? { password: deleteConfirmation }
+          : { confirmationEmail: deleteConfirmation.trim() },
+      )
+      setIsDeleteDialogOpen(false)
+      showToast({ tone: 'success', message: 'Tu cuenta y todos tus datos se han borrado.' })
+      navigate('/login', { replace: true })
+    } catch (err) {
+      // El diálogo se cierra y el error se muestra en el formulario, junto al campo que
+      // hay que corregir. Dejarlo dentro del diálogo obligaría a leerlo y cerrarlo para
+      // poder tocar el campo.
+      setIsDeleteDialogOpen(false)
+      setDeleteError(extractApiError(err, 'No se pudo borrar la cuenta.'))
+    } finally {
+      setIsDeletePending(false)
+    }
+  }
 
   const handleProfileSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault()
@@ -231,6 +272,48 @@ export default function ProfileView() {
             {isLogoutAllPending ? 'Cerrando sesiones…' : 'Cerrar todas las sesiones'}
           </button>
         </section>
+
+        <section className="profile-card">
+          <h2 className="profile-card__title">Borrar la cuenta</h2>
+          <p className="results-subtitle" style={{ marginBottom: '1rem' }}>
+            Se borran tu cuenta y <strong>todo</strong> lo que contiene: tu biblioteca, tus
+            categorías, tus formatos y tus sesiones. No hay forma de recuperarlo, y no se envía
+            ninguna copia por correo.
+          </p>
+
+          <div className="field">
+            <label htmlFor="delete-confirmation">
+              {requiresPassword
+                ? 'Escribe tu contraseña para continuar'
+                : `Escribe ${expectedConfirmation} para continuar`}
+            </label>
+            <input
+              id="delete-confirmation"
+              type={requiresPassword ? 'password' : 'text'}
+              value={deleteConfirmation}
+              onChange={(e) => {
+                setDeleteConfirmation(e.target.value)
+                setDeleteError(null)
+              }}
+              autoComplete={requiresPassword ? 'current-password' : 'off'}
+            />
+          </div>
+
+          {deleteError ? (
+            <div className="auth-error" role="alert">
+              {deleteError}
+            </div>
+          ) : null}
+
+          <button
+            type="button"
+            className="button button--danger"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            disabled={!canOpenDeleteDialog || isDeletePending}
+          >
+            {isDeletePending ? 'Borrando…' : 'Borrar mi cuenta'}
+          </button>
+        </section>
       </div>
 
       <ConfirmDialog
@@ -243,6 +326,18 @@ export default function ProfileView() {
         isPending={isLogoutAllPending}
         onClose={() => setIsLogoutDialogOpen(false)}
         onConfirm={() => void handleLogoutAll()}
+      />
+
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        title="Borrar la cuenta definitivamente"
+        message="Esto borra tu cuenta y todos tus datos: biblioteca, categorías, formatos y sesiones. La acción no se puede deshacer y no queda ninguna copia."
+        confirmLabel="Sí, borrar mi cuenta"
+        cancelLabel="Cancelar"
+        tone="danger"
+        isPending={isDeletePending}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={() => void handleDeleteAccount()}
       />
     </div>
   )

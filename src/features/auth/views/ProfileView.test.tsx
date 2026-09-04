@@ -8,10 +8,12 @@ const navigateMock = vi.hoisted(() => vi.fn())
 const updateProfileMock = vi.hoisted(() => vi.fn())
 const changePasswordMock = vi.hoisted(() => vi.fn())
 const logoutAllMock = vi.hoisted(() => vi.fn())
+const deleteAccountMock = vi.hoisted(() => vi.fn())
 const authState = vi.hoisted(() => ({
   user: null as User | null,
   refreshUser: vi.fn(),
   logoutAll: logoutAllMock,
+  deleteAccount: deleteAccountMock,
 }))
 
 vi.mock('react-router-dom', async () => {
@@ -153,5 +155,76 @@ describe('ProfileView', () => {
       await screen.findByText('Se cerraron todas tus sesiones correctamente.'),
     ).toBeInTheDocument()
     expect(navigateMock).toHaveBeenCalledWith('/login', { replace: true })
+  })
+
+  /**
+   * T1-14. Lo que se comprueba aquí es la doble confirmación, no la llamada: la
+   * operación no tiene vuelta atrás y el requisito es que un clic suelto no baste.
+   */
+  it('mantiene el borrado deshabilitado hasta escribir la contraseña', async () => {
+    renderProfileView()
+
+    const borrar = screen.getByRole('button', { name: 'Borrar mi cuenta' })
+    expect(borrar).toBeDisabled()
+
+    await userEvent.setup().type(screen.getByLabelText('Escribe tu contraseña para continuar'), 'x')
+
+    expect(borrar).toBeEnabled()
+  })
+
+  it('borra la cuenta tras la segunda confirmación y vuelve al login', async () => {
+    const user = userEvent.setup()
+    deleteAccountMock.mockResolvedValue(undefined)
+
+    renderProfileView()
+
+    await user.type(screen.getByLabelText('Escribe tu contraseña para continuar'), 'Test1234!')
+    await user.click(screen.getByRole('button', { name: 'Borrar mi cuenta' }))
+
+    expect(
+      screen.getByRole('alertdialog', { name: 'Borrar la cuenta definitivamente' }),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Sí, borrar mi cuenta' }))
+
+    await waitFor(() => {
+      expect(deleteAccountMock).toHaveBeenCalledWith({ password: 'Test1234!' })
+    })
+    expect(navigateMock).toHaveBeenCalledWith('/login', { replace: true })
+  })
+
+  it('muestra el error junto al campo y no sale de la sesión si el borrado falla', async () => {
+    const user = userEvent.setup()
+    deleteAccountMock.mockRejectedValue({
+      response: { data: { detail: 'La contraseña no es correcta.' } },
+    })
+
+    renderProfileView()
+
+    await user.type(screen.getByLabelText('Escribe tu contraseña para continuar'), 'mal')
+    await user.click(screen.getByRole('button', { name: 'Borrar mi cuenta' }))
+    await user.click(screen.getByRole('button', { name: 'Sí, borrar mi cuenta' }))
+
+    expect(await screen.findByText('La contraseña no es correcta.')).toBeInTheDocument()
+    // Quedarse dentro importa: si se limpiara la sesión igualmente, quien escriba mal la
+    // contraseña acabaría en el login creyendo que borró su cuenta.
+    expect(navigateMock).not.toHaveBeenCalledWith('/login', { replace: true })
+  })
+
+  it('pide escribir el correo exacto en una cuenta sin contraseña', async () => {
+    const user = userEvent.setup()
+    authState.user = { ...authState.user!, hasPassword: false, linkedProviders: ['google'] }
+    deleteAccountMock.mockResolvedValue(undefined)
+
+    renderProfileView()
+
+    const campo = screen.getByLabelText(`Escribe ${authState.user!.email} para continuar`)
+    const borrar = screen.getByRole('button', { name: 'Borrar mi cuenta' })
+
+    await user.type(campo, 'otro@correo.com')
+    expect(borrar).toBeDisabled()
+
+    await user.clear(campo)
+    await user.type(campo, authState.user!.email)
+    expect(borrar).toBeEnabled()
   })
 })

@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { AuthAPI } from '../api/AuthAPI'
 import type {
   AuthResponse,
+  DeleteAccountPayload,
   AuthMethodsResponse,
   LoginPayload,
   OAuthLinkConfirmPayload,
@@ -119,6 +120,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  /**
+   * El borrado limpia la sesión local **solo si el servidor confirma**. Al revés que en
+   * `logout`, aquí un fallo tiene que dejar al usuario dentro: si se limpiara igualmente,
+   * quien escriba mal la contraseña se vería en la pantalla de login creyendo que borró
+   * su cuenta, y no habría forma de saber desde el cliente que sigue existiendo.
+   */
+  const deleteAccount = async (payload: DeleteAccountPayload) => {
+    await AuthAPI.deleteAccount(payload)
+    tokenStore.set(null)
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
+    setUser(null)
+  }
+
   const refreshUser = async () => {
     const updatedUser = await AuthAPI.me()
     setUser(updatedUser)
@@ -148,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         logoutAll,
+        deleteAccount,
         refreshUser,
         completeSession,
         loginWithOAuth,
