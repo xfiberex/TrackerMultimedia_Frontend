@@ -75,8 +75,9 @@ describe('cristal declarado y cristal real', () => {
   function fondo(cuerpo: string): string | null {
     const match = /(?:^|[\s;])background(?:-color)?:\s*([^;]+);/.exec(cuerpo)
     if (!match) return null
-    return match[1].replace(/var\(\s*(--[a-z0-9-]+)[^)]*\)/gi, (todo, nombre) =>
-      tokens.get(nombre) ?? todo,
+    return match[1].replace(
+      /var\(\s*(--[a-z0-9-]+)[^)]*\)/gi,
+      (todo, nombre) => tokens.get(nombre) ?? todo,
     )
   }
 
@@ -122,7 +123,8 @@ describe('cristal declarado y cristal real', () => {
       // La regla del tema oscuro no repite el `backdrop-filter`, pero sí el fondo, así que
       // una superficie puede ser cristal en un tema y un muro en el otro.
       const variantes = reglas.filter(
-        (regla) => regla.selector === selector || regla.selector === `[data-theme='dark'] ${selector}`,
+        (regla) =>
+          regla.selector === selector || regla.selector === `[data-theme='dark'] ${selector}`,
       )
 
       for (const variante of variantes) {
