@@ -335,7 +335,6 @@ a {
   border: 1px solid var(--border-strong);
   background: rgba(255, 255, 255, 0.98);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(12px);
   z-index: 20;
 }
 
@@ -732,7 +731,6 @@ a {
   border: 1px solid var(--border-strong);
   background: rgba(255, 255, 255, 0.97);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(12px);
   transform-origin: top right;
   animation: toast-enter 200ms cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -889,7 +887,6 @@ a {
   background: rgba(255, 255, 255, 0.98);
   border-left: 1px solid var(--border-strong);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(12px);
   animation: side-panel-enter 260ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -1426,7 +1423,6 @@ a {
     rgba(0, 0, 0, 0.06) 0px 6px 6px -3px,
     rgba(0, 0, 0, 0.06) 0px 12px 12px -6px,
     rgba(0, 0, 0, 0.06) 0px 24px 24px -12px;
-  backdrop-filter: blur(12px);
 }
 
 /* La pantalla de acceso se escribió entera con valores del tema claro y solo tenía
@@ -2371,7 +2367,6 @@ a {
   border: 1px solid var(--border-strong);
   background: rgba(255, 255, 255, 0.98);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(12px);
   display: grid;
   gap: 0.75rem;
 }
