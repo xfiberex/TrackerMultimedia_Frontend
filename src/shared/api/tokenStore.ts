@@ -6,25 +6,25 @@
  * ── POLÍTICA DE SEGURIDAD ──
  *
  * Access Token (JWT): NUNCA persistido, solo en memoria (volátil).
- * - Ventaja: Seguro contra XSS — si un atacante inyecta JS, no puede extraer el token del storage.
- * - Desventaja: Se pierde al recargar (pero se recupera con el refresh token).
- * - Ubicación: Módulo scope privado (_accessToken).
+ * - Ventaja: un XSS no puede extraerlo de ningún almacenamiento, porque no está en ninguno.
+ * - Desventaja: se pierde al recargar, y se recupera con una llamada a /auth/refresh.
+ * - Ubicación: ámbito de módulo privado (_accessToken).
  *
- * Refresh Token (opaco): Persistido en localStorage, legible por cualquier JS del origen.
- * - Ventaja: Permite recuperación de sesión tras recargas.
- * - Desventaja: expuesto a XSS. Un script inyectado puede leerlo y usarlo hasta que caduque.
- * - Ubicación: localStorage (necesario para recuperar sesión).
- * - Mitigaciones REALES hoy: el servidor guarda solo el hash SHA-256, rota el token en cada
- *   uso y, si alguien presenta uno ya rotado, revoca todas las sesiones del usuario.
- * - NO hay mitigación de cookie: `SameSite` es un atributo de cookie y no existe en
- *   localStorage. Una versión anterior de este comentario lo afirmaba; era falso.
+ * Refresh Token (opaco): en una cookie `HttpOnly` que este código no puede leer (T4-01).
+ * - Antes vivía en localStorage y era legible por cualquier JS del origen: un script
+ *   inyectado se llevaba la sesión y podía renovarla durante siete días.
+ * - Defensas actuales: `HttpOnly` (JavaScript no lo ve), `SameSite=Strict`, `Path` acotado
+ *   a /api/auth, y la cabecera `X-TM-Client` que exigen /auth/refresh y /auth/logout, que
+ *   es lo que impide que otro sitio construya esas peticiones.
+ * - En el servidor sigue estando lo de antes: solo se guarda el hash SHA-256, el token rota
+ *   en cada uso, y presentar uno ya rotado revoca todas las sesiones del usuario.
  *
- * ── MEJORA FUTURO (OPCIONAL) ──
+ * ── LO QUE SIGUE SIN RESOLVERSE ──
  *
- * Para máxima seguridad en producción:
- * 1. Usar cookies httpOnly + SameSite=Strict (requiere backend que maneje cookies automáticamente).
- * 2. Omitir refresh token del cliente (usar Automatic Token Refresh con cookies, sin JS).
- * 3. CORS + Credentials incluidas en requests.
+ * Un XSS con la página abierta sigue pudiendo usar la sesión: no puede robar la cookie,
+ * pero sí provocar peticiones desde el propio origen, que es donde la cookie viaja. Lo que
+ * se ha eliminado es la exfiltración —llevarse la credencial y usarla después, desde otro
+ * sitio y durante días—, no el abuso en vivo. Contra eso lo que hay es la CSP.
  */
 
 let _accessToken: string | null = null

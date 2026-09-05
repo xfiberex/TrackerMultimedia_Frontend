@@ -11,8 +11,13 @@ const apiMock = vi.hoisted(() => ({
   put: vi.fn(),
 }))
 
+// `refresh` no pasa por la instancia de axios sino por `refreshSession`, que comparte una
+// única petición en vuelo con el interceptor de 401.
+const refreshSessionMock = vi.hoisted(() => vi.fn())
+
 vi.mock('@/shared/api/axios', () => ({
   default: apiMock,
+  refreshSession: refreshSessionMock,
 }))
 
 import { AuthAPI } from './AuthAPI'
@@ -47,7 +52,6 @@ describe('AuthAPI', () => {
   it('login and refresh return the auth response payload', async () => {
     const authResponse: AuthResponse = {
       accessToken: 'access-token',
-      refreshToken: 'refresh-token',
       expiresIn: 3600,
       user: {
         id: 'user-1',
@@ -59,25 +63,26 @@ describe('AuthAPI', () => {
       },
     }
     apiMock.post.mockResolvedValue({ data: authResponse })
+    refreshSessionMock.mockResolvedValue(authResponse)
 
     await expect(AuthAPI.login({ email: 'user@test.com', password: 'Pass123$' })).resolves.toEqual(
       authResponse,
     )
-    await expect(AuthAPI.refresh('refresh-token')).resolves.toEqual(authResponse)
+    await expect(AuthAPI.refresh()).resolves.toEqual(authResponse)
 
     expect(apiMock.post).toHaveBeenNthCalledWith(1, '/auth/login', {
       email: 'user@test.com',
       password: 'Pass123$',
     })
-    expect(apiMock.post).toHaveBeenNthCalledWith(2, '/auth/refresh', {
-      refreshToken: 'refresh-token',
-    })
+    // Sin argumentos y sin pasar por la instancia de axios: el token va en la cookie y la
+    // petición se comparte con cualquier otra renovación que esté en curso.
+    expect(refreshSessionMock).toHaveBeenCalledWith()
   })
 
   it('logout-style endpoints resolve void after posting the expected payload', async () => {
     apiMock.post.mockResolvedValue({})
 
-    await expect(AuthAPI.logout('refresh-token')).resolves.toBeUndefined()
+    await expect(AuthAPI.logout()).resolves.toBeUndefined()
     await expect(AuthAPI.logoutAll()).resolves.toBeUndefined()
     await expect(
       AuthAPI.changePassword({ currentPassword: 'Old123$', newPassword: 'New123$' }),
@@ -90,9 +95,7 @@ describe('AuthAPI', () => {
       }),
     ).resolves.toBeUndefined()
 
-    expect(apiMock.post).toHaveBeenNthCalledWith(1, '/auth/logout', {
-      refreshToken: 'refresh-token',
-    })
+    expect(apiMock.post).toHaveBeenNthCalledWith(1, '/auth/logout')
     expect(apiMock.post).toHaveBeenNthCalledWith(2, '/auth/logout-all')
     expect(apiMock.post).toHaveBeenNthCalledWith(3, '/auth/change-password', {
       currentPassword: 'Old123$',
@@ -178,7 +181,6 @@ describe('AuthAPI', () => {
   it('posts the link confirmation payload and returns a session', async () => {
     const authResponse: AuthResponse = {
       accessToken: 'linked-access',
-      refreshToken: 'linked-refresh',
       expiresIn: 3600,
       user: {
         id: 'user-1',

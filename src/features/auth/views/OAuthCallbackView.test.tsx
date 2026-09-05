@@ -3,7 +3,7 @@ import { tokenStore } from '@/shared/api/tokenStore'
 
 const navigateMock = vi.hoisted(() => vi.fn())
 const completeSessionMock = vi.hoisted(() => vi.fn())
-const refreshUserMock = vi.hoisted(() => vi.fn())
+const refreshMock = vi.hoisted(() => vi.fn())
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
@@ -17,11 +17,29 @@ vi.mock('react-router-dom', async () => {
 vi.mock('../context/useAuth', () => ({
   useAuth: () => ({
     completeSession: completeSessionMock,
-    refreshUser: refreshUserMock,
   }),
 }))
 
+vi.mock('../api/AuthAPI', () => ({
+  AuthAPI: {
+    refresh: refreshMock,
+  },
+}))
+
 import OAuthCallbackView from './OAuthCallbackView'
+
+const session = {
+  accessToken: 'oauth-access',
+  expiresIn: 900,
+  user: {
+    id: 'oauth-user',
+    email: 'oauth@test.com',
+    displayName: 'OAuth User',
+    emailConfirmed: true,
+    hasPassword: false,
+    linkedProviders: ['google'],
+  },
+}
 
 describe('OAuthCallbackView', () => {
   beforeEach(() => {
@@ -42,104 +60,65 @@ describe('OAuthCallbackView', () => {
       })
     })
     expect(completeSessionMock).not.toHaveBeenCalled()
-    expect(refreshUserMock).not.toHaveBeenCalled()
+    // Un error del proveedor no se convierte en un intento de sesión.
+    expect(refreshMock).not.toHaveBeenCalled()
   })
 
-  it('redirects to login when the callback hash does not contain both tokens', async () => {
-    window.history.replaceState({}, '', '/oauth-callback#access_token=only-access')
+  it('exchanges the refresh cookie for a session and redirects to the requested path', async () => {
+    refreshMock.mockResolvedValue(session)
+    window.history.replaceState({}, '', '/oauth-callback#return_path=%2Fprofile')
 
     render(<OAuthCallbackView />)
 
     await waitFor(() => {
-      expect(navigateMock).toHaveBeenCalledWith('/login?oauth_error=missing_tokens', {
-        replace: true,
-      })
-    })
-    expect(completeSessionMock).not.toHaveBeenCalled()
-    expect(refreshUserMock).not.toHaveBeenCalled()
-  })
-
-  it('completes the session from the callback payload and redirects to the requested path', async () => {
-    const encodedUser = encodeURIComponent(
-      JSON.stringify({
-        id: 'oauth-user',
-        email: 'oauth@test.com',
-        displayName: 'OAuth User',
-        emailConfirmed: true,
-        hasPassword: false,
-        linkedProviders: ['google'],
-      }),
-    )
-
-    window.history.replaceState(
-      {},
-      '',
-      `/oauth-callback#access_token=oauth-access&refresh_token=oauth%2Brefresh%2Fvalue%3D&return_path=%2Fprofile&expires_in=900&user=${encodedUser}`,
-    )
-
-    render(<OAuthCallbackView />)
-
-    await waitFor(() => {
-      expect(completeSessionMock).toHaveBeenCalledWith({
-        accessToken: 'oauth-access',
-        refreshToken: 'oauth+refresh/value=',
-        expiresIn: 900,
-        user: {
-          id: 'oauth-user',
-          email: 'oauth@test.com',
-          displayName: 'OAuth User',
-          emailConfirmed: true,
-          hasPassword: false,
-          linkedProviders: ['google'],
-        },
-      })
+      expect(completeSessionMock).toHaveBeenCalledWith(session)
     })
 
-    expect(refreshUserMock).not.toHaveBeenCalled()
-    expect(tokenStore.get()).toBeNull()
-    expect(localStorage.getItem('refreshToken')).toBeNull()
+    // Sin argumentos: la sesión llega en la cookie que el backend escribió al redirigir.
+    expect(refreshMock).toHaveBeenCalledWith()
+    expect(localStorage.length).toBe(0)
 
     await waitFor(() => {
       expect(navigateMock).toHaveBeenCalledWith('/profile', { replace: true })
     })
   })
 
-  it('falls back to the legacy refresh flow when the embedded user is absent', async () => {
-    refreshUserMock.mockResolvedValue(undefined)
-    window.history.replaceState(
-      {},
-      '',
-      '/oauth-callback#access_token=oauth-access&refresh_token=oauth%2Brefresh%2Fvalue%3D',
-    )
+  it('defaults to the library when the fragment carries no return path', async () => {
+    refreshMock.mockResolvedValue(session)
 
     render(<OAuthCallbackView />)
 
     await waitFor(() => {
-      expect(refreshUserMock).toHaveBeenCalledTimes(1)
+      expect(navigateMock).toHaveBeenCalledWith('/library', { replace: true })
     })
-
-    expect(tokenStore.get()).toBe('oauth-access')
-    expect(localStorage.getItem('refreshToken')).toBe('oauth+refresh/value=')
   })
 
-  it('falls back to a session error when the legacy refresh flow fails', async () => {
-    refreshUserMock.mockRejectedValue(new Error('refresh failed'))
-    window.history.replaceState(
-      {},
-      '',
-      '/oauth-callback#access_token=oauth-access&refresh_token=oauth%2Brefresh%2Fvalue%3D',
-    )
+  it('sends the user back to login when the exchange fails', async () => {
+    refreshMock.mockRejectedValue(new Error('refresh failed'))
+    window.history.replaceState({}, '', '/oauth-callback#return_path=%2Fprofile')
 
     render(<OAuthCallbackView />)
-
-    await waitFor(() => {
-      expect(refreshUserMock).toHaveBeenCalledTimes(1)
-    })
 
     await waitFor(() => {
       expect(navigateMock).toHaveBeenCalledWith('/login?oauth_error=session_error', {
         replace: true,
       })
     })
+    expect(completeSessionMock).not.toHaveBeenCalled()
+  })
+
+  it('never leaves a token in the address bar', async () => {
+    refreshMock.mockResolvedValue(session)
+    window.history.replaceState({}, '', '/oauth-callback#return_path=%2Flibrary')
+
+    render(<OAuthCallbackView />)
+
+    await waitFor(() => expect(completeSessionMock).toHaveBeenCalled())
+
+    // El backend ya no manda tokens en el fragmento; esta vista tampoco los espera. Si
+    // alguien reintrodujera el formato antiguo, este test no lo detectaría solo: lo que
+    // lo sostiene es el test de backend sobre la cabecera Location del callback.
+    expect(window.location.hash).not.toContain('access_token')
+    expect(window.location.hash).not.toContain('refresh_token')
   })
 })

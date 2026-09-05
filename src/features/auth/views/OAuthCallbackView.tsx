@@ -2,19 +2,20 @@
  * OAuthCallbackView
  *
  * El backend redirige aquí tras completar el flujo OAuth con la URL:
- *   /oauth-callback#access_token=...&refresh_token=...&expires_in=...&return_path=...&user=...
+ *   /oauth-callback#return_path=...
  *
- * Los tokens viajan en el fragment (#) para que nunca lleguen a los logs
- * del servidor. Esta vista los lee, los guarda en el store y redirige.
+ * **En la URL ya no viaja ningún token.** La sesión llega en la cookie de refresco que el
+ * backend escribe en esa misma redirección, y esta vista la cambia por un access token
+ * llamando a `/auth/refresh`. Antes el fragmento llevaba el access token, el refresco y el
+ * usuario serializado: el fragmento no se manda al servidor, así que no llegaba a los logs,
+ * pero sí queda en el historial del navegador y en cualquier sitio donde se pegue la
+ * dirección, y eso no tiene arreglo una vez ha ocurrido (T4-01).
  */
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { tokenStore } from '@/shared/api/tokenStore'
 import { useAuth } from '../context/useAuth'
-import type { User } from '../schemas/authSchema'
+import { AuthAPI } from '../api/AuthAPI'
 import Loader from '@/shared/components/Loader'
-
-const REFRESH_TOKEN_KEY = 'refreshToken'
 
 function parseFragmentParams(hash: string): Map<string, string> {
   const fragment = hash.startsWith('#') ? hash.slice(1) : hash
@@ -41,7 +42,7 @@ function parseFragmentParams(hash: string): Map<string, string> {
 
 export default function OAuthCallbackView() {
   const navigate = useNavigate()
-  const { completeSession, refreshUser } = useAuth()
+  const { completeSession } = useAuth()
   const processed = useRef(false)
 
   useEffect(() => {
@@ -49,12 +50,7 @@ export default function OAuthCallbackView() {
     processed.current = true
 
     const params = parseFragmentParams(window.location.hash)
-
-    const accessToken = params.get('access_token') ?? null
-    const refreshToken = params.get('refresh_token') ?? null
     const returnPath = params.get('return_path') ?? '/library'
-    const rawUser = params.get('user') ?? null
-    const expiresIn = Number(params.get('expires_in') ?? '0')
     const oauthError = new URLSearchParams(window.location.search).get('oauth_error')
 
     if (oauthError) {
@@ -62,39 +58,18 @@ export default function OAuthCallbackView() {
       return
     }
 
-    if (!accessToken || !refreshToken) {
-      navigate('/login?oauth_error=missing_tokens', { replace: true })
-      return
-    }
-
-    if (rawUser) {
-      try {
-        const user = JSON.parse(rawUser) as User
-        completeSession({
-          accessToken,
-          refreshToken,
-          expiresIn: Number.isFinite(expiresIn) ? expiresIn : 0,
-          user,
-        })
-        navigate(returnPath, { replace: true })
-        return
-      } catch {
-        // Si el payload embebido no se puede decodificar, intentamos el fallback legacy.
-      }
-    }
-
-    tokenStore.set(accessToken)
-    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
-
-    // Actualizar el estado global del usuario
-    void refreshUser()
-      .then(() => {
+    // Una ida y vuelta que antes no hacía falta, y es el precio de que la sesión no pase
+    // por la barra de direcciones. Si el proveedor falló, el backend ya habrá redirigido a
+    // /login con su código de error y aquí no se llega.
+    void AuthAPI.refresh()
+      .then((session) => {
+        completeSession(session)
         navigate(returnPath, { replace: true })
       })
       .catch(() => {
         navigate('/login?oauth_error=session_error', { replace: true })
       })
-  }, [navigate, refreshUser, completeSession])
+  }, [navigate, completeSession])
 
   return <Loader />
 }

@@ -1,4 +1,4 @@
-import api from '@/shared/api/axios'
+import api, { refreshSession } from '@/shared/api/axios'
 import { resolveDownloadFileName } from '@/shared/utils'
 import type {
   AuthMethodsResponse,
@@ -28,11 +28,12 @@ export const AuthAPI = {
   login: (payload: LoginPayload) =>
     api.post<AuthResponse>('/auth/login', payload).then((r) => r.data),
 
-  refresh: (refreshToken: string) =>
-    api.post<AuthResponse>('/auth/refresh', { refreshToken }).then((r) => r.data),
+  // Sin argumentos: el token de refresco va en la cookie que el navegador adjunta solo.
+  // Pasa por `refreshSession` y no por `api` directamente para compartir la única petición
+  // en vuelo con el interceptor de 401: dos renovaciones a la vez revocarían la sesión.
+  refresh: () => refreshSession(),
 
-  logout: (refreshToken: string | null) =>
-    api.post<void>('/auth/logout', { refreshToken }).then(() => {}),
+  logout: () => api.post<void>('/auth/logout').then(() => {}),
 
   me: () => api.get<User>('/auth/me').then((r) => r.data),
 

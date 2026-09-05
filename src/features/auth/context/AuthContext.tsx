@@ -18,8 +18,6 @@ import { env } from '@/config/env'
 // Provider  (único export de este archivo)
 // ---------------------------------------------------------------------------
 
-const REFRESH_TOKEN_KEY = 'refreshToken'
-
 /**
  * Aplica los interruptores de .env sobre lo que responde `/auth/methods`.
  *
@@ -43,9 +41,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const [methods, setMethods] = useState<AuthMethodsResponse | null>(null)
 
+  // El token de refresco no pasa por aquí: el servidor lo pone en una cookie HttpOnly en
+  // la misma respuesta. Lo único que este código guarda es el access token, en memoria.
   const applySession = (response: AuthResponse) => {
     tokenStore.set(response.accessToken)
-    localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken)
     setUser(response.user)
   }
 
@@ -59,21 +58,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
   }, [])
 
-  // Al montar: intentar recuperar la sesión desde el refresh token guardado.
+  // Al montar: intentar recuperar la sesión. Se llama siempre, no solo cuando había algo
+  // guardado, porque la cookie no es legible desde JavaScript: preguntar al servidor es la
+  // única forma de saber si hay sesión. Un 401 significa que no la hay, y no es un error.
   useEffect(() => {
-    const savedToken = localStorage.getItem(REFRESH_TOKEN_KEY)
-
-    const init = savedToken
-      ? AuthAPI.refresh(savedToken)
-          .then((response) => {
-            applySession(response)
-          })
-          .catch(() => {
-            localStorage.removeItem(REFRESH_TOKEN_KEY)
-          })
-      : Promise.resolve()
-
-    void init.finally(() => setIsLoading(false))
+    void AuthAPI.refresh()
+      .then(applySession)
+      .catch(() => {
+        // Sin sesión: se sigue como visitante.
+      })
+      .finally(() => setIsLoading(false))
   }, [])
 
   // Escucha el evento que lanza el interceptor 401 cuando el refresh falla
@@ -100,12 +94,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = async () => {
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
     try {
-      await AuthAPI.logout(refreshToken)
+      await AuthAPI.logout()
     } finally {
       tokenStore.set(null)
-      localStorage.removeItem(REFRESH_TOKEN_KEY)
       setUser(null)
     }
   }
@@ -115,7 +107,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await AuthAPI.logoutAll()
     } finally {
       tokenStore.set(null)
-      localStorage.removeItem(REFRESH_TOKEN_KEY)
       setUser(null)
     }
   }
@@ -129,7 +120,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const deleteAccount = async (payload: DeleteAccountPayload) => {
     await AuthAPI.deleteAccount(payload)
     tokenStore.set(null)
-    localStorage.removeItem(REFRESH_TOKEN_KEY)
     setUser(null)
   }
 

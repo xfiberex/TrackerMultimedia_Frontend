@@ -76,7 +76,6 @@ const methods: AuthMethodsResponse = {
 function makeAuthResponse(overrides?: Partial<AuthResponse>): AuthResponse {
   return {
     accessToken: 'access-token',
-    refreshToken: 'refresh-token',
     expiresIn: 900,
     user: baseUser,
     ...overrides,
@@ -135,7 +134,6 @@ describe('AuthProvider', () => {
           linkedProviders: ['google'],
         },
         accessToken: 'linked-access',
-        refreshToken: 'linked-refresh',
       }),
     )
   })
@@ -147,7 +145,12 @@ describe('AuthProvider', () => {
     envMock.enableGitHubAuth = true
   })
 
-  it('loads available auth methods and finishes initialization without refresh token', async () => {
+  it('finishes initialization as a visitor when there is no session', async () => {
+    // El refresh se intenta **siempre** al montar: la cookie es HttpOnly, así que
+    // preguntar al servidor es la única forma de saber si hay sesión. Un 401 no es un
+    // error que mostrar, es la respuesta de que no la hay.
+    authApiMocks.refresh.mockRejectedValueOnce(new Error('no session'))
+
     render(
       <AuthProvider>
         <ContextProbe />
@@ -157,7 +160,7 @@ describe('AuthProvider', () => {
     await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('false'))
 
     expect(authApiMocks.getMethods).toHaveBeenCalledTimes(1)
-    expect(authApiMocks.refresh).not.toHaveBeenCalled()
+    expect(authApiMocks.refresh).toHaveBeenCalledTimes(1)
     expect(screen.getByTestId('methods')).toHaveTextContent('true-true-false')
     expect(screen.getByTestId('user-email')).toHaveTextContent('anonymous')
   })
@@ -209,12 +212,10 @@ describe('AuthProvider', () => {
     await waitFor(() => expect(screen.getByTestId('methods')).toHaveTextContent('true-false-false'))
   })
 
-  it('recovers the session from a stored refresh token on mount', async () => {
-    localStorage.setItem('refreshToken', 'saved-refresh')
+  it('recovers the session from the refresh cookie on mount', async () => {
     authApiMocks.refresh.mockResolvedValueOnce(
       makeAuthResponse({
         accessToken: 'restored-access',
-        refreshToken: 'rotated-refresh',
       }),
     )
 
@@ -226,9 +227,11 @@ describe('AuthProvider', () => {
 
     await waitFor(() => expect(screen.getByTestId('user-email')).toHaveTextContent(baseUser.email))
 
-    expect(authApiMocks.refresh).toHaveBeenCalledWith('saved-refresh')
+    // Sin argumentos: la cookie la adjunta el navegador, no este código.
+    expect(authApiMocks.refresh).toHaveBeenCalledWith()
     expect(tokenStore.get()).toBe('restored-access')
-    expect(localStorage.getItem('refreshToken')).toBe('rotated-refresh')
+    // Y nada de la sesión queda en un almacenamiento legible por JavaScript.
+    expect(localStorage.length).toBe(0)
   })
 
   it('logs in and persists the new session', async () => {
@@ -247,7 +250,7 @@ describe('AuthProvider', () => {
 
     expect(authApiMocks.login).toHaveBeenCalledWith(loginPayload)
     expect(tokenStore.get()).toBe('access-token')
-    expect(localStorage.getItem('refreshToken')).toBe('refresh-token')
+    expect(localStorage.length).toBe(0)
   })
 
   it('register proxies the created user result', async () => {
@@ -270,13 +273,7 @@ describe('AuthProvider', () => {
 
   it('logout clears the session even when the API request fails', async () => {
     const user = userEvent.setup()
-    localStorage.setItem('refreshToken', 'saved-refresh')
-    authApiMocks.refresh.mockResolvedValueOnce(
-      makeAuthResponse({
-        accessToken: 'restored-access',
-        refreshToken: 'rotated-refresh',
-      }),
-    )
+    authApiMocks.refresh.mockResolvedValueOnce(makeAuthResponse({ accessToken: 'restored-access' }))
     authApiMocks.logout.mockRejectedValueOnce(new Error('logout failed'))
 
     render(
@@ -290,14 +287,13 @@ describe('AuthProvider', () => {
 
     await waitFor(() => expect(screen.getByTestId('user-email')).toHaveTextContent('anonymous'))
 
-    expect(authApiMocks.logout).toHaveBeenCalledWith('rotated-refresh')
+    expect(authApiMocks.logout).toHaveBeenCalledWith()
     expect(tokenStore.get()).toBeNull()
-    expect(localStorage.getItem('refreshToken')).toBeNull()
+    expect(localStorage.length).toBe(0)
   })
 
   it('refreshUser reloads the current user from the backend', async () => {
     const user = userEvent.setup()
-    localStorage.setItem('refreshToken', 'saved-refresh')
 
     render(
       <AuthProvider>
@@ -318,13 +314,7 @@ describe('AuthProvider', () => {
 
   it('logoutAll clears the current session even when the API request fails', async () => {
     const user = userEvent.setup()
-    localStorage.setItem('refreshToken', 'saved-refresh')
-    authApiMocks.refresh.mockResolvedValueOnce(
-      makeAuthResponse({
-        accessToken: 'restored-access',
-        refreshToken: 'rotated-refresh',
-      }),
-    )
+    authApiMocks.refresh.mockResolvedValueOnce(makeAuthResponse({ accessToken: 'restored-access' }))
     authApiMocks.logoutAll.mockRejectedValueOnce(new Error('logout all failed'))
 
     render(
@@ -340,7 +330,7 @@ describe('AuthProvider', () => {
 
     expect(authApiMocks.logoutAll).toHaveBeenCalledTimes(1)
     expect(tokenStore.get()).toBeNull()
-    expect(localStorage.getItem('refreshToken')).toBeNull()
+    expect(localStorage.length).toBe(0)
   })
 
   it('linkConfirm stores the linked session and user', async () => {
@@ -360,12 +350,10 @@ describe('AuthProvider', () => {
     )
     expect(authApiMocks.linkConfirm).toHaveBeenCalledWith(linkPayload)
     expect(tokenStore.get()).toBe('linked-access')
-    expect(localStorage.getItem('refreshToken')).toBe('linked-refresh')
+    expect(localStorage.length).toBe(0)
   })
 
   it('clears the current session when the forced logout event is dispatched', async () => {
-    localStorage.setItem('refreshToken', 'saved-refresh')
-
     render(
       <AuthProvider>
         <ContextProbe />

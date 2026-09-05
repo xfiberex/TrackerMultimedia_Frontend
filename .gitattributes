@@ -1,0 +1,22 @@
+# Finales de línea LF en el árbol de trabajo, no solo en el repositorio.
+#
+# Sin esto, `core.autocrlf=true` —el valor por defecto de Git en Windows— convierte los
+# archivos a CRLF al clonar. Para casi todo es inocuo, pero rompió el hash SHA-256 con el
+# que la CSP autoriza el script en línea de `index.html`: el navegador recibe un archivo
+# con CRLF, calcula otro hash, bloquea el script y vuelve el destello de tema claro que
+# T3-18 corrigió. Y lo hace **en silencio**, sin error a la vista.
+#
+# El `.editorconfig` ya declaraba LF, pero solo manda sobre el editor: no interviene en el
+# checkout. Esto sí.
+* text=auto eol=lf
+
+# Binarios: nunca tocar su contenido.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

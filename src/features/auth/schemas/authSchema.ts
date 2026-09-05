@@ -19,9 +19,12 @@ export const userSchema = z.object({
   linkedProviders: z.array(z.string()),
 })
 
+// Sin `refreshToken`: desde T4-01 viaja en una cookie HttpOnly que este código no puede
+// leer ni necesita leer. Si el backend volviera a mandarlo en el cuerpo, este esquema no
+// lo detectaría —Zod ignora las claves de más— pero sí lo detecta el test de backend que
+// mira el JSON crudo.
 export const authResponseSchema = z.object({
   accessToken: z.string(),
-  refreshToken: z.string(),
   expiresIn: z.number().positive(),
   user: userSchema,
 })

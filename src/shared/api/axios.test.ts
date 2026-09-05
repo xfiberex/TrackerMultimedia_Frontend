@@ -32,7 +32,12 @@ function createDeferred<T>() {
 const axiosState = vi.hoisted(() => {
   const instances: MockAxiosInstance[] = []
 
-  const create = vi.fn(() => {
+  // Las configuraciones se guardan para poder afirmar sobre cómo se construye cada
+  // instancia —`withCredentials` y la cabecera anti-CSRF—, no solo sobre lo que hace.
+  const configs: Record<string, unknown>[] = []
+
+  const create = vi.fn((config: Record<string, unknown>) => {
+    configs.push(config)
     const requestHandlers: MockHandler[] = []
     const responseSuccessHandlers: MockHandler[] = []
     const responseErrorHandlers: MockHandler[] = []
@@ -65,8 +70,10 @@ const axiosState = vi.hoisted(() => {
   return {
     create,
     instances,
+    configs,
     reset() {
       instances.length = 0
+      configs.length = 0
       create.mockClear()
     },
   }
@@ -87,6 +94,7 @@ async function loadAxiosModule() {
 
   return {
     api: axiosModule.default,
+    refreshSession: axiosModule.refreshSession,
     authLogoutEvent: axiosModule.AUTH_LOGOUT_EVENT,
     tokenStore,
     refreshClient: axiosState.instances[0],
@@ -114,16 +122,53 @@ describe('shared api axios client', () => {
     })
   })
 
-  it('rejects the original error when a 401 arrives without a refresh token', async () => {
-    const { apiClient, refreshClient } = await loadAxiosModule()
-    const interceptor = apiClient.interceptors.response.errorHandlers[0]
-    const error = {
-      response: { status: 401 },
-      config: { headers: {} as Record<string, string> },
-    }
+  it('creates both clients with credentials and the anti-CSRF header', async () => {
+    await loadAxiosModule()
 
-    await expect(interceptor(error)).rejects.toBe(error)
-    expect(refreshClient.post).not.toHaveBeenCalled()
+    // `withCredentials` es lo que hace que el navegador adjunte la cookie de refresco:
+    // sin él la sesión no sobrevive a una recarga y el fallo es mudo, porque el refresh
+    // responde 401 igual que si no hubiera sesión. Y sin la cabecera, el backend rechaza
+    // /auth/refresh y /auth/logout por su defensa contra CSRF.
+    expect(axiosState.configs).toHaveLength(2)
+
+    for (const config of axiosState.configs) {
+      expect(config).toMatchObject({
+        withCredentials: true,
+        headers: expect.objectContaining({ 'X-TM-Client': 'web' }),
+      })
+    }
+  })
+
+  it('collapses concurrent refreshes into a single request', async () => {
+    const { refreshSession, refreshClient } = await loadAxiosModule()
+    const deferred = createDeferred<{ data: { accessToken: string } }>()
+    refreshClient.post.mockReturnValue(deferred.promise)
+
+    // Es lo que hace StrictMode al montar los efectos dos veces. Sin un único vuelo, las
+    // dos peticiones salen con el mismo valor de cookie, la segunda presenta un token ya
+    // rotado, y el backend lo interpreta como robo y revoca TODAS las sesiones.
+    const primera = refreshSession()
+    const segunda = refreshSession()
+
+    deferred.resolve({ data: { accessToken: 'unico-access' } })
+
+    await expect(Promise.all([primera, segunda])).resolves.toEqual([
+      { accessToken: 'unico-access' },
+      { accessToken: 'unico-access' },
+    ])
+    expect(refreshClient.post).toHaveBeenCalledTimes(1)
+  })
+
+  it('starts a new request once the previous refresh has settled', async () => {
+    const { refreshSession, refreshClient } = await loadAxiosModule()
+    refreshClient.post.mockResolvedValue({ data: { accessToken: 'access' } })
+
+    await refreshSession()
+    await refreshSession()
+
+    // El vuelo compartido se libera al terminar: si no, la sesión no podría renovarse
+    // nunca más después de la primera vez.
+    expect(refreshClient.post).toHaveBeenCalledTimes(2)
   })
 
   it('refreshes the token and retries the original request after a 401', async () => {
@@ -131,11 +176,9 @@ describe('shared api axios client', () => {
     const interceptor = apiClient.interceptors.response.errorHandlers[0]
     const originalRequest = { headers: {} as Record<string, string> }
 
-    localStorage.setItem('refreshToken', 'old-refresh')
     refreshClient.post.mockResolvedValue({
       data: {
         accessToken: 'new-access',
-        refreshToken: 'new-refresh',
         user: {
           id: 'user-1',
           email: 'user@test.com',
@@ -155,11 +198,11 @@ describe('shared api axios client', () => {
       }),
     ).resolves.toEqual({ data: 'retried-response' })
 
-    expect(refreshClient.post).toHaveBeenCalledWith('/auth/refresh', {
-      refreshToken: 'old-refresh',
-    })
+    // Sin cuerpo: el token va en la cookie.
+    expect(refreshClient.post).toHaveBeenCalledWith('/auth/refresh')
     expect(tokenStore.get()).toBe('new-access')
-    expect(localStorage.getItem('refreshToken')).toBe('new-refresh')
+    // Y la rotación no deja rastro en ningún almacenamiento legible por JavaScript.
+    expect(localStorage.length).toBe(0)
     expect(apiClient).toHaveBeenCalledWith(
       expect.objectContaining({
         _retry: true,
@@ -174,7 +217,6 @@ describe('shared api axios client', () => {
     const refreshDeferred = createDeferred<{
       data: {
         accessToken: string
-        refreshToken: string
         user: {
           id: string
           email: string
@@ -186,7 +228,6 @@ describe('shared api axios client', () => {
       }
     }>()
 
-    localStorage.setItem('refreshToken', 'shared-refresh')
     refreshClient.post.mockReturnValue(refreshDeferred.promise)
     apiClient
       .mockResolvedValueOnce({ data: 'first-retry' })
@@ -208,7 +249,6 @@ describe('shared api axios client', () => {
     refreshDeferred.resolve({
       data: {
         accessToken: 'queued-access',
-        refreshToken: 'queued-refresh',
         user: {
           id: 'user-1',
           email: 'user@test.com',
@@ -247,7 +287,6 @@ describe('shared api axios client', () => {
     const refreshError = new Error('refresh failed')
 
     tokenStore.set('stale-access')
-    localStorage.setItem('refreshToken', 'stale-refresh')
     refreshClient.post.mockRejectedValue(refreshError)
 
     await expect(
@@ -258,7 +297,7 @@ describe('shared api axios client', () => {
     ).rejects.toBe(refreshError)
 
     expect(tokenStore.get()).toBeNull()
-    expect(localStorage.getItem('refreshToken')).toBeNull()
+    expect(localStorage.length).toBe(0)
     expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: authLogoutEvent }))
   })
 })
