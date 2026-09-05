@@ -117,6 +117,50 @@ describe.each(temas)('contraste del tema $nombre', ({ selector }) => {
 })
 
 /**
+ * El botón de borrar es el control más consecuente de la aplicación, y su tinta salía
+ * de `--status-dropped` —el color del estado «abandonado» de un elemento—. El tema
+ * oscuro sobreescribía su fondo pero no su color, así que quedaba en **2,47:1**:
+ * ilegible. Ahora la tinta es `--destructive`, que cada tema define por su cuenta, y
+ * este test comprueba la pareja real: la tinta sobre el fondo teñido del propio botón.
+ */
+describe.each(temas)('acción destructiva en el tema $nombre', ({ selector }) => {
+  const body = ruleBody(selector)
+
+  it('la tinta de peligro supera 4,5:1 sobre el fondo del botón', () => {
+    const stops = gradientStops(body)
+    const panel = parseColor(token(body, 'surface-strong'), stops[0])
+
+    // `--destructive-surface` es translúcido: se compone sobre el panel que hay detrás.
+    const fondo = parseColor(token(body, 'destructive-surface'), panel)
+    const tinta = parseColor(token(body, 'destructive'))
+
+    const ratio = contrastRatio(tinta, fondo)
+    expect(
+      Number(ratio.toFixed(2)),
+      `--destructive sobre --destructive-surface da ${ratio.toFixed(2)}:1, por debajo del mínimo AA`,
+    ).toBeGreaterThanOrEqual(4.5)
+  })
+})
+
+/**
+ * La regresión concreta que hubo: reutilizar un token de `--status-*` como tinta de una
+ * acción. Son semánticas distintas —uno describe un elemento de la biblioteca, el otro
+ * lo que hace un botón— y acoplarlas hizo que el color de «abandonado» decidiera cómo
+ * se ve el botón de borrar.
+ */
+it('las acciones destructivas no toman su tinta de un token de estado', () => {
+  for (const regla of ['.button--danger', '.feedback-banner--danger']) {
+    const inicio = css.indexOf(`${regla} {`)
+    expect(inicio, `no se encontró la regla ${regla}`).toBeGreaterThan(-1)
+
+    const cuerpo = css.slice(inicio, css.indexOf('}', inicio))
+    expect(cuerpo, `${regla} debe usar --destructive, no un --status-*`).not.toContain(
+      'var(--status-',
+    )
+  }
+})
+
+/**
  * `--accent-primary` es un tono de superficie, no de tinta: en oscuro vale #334155 y
  * sobre el panel daba 1,41:1. Se usó como color de texto en la pestaña activa del
  * catálogo, que quedó indistinguible de las inactivas. Este test fija que la tinta de
@@ -128,4 +172,54 @@ it('la pestaña activa del catálogo en oscuro no usa un color de superficie com
 
   expect(regla![1]).not.toContain('var(--accent-primary)')
   expect(regla![1]).toContain('var(--accent-ink)')
+})
+
+/**
+ * La pantalla de acceso se escribió entera con valores del tema claro y solo tenía dos
+ * reglas `[data-theme='dark']`. Lo que se veía bien se salvaba porque una regla oscura
+ * genérica aparecía más abajo en el archivo y ganaba el desempate por orden — no por
+ * diseño. En cuanto una de esas desapareció, el botón de acceso volvió a ser azul
+ * marino sobre una tarjeta azul marino, y con él salieron a la luz la marca, el título,
+ * los enlaces del pie y el mensaje de error, todos en `#0f172a` o `#dc2626` fijos.
+ *
+ * Un fondo fijo se nota; una tinta fija que no sigue al tema desaparece. De ahí que la
+ * regla sea sobre `color`: en esta sección la tinta siempre sale de un token.
+ */
+it('la pantalla de acceso no fija ninguna tinta a mano', () => {
+  const reglas = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)]
+    .map(([, selector, cuerpo]) => ({ selector: selector.trim(), cuerpo }))
+    .filter(({ selector }) => selector.includes('auth') || selector.includes('oauth'))
+
+  expect(reglas.length, 'no se encontró ninguna regla de la pantalla de acceso').toBeGreaterThan(10)
+
+  const culpables = reglas
+    .filter(({ cuerpo }) => /(^|[\s;])color:\s*#[0-9a-f]{3,8}/i.test(cuerpo))
+    .map(({ selector }) => selector)
+
+  expect(
+    culpables,
+    `estas reglas fijan la tinta a mano en vez de usar un token, así que no siguen al tema: ${culpables.join(', ')}`,
+  ).toEqual([])
+})
+
+/**
+ * Una variable CSS que no existe no falla: cae en su valor de respaldo, en silencio.
+ *
+ * El enlace «Saltar al contenido» pedía `--surface`, `--border` y `--accent`, tres
+ * nombres que este proyecto nunca ha definido —los suyos son `--surface-strong`,
+ * `--border-strong` y `--accent-primary`—, así que su fondo se quedaba en el `#fff` de
+ * respaldo. Pero `--text-primary` sí existe, de modo que en tema oscuro el texto se
+ * aclaraba sobre un fondo que no: **1,48:1**. Justo en la ayuda de accesibilidad que
+ * añadió T1-18.
+ */
+it('no se usa ninguna variable CSS que no esté definida', () => {
+  const definidas = new Set([...css.matchAll(/^\s*(--[a-z0-9-]+)\s*:/gim)].map((m) => m[1]))
+  const usadas = new Set([...css.matchAll(/var\(\s*(--[a-z0-9-]+)/gi)].map((m) => m[1]))
+
+  const huerfanas = [...usadas].filter((n) => !definidas.has(n)).sort()
+
+  expect(
+    huerfanas,
+    `estas variables se usan pero no se definen, así que siempre caen en su valor de respaldo: ${huerfanas.join(', ')}`,
+  ).toEqual([])
 })
