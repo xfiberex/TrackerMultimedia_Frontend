@@ -546,6 +546,33 @@ a {
   background: rgba(255, 255, 255, 0.88);
 }
 
+/*
+ * La flecha del `select` la pintamos nosotros.
+ *
+ * La nativa se dibuja pegada al borde derecho y **no la mueve `padding-right`**, así que
+ * quedaba en el filo mientras el texto respetaba su margen de `--space-4`: el único
+ * elemento de la interfaz sin aire por un lado. `appearance: none` la quita y la
+ * repone este `background-image`, ya sí colocado con el mismo margen que el texto.
+ *
+ * El dibujo es el `ChevronDownIcon` de Heroicons, el mismo trazo y el mismo tamaño que
+ * el de los menús de acciones, para que dos flechas de la misma pantalla no sean dos
+ * flechas distintas.
+ *
+ * El `padding-right` reserva su hueco: sin él, una opción larga se metería por debajo.
+ * Y ojo con el orden —esta regla va después de la de arriba a propósito—: `background`
+ * en forma corta reinicia `background-image`, así que ponerla antes borraría la flecha.
+ */
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  /* 48px = margen (16) + flecha (16) + margen (16), que es justo --space-12. */
+  padding-right: var(--space-12);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19.5 8.25-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-4) center;
+  background-size: 1rem 1rem;
+}
+
 .input--readonly-ellipsis {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2384,8 +2411,6 @@ a {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  position: relative;
-  z-index: 10;
 }
 
 .color-picker-trigger {
@@ -2435,12 +2460,23 @@ a {
   transform: rotate(180deg);
 }
 
+/*
+ * El desplegable de color **ocupa sitio**, no flota sobre lo de abajo.
+ *
+ * Flotando era `position: absolute`, y dentro del diálogo de «Nueva categoría» eso lo
+ * cortaba: un hijo posicionado en absoluto no ensancha la caja de su contenedor, pero sí
+ * cuenta como desbordamiento, así que `.side-panel__content` —que tiene `overflow-y:
+ * auto`— sacaba una barra de desplazamiento y recortaba la última fila, la del color
+ * personalizado. El diálogo no estaba lleno: sobraba espacio y aun así se cortaba.
+ *
+ * Cualquier ajuste de altura habría sido un parche, porque el recorte no venía de que
+ * faltara sitio sino de flotar dentro de algo que se desplaza. Estando en el flujo, el
+ * diálogo crece con él mientras quepa, y si algún día no cabe, se desplaza entero y
+ * correctamente. `.color-picker-control` ya separa a sus hijos con su propio `gap`, y por
+ * eso desaparecen también el `position: relative` y los dos `z-index`: no quedaba nada
+ * que posicionar ni nada sobre lo que superponerse.
+ */
 .color-picker-popover {
-  position: absolute;
-  top: calc(100% + 0.4rem);
-  left: 0;
-  right: 0;
-  z-index: 30;
   padding: var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-strong);
@@ -2659,6 +2695,17 @@ a {
   background: rgba(15, 23, 42, 0.8);
   color: #cbd5e1;
   border-color: #334155;
+}
+
+/*
+ * La flecha, otra vez, y no por gusto: la regla de arriba usa `background` en forma
+ * corta, que reinicia `background-image`. Sin esta línea el tema oscuro dejaría los
+ * `select` **sin ningún indicador**, que es peor que el defecto que arregló todo esto.
+ * El color acompaña al del texto en oscuro; el gris de tema claro se perdería contra el
+ * fondo. `src/config/select-arrow.test.ts` vigila que las dos sigan estando.
+ */
+[data-theme='dark'] .select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23cbd5e1'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19.5 8.25-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
 }
 
 [data-theme='dark'] .input:focus,
