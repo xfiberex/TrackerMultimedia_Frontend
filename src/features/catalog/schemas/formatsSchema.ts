@@ -1,7 +1,11 @@
 import { z } from 'zod'
+import { mensaje } from '@/shared/i18n/mensajeZod'
 
 export const createFormatInputSchema = z.object({
-  name: z.string().min(1, 'Nombre requerido').max(60, 'Máximo 60 caracteres'),
+  name: z
+    .string()
+    .min(1, mensaje('validacion.nombreRequerido'))
+    .max(60, mensaje('validacion.maximo60')),
 })
 
 export const updateFormatInputSchema = createFormatInputSchema

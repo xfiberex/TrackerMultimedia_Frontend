@@ -5,12 +5,14 @@ import {
   TrashIcon,
   TvIcon,
 } from '@heroicons/react/24/outline'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import {
   mediaSourceLabels,
-  mediaTrackingStatusLabels,
-  contentKindLabels,
+  mediaTrackingStatusLabelKeys,
+  contentKindLabelKeys,
   mediaTypeLabels,
-  progressUnitLabels,
+  progressUnitLabelKeys,
   type MediaItem,
 } from '@/features/media-items/schemas/mediaItemSchema'
 import { formatDate, formatScore } from '@/shared/utils'
@@ -22,26 +24,33 @@ interface MediaItemCardProps {
   onEdit?: (item: MediaItem) => void
 }
 
-function getKindLabel(item: MediaItem): string {
-  return item.type ? mediaTypeLabels[item.type] : contentKindLabels[item.contentKind]
+// Estas tres siguen siendo funciones de módulo, pero reciben `t`. Meterlas dentro del
+// componente para alcanzar el hook las recrearía en cada render sin ganar nada; pasarlo
+// como argumento las deja igual de puras que antes.
+function getKindLabel(item: MediaItem, t: TFunction): string {
+  return item.type ? mediaTypeLabels[item.type] : t(contentKindLabelKeys[item.contentKind])
 }
 
-function getProgressLabel(item: MediaItem): string {
+function getProgressLabel(item: MediaItem, t: TFunction): string {
   const progressCurrent = item.progressCurrent ?? item.progressCount
 
   if (progressCurrent <= 0 && item.progressTotal == null) {
-    return 'Sin progreso'
+    return t('tarjeta.sinProgreso')
   }
 
   if (item.progressUnit === 'None') {
-    return `Progreso ${progressCurrent}`
+    return t('tarjeta.progreso', { actual: String(progressCurrent) })
   }
 
   const progressTotal = item.progressTotal != null ? `/${item.progressTotal}` : ''
-  return `Progreso ${progressCurrent}${progressTotal} ${progressUnitLabels[item.progressUnit].toLowerCase()}`
+  return t('tarjeta.progresoConUnidad', {
+    actual: String(progressCurrent),
+    total: progressTotal,
+    unidad: t(progressUnitLabelKeys[item.progressUnit]).toLowerCase(),
+  })
 }
 
-function getSeasonLabel(item: MediaItem): string | null {
+function getSeasonLabel(item: MediaItem, t: TFunction): string | null {
   if (item.currentSeason <= 1) {
     return null
   }
@@ -50,7 +59,7 @@ function getSeasonLabel(item: MediaItem): string | null {
     return null
   }
 
-  return `Temporada ${item.currentSeason}`
+  return t('tarjeta.temporada', { numero: String(item.currentSeason) })
 }
 
 export default function MediaItemCard({
@@ -59,12 +68,15 @@ export default function MediaItemCard({
   onDelete,
   onEdit,
 }: MediaItemCardProps) {
+  const { t } = useTranslation()
   const statusClassName = `badge badge--${item.status.toLowerCase()}`
   const categories = item.categories ?? []
   const metadata = [
-    item.releaseYear ? `Estreno ${item.releaseYear}` : 'Año sin registrar',
-    getProgressLabel(item),
-    getSeasonLabel(item),
+    item.releaseYear
+      ? t('tarjeta.estreno', { anio: String(item.releaseYear) })
+      : t('tarjeta.anioSinRegistrar'),
+    getProgressLabel(item, t),
+    getSeasonLabel(item, t),
   ].filter((part): part is string => part !== null)
 
   return (
@@ -84,11 +96,13 @@ export default function MediaItemCard({
 
       <div className="media-card__body">
         <h3 className="media-card__title">{item.title}</h3>
-        <p className="media-card__alt">{item.alternativeTitle ?? 'Sin título alternativo'}</p>
+        <p className="media-card__alt">
+          {item.alternativeTitle ?? t('tarjeta.sinTituloAlternativo')}
+        </p>
 
         <div className="badge-row">
-          <span className="badge">{getKindLabel(item)}</span>
-          <span className={statusClassName}>{mediaTrackingStatusLabels[item.status]}</span>
+          <span className="badge">{getKindLabel(item, t)}</span>
+          <span className={statusClassName}>{t(mediaTrackingStatusLabelKeys[item.status])}</span>
           <span className="badge badge--source">{mediaSourceLabels[item.sourceType]}</span>
           {item.externalStatusLabel ? (
             <span className="badge">{item.externalStatusLabel}</span>
@@ -133,7 +147,7 @@ export default function MediaItemCard({
                   onClick={() => onEdit(item)}
                 >
                   <PencilSquareIcon width={18} height={18} />
-                  Editar
+                  {t('comun.editar')}
                 </button>
               ) : null}
 
@@ -145,7 +159,7 @@ export default function MediaItemCard({
                   disabled={isDeleting}
                 >
                   <TrashIcon width={18} height={18} />
-                  {isDeleting ? 'Eliminando…' : 'Eliminar'}
+                  {isDeleting ? t('tarjeta.eliminando') : t('comun.eliminar')}
                 </button>
               ) : null}
             </div>

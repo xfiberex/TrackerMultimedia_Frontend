@@ -7,6 +7,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CategoriesApi } from '@/features/categories/api/CategoriesAPI'
 import type { Category, CreateCategoryInput } from '@/features/categories/schemas/categorySchema'
 import EmptyState from '@/shared/components/EmptyState'
@@ -36,6 +37,7 @@ function ColorPickerDropdown({
   /** Id del texto que etiqueta el control, para que el disparador tenga nombre accesible. */
   labelId: string
 }) {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
   const nativeRef = useRef<HTMLInputElement | null>(null)
@@ -80,7 +82,7 @@ function ColorPickerDropdown({
           style={{ backgroundColor: isValidHex ? (displayColor ?? 'transparent') : 'transparent' }}
         />
         <span className="color-picker-trigger__value" id={`${labelId}-value`}>
-          {value.trim() || 'Sin color'}
+          {value.trim() || t('categorias.sinColor')}
         </span>
         <ChevronDownIcon
           className={`color-picker-trigger__chevron${isOpen ? ' color-picker-trigger__chevron--open' : ''}`}
@@ -90,8 +92,16 @@ function ColorPickerDropdown({
       </button>
 
       {isOpen ? (
-        <div className="color-picker-popover" role="listbox" aria-label="Selector de color">
-          <div className="color-picker-presets" role="group" aria-label="Colores predefinidos">
+        <div
+          className="color-picker-popover"
+          role="listbox"
+          aria-label={t('categorias.selectorColor')}
+        >
+          <div
+            className="color-picker-presets"
+            role="group"
+            aria-label={t('categorias.coloresPredefinidos')}
+          >
             {PRESET_COLORS.map((color) => (
               <button
                 key={color}
@@ -110,7 +120,7 @@ function ColorPickerDropdown({
           </div>
 
           <div className="color-picker-native-row">
-            <label htmlFor="category-color-native">Personalizado</label>
+            <label htmlFor="category-color-native">{t('categorias.personalizado')}</label>
             <input
               ref={nativeRef}
               id="category-color-native"
@@ -125,7 +135,7 @@ function ColorPickerDropdown({
               placeholder="#336699"
               value={value}
               onChange={(e) => onChange(e.target.value)}
-              aria-label="Valor hexadecimal del color"
+              aria-label={t('categorias.hexadecimal')}
             />
             {value.trim() ? (
               <button
@@ -137,7 +147,7 @@ function ColorPickerDropdown({
                   setIsOpen(false)
                 }}
               >
-                Quitar
+                {t('categorias.quitar')}
               </button>
             ) : null}
           </div>
@@ -201,6 +211,7 @@ export default function CategoriesView() {
   const queryClient = useQueryClient()
   const editorSectionRef = useRef<HTMLElement | null>(null)
   const { showToast } = useToast()
+  const { t } = useTranslation()
 
   const categoriesQuery = useQuery({
     queryKey: queryKeys.categories.list(),
@@ -225,8 +236,8 @@ export default function CategoriesView() {
       showToast({
         tone: 'success',
         message: variables.categoryId
-          ? `"${savedCategory.name}" se actualizó correctamente.`
-          : `"${savedCategory.name}" se creó correctamente.`,
+          ? t('categorias.actualizada', { nombre: savedCategory.name })
+          : t('categorias.creada', { nombre: savedCategory.name }),
       })
       setError(null)
       setEditingCategory(null)
@@ -238,9 +249,7 @@ export default function CategoriesView() {
       setError(
         extractCategoriesError(
           mutationError,
-          variables.categoryId
-            ? 'No se pudo actualizar la categoría.'
-            : 'No se pudo crear la categoría.',
+          variables.categoryId ? t('categorias.errorActualizar') : t('categorias.errorCrear'),
         ),
       )
     },
@@ -258,7 +267,10 @@ export default function CategoriesView() {
       }
 
       setDeleteCandidate(null)
-      showToast({ tone: 'success', message: `"${deletedCategory.name}" se eliminó correctamente.` })
+      showToast({
+        tone: 'success',
+        message: t('categorias.eliminada', { nombre: deletedCategory.name }),
+      })
       setError(null)
       void queryClient.invalidateQueries({ queryKey: queryKeys.categories.root })
       void queryClient.invalidateQueries({ queryKey: queryKeys.mediaItems.root })
@@ -267,7 +279,7 @@ export default function CategoriesView() {
       setDeleteCandidate(null)
       showToast({
         tone: 'danger',
-        message: extractCategoriesError(mutationError, 'No se pudo eliminar la categoría.'),
+        message: extractCategoriesError(mutationError, t('categorias.errorEliminar')),
       })
     },
   })
@@ -316,7 +328,9 @@ export default function CategoriesView() {
   }
 
   if (categoriesQuery.isLoading && !categoriesQuery.data) {
-    return <Loader title="Cargando categorías" message="Preparando tu taxonomía personal." />
+    return (
+      <Loader title={t('categorias.cargandoTitulo')} message={t('categorias.cargandoMensaje')} />
+    )
   }
 
   return (
@@ -324,21 +338,18 @@ export default function CategoriesView() {
       <section className="hero-panel">
         <span className="hero-panel__eyebrow">
           <TagIcon width={18} height={18} />
-          Categorías
+          {t('categorias.eyebrow')}
         </span>
-        <h1 className="hero-panel__title">Tus categorías</h1>
-        <p className="hero-panel__description">
-          Crea, renombra y elimina categorías personales para organizar tu biblioteca con tus
-          propias reglas.
-        </p>
+        <h1 className="hero-panel__title">{t('categorias.titulo')}</h1>
+        <p className="hero-panel__description">{t('categorias.descripcion')}</p>
         <div className="hero-panel__meta">
-          <span className="hero-chip">{categories.length} categorías</span>
-          <span className="hero-chip">Colores opcionales</span>
+          <span className="hero-chip">{t('categorias.cuenta', { count: categories.length })}</span>
+          <span className="hero-chip">{t('categorias.coloresOpcionales')}</span>
         </div>
         <div className="hero-panel__actions">
           <button className="button button--primary" type="button" onClick={openFreshEditor}>
             <PlusIcon width={18} height={18} />
-            Abrir editor
+            {t('categorias.abrirEditor')}
           </button>
         </div>
       </section>
@@ -346,10 +357,8 @@ export default function CategoriesView() {
       {categoriesQuery.isError ? (
         <div className="status-stack">
           <div className="status-banner status-banner--warning" role="status">
-            <strong>La taxonomía no se pudo sincronizar.</strong>
-            <span>
-              Puedes seguir preparando el editor, pero la lista no se refrescó correctamente.
-            </span>
+            <strong>{t('categorias.sincronizacionTitulo')}</strong>
+            <span>{t('categorias.sincronizacionTexto')}</span>
           </div>
         </div>
       ) : null}
@@ -357,23 +366,20 @@ export default function CategoriesView() {
       <section className="panel" ref={editorSectionRef}>
         <div className="panel__header">
           <div>
-            <h2 className="panel__title">Editor de categorías</h2>
-            <p className="panel__description">
-              Usa colores opcionales para distinguir grupos como backlog, favoritos, pendientes o
-              temporadas.
-            </p>
+            <h2 className="panel__title">{t('categorias.editorTitulo')}</h2>
+            <p className="panel__description">{t('categorias.editorDescripcion')}</p>
           </div>
           {!isEditing ? (
             <span className="hero-chip">
               <PlusIcon width={16} height={16} />
-              Nueva categoría
+              {t('categorias.nuevaCategoria')}
             </span>
           ) : null}
         </div>
 
         <form
           className="filters-form category-form"
-          aria-label="Formulario de categorías"
+          aria-label={t('categorias.formulario')}
           onSubmit={handleSubmit}
         >
           {error ? (
@@ -384,7 +390,7 @@ export default function CategoriesView() {
 
           <div className="control-grid">
             <div className="control">
-              <label htmlFor="category-name">Nombre de la categoría</label>
+              <label htmlFor="category-name">{t('categorias.nombre')}</label>
               <input
                 id="category-name"
                 className="input"
@@ -398,7 +404,7 @@ export default function CategoriesView() {
               {/* No es un <label>: el selector de color es un widget compuesto, no un
                   control único, así que se nombra por aria-labelledby desde el disparador. */}
               <span className="control__label" id="category-color-label">
-                Color
+                {t('categorias.color')}
               </span>
               <ColorPickerDropdown
                 labelId="category-color-label"
@@ -411,7 +417,7 @@ export default function CategoriesView() {
           <div className="category-form__actions">
             {isEditing ? (
               <button type="button" className="button button--ghost" onClick={resetForm}>
-                Cancelar edición
+                {t('categorias.cancelarEdicion')}
               </button>
             ) : null}
 
@@ -421,10 +427,10 @@ export default function CategoriesView() {
               disabled={saveMutation.isPending}
             >
               {saveMutation.isPending
-                ? 'Guardando…'
+                ? t('comun.guardando')
                 : isEditing
-                  ? 'Guardar cambios'
-                  : 'Crear categoría'}
+                  ? t('perfil.guardarCambios')
+                  : t('categorias.crear')}
             </button>
           </div>
         </form>
@@ -433,24 +439,22 @@ export default function CategoriesView() {
       <section className="panel">
         <div className="results-header">
           <div>
-            <h2 className="results-title">Categorías disponibles</h2>
-            <p className="results-subtitle">
-              Cada categoría es privada para tu cuenta y puede asignarse a varios ítems.
-            </p>
+            <h2 className="results-title">{t('categorias.disponiblesTitulo')}</h2>
+            <p className="results-subtitle">{t('categorias.disponiblesSubtitulo')}</p>
           </div>
         </div>
 
         {categoriesQuery.isError ? (
           <EmptyState
-            title="No se pudieron cargar las categorías"
-            message="Recarga la vista o revisa la conexión con el backend."
+            title={t('categorias.errorTitulo')}
+            message={t('categorias.errorMensaje')}
             action={
               <button
                 className="button button--primary"
                 type="button"
                 onClick={() => categoriesQuery.refetch()}
               >
-                Reintentar
+                {t('comun.reintentar')}
               </button>
             }
           />
@@ -458,12 +462,12 @@ export default function CategoriesView() {
 
         {!categoriesQuery.isError && categories.length === 0 ? (
           <EmptyState
-            title="Todavía no tienes categorías"
-            message="Crea la primera para empezar a agrupar tu biblioteca con reglas propias."
+            title={t('categorias.vaciaTitulo')}
+            message={t('categorias.vaciaMensaje')}
             action={
               <button className="button button--primary" type="button" onClick={openFreshEditor}>
                 <PlusIcon width={18} height={18} />
-                Abrir editor
+                {t('categorias.abrirEditor')}
               </button>
             }
           />
@@ -474,9 +478,9 @@ export default function CategoriesView() {
             <table className="search-table">
               <thead>
                 <tr>
-                  <th>Color</th>
-                  <th>Nombre</th>
-                  <th>Acciones</th>
+                  <th>{t('categorias.color')}</th>
+                  <th>{t('categorias.colNombre')}</th>
+                  <th>{t('descubrir.colAcciones')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -489,7 +493,7 @@ export default function CategoriesView() {
                           style={{ backgroundColor: category.color ?? 'transparent' }}
                           aria-hidden="true"
                         />
-                        <span>{category.color ?? 'Sin color'}</span>
+                        <span>{category.color ?? t('categorias.sinColor')}</span>
                       </div>
                     </td>
                     <td className="search-row__title-cell">
@@ -508,7 +512,7 @@ export default function CategoriesView() {
                           }}
                         >
                           <PencilSquareIcon width={16} height={16} />
-                          Editar
+                          {t('comun.editar')}
                         </button>
                         <button
                           className="button button--danger"
@@ -517,7 +521,7 @@ export default function CategoriesView() {
                           disabled={deleteMutation.isPending}
                         >
                           <TrashIcon width={16} height={16} />
-                          Eliminar
+                          {t('comun.eliminar')}
                         </button>
                       </div>
                     </td>
@@ -532,11 +536,13 @@ export default function CategoriesView() {
       <ConfirmDialog
         open={deleteCandidate !== null}
         title={
-          deleteCandidate ? `Eliminar la categoría "${deleteCandidate.name}"` : 'Eliminar categoría'
+          deleteCandidate
+            ? t('categorias.dialogoTitulo', { nombre: deleteCandidate.name })
+            : t('categorias.dialogoTituloGenerico')
         }
-        message="Esta categoría desaparecerá de tu taxonomía personal y dejará de estar disponible en Biblioteca y Descubrir."
-        confirmLabel="Eliminar categoría"
-        cancelLabel="Conservar categoría"
+        message={t('categorias.dialogoMensaje')}
+        confirmLabel={t('categorias.dialogoConfirmar')}
+        cancelLabel={t('categorias.dialogoCancelar')}
         tone="danger"
         isPending={deleteMutation.isPending}
         onClose={() => setDeleteCandidate(null)}

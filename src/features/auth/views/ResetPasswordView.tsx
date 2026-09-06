@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import LanguageToggle from '@/shared/components/LanguageToggle'
 import { AuthAPI } from '../api/AuthAPI'
 import { extractApiError } from '@/shared/utils'
 
 export default function ResetPasswordView() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const [email, setEmail] = useState(searchParams.get('email') ?? '')
   const [token, setToken] = useState(searchParams.get('token') ?? '')
@@ -19,7 +22,7 @@ export default function ResetPasswordView() {
     setError(null)
 
     if (newPassword !== confirmPassword) {
-      setError('Las contraseñas no coinciden.')
+      setError(t('registro.noCoinciden'))
       return
     }
 
@@ -28,10 +31,10 @@ export default function ResetPasswordView() {
     try {
       await AuthAPI.resetPassword({ email, token, newPassword })
       navigate('/login', {
-        state: { message: 'Contraseña actualizada. Ya puedes iniciar sesión.' },
+        state: { message: t('nuevaContrasena.hecho') },
       })
     } catch (err) {
-      setError(extractApiError(err, 'El enlace de recuperación no es válido o ha expirado.'))
+      setError(extractApiError(err, t('nuevaContrasena.enlaceInvalido')))
     } finally {
       setIsPending(false)
     }
@@ -42,10 +45,11 @@ export default function ResetPasswordView() {
       <div className="auth-card">
         <div className="auth-brand">
           <span className="brand__title">TrackerMultimedia</span>
+          <LanguageToggle />
         </div>
 
-        <h1 className="auth-card__title">Nueva contraseña</h1>
-        <p className="auth-card__subtitle">Introduce tu nueva contraseña.</p>
+        <h1 className="auth-card__title">{t('nuevaContrasena.titulo')}</h1>
+        <p className="auth-card__subtitle">{t('nuevaContrasena.subtitulo')}</p>
 
         {error ? (
           <div className="auth-error" role="alert">
@@ -56,7 +60,7 @@ export default function ResetPasswordView() {
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           {/* Email y token se rellenan desde URL; se muestran como ocultos/readonly */}
           <div className="control">
-            <label htmlFor="email">Correo electrónico</label>
+            <label htmlFor="email">{t('acceso.correo')}</label>
             <input
               id="email"
               type="email"
@@ -71,7 +75,7 @@ export default function ResetPasswordView() {
 
           {!searchParams.get('token') && (
             <div className="control">
-              <label htmlFor="token">Código de recuperación</label>
+              <label htmlFor="token">{t('nuevaContrasena.codigo')}</label>
               <input
                 id="token"
                 type="text"
@@ -85,7 +89,7 @@ export default function ResetPasswordView() {
           )}
 
           <div className="control">
-            <label htmlFor="newPassword">Nueva contraseña</label>
+            <label htmlFor="newPassword">{t('nuevaContrasena.nueva')}</label>
             <input
               id="newPassword"
               type="password"
@@ -104,7 +108,7 @@ export default function ResetPasswordView() {
           </div>
 
           <div className="control">
-            <label htmlFor="confirmPassword">Confirmar contraseña</label>
+            <label htmlFor="confirmPassword">{t('nuevaContrasena.confirmar')}</label>
             <input
               id="confirmPassword"
               type="password"
@@ -117,12 +121,12 @@ export default function ResetPasswordView() {
           </div>
 
           <button type="submit" className="button button--primary" disabled={isPending}>
-            {isPending ? 'Actualizando…' : 'Establecer nueva contraseña'}
+            {isPending ? t('nuevaContrasena.actualizando') : t('nuevaContrasena.establecer')}
           </button>
         </form>
 
         <p className="auth-footer">
-          <Link to="/login">Volver al inicio de sesión</Link>
+          <Link to="/login">{t('comun.volverAlLogin')}</Link>
         </p>
       </div>
     </div>

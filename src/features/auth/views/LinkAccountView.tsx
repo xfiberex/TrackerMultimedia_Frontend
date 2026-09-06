@@ -9,6 +9,8 @@
  */
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
+import LanguageToggle from '@/shared/components/LanguageToggle'
 import { useAuth } from '../context/useAuth'
 import { extractApiError } from '@/shared/utils'
 
@@ -24,6 +26,7 @@ export default function LinkAccountView() {
 
   const { linkConfirm } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   if (!linkToken || !provider || !email) {
     return (
@@ -31,13 +34,12 @@ export default function LinkAccountView() {
         <div className="auth-card">
           <div className="auth-brand">
             <span className="brand__title">TrackerMultimedia</span>
+            <LanguageToggle />
           </div>
-          <h1 className="auth-card__title">Enlace inválido</h1>
-          <p className="auth-card__subtitle">
-            El enlace de vinculación no es válido o ha expirado.
-          </p>
+          <h1 className="auth-card__title">{t('vinculacion.invalidoTitulo')}</h1>
+          <p className="auth-card__subtitle">{t('vinculacion.invalidoSubtitulo')}</p>
           <p className="auth-footer">
-            <Link to="/login">Volver al inicio de sesión</Link>
+            <Link to="/login">{t('comun.volverAlLogin')}</Link>
           </p>
         </div>
       </div>
@@ -55,7 +57,7 @@ export default function LinkAccountView() {
       await linkConfirm({ linkToken, provider, email, password })
       navigate('/library', { replace: true })
     } catch (err) {
-      setError(extractApiError(err, 'No se pudo vincular la cuenta. Verifica tu contraseña.'))
+      setError(extractApiError(err, t('vinculacion.error')))
     } finally {
       setIsPending(false)
     }
@@ -66,12 +68,16 @@ export default function LinkAccountView() {
       <div className="auth-card">
         <div className="auth-brand">
           <span className="brand__title">TrackerMultimedia</span>
+          <LanguageToggle />
         </div>
 
-        <h1 className="auth-card__title">Vincular cuenta</h1>
+        <h1 className="auth-card__title">{t('vinculacion.titulo')}</h1>
         <p className="auth-card__subtitle">
-          Ya existe una cuenta con el correo <strong>{email}</strong>. Ingresa tu contraseña para
-          vincular tu cuenta de {providerLabel}.
+          <Trans
+            i18nKey="vinculacion.subtitulo"
+            values={{ correo: email, proveedor: providerLabel }}
+            components={{ destacado: <strong /> }}
+          />
         </p>
 
         {error ? (
@@ -82,7 +88,7 @@ export default function LinkAccountView() {
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="control">
-            <label htmlFor="password">Contraseña actual</label>
+            <label htmlFor="password">{t('vinculacion.contrasenaActual')}</label>
             <input
               id="password"
               type="password"
@@ -101,12 +107,14 @@ export default function LinkAccountView() {
           </div>
 
           <button type="submit" className="button button--primary" disabled={isPending}>
-            {isPending ? 'Vinculando…' : `Vincular con ${providerLabel}`}
+            {isPending
+              ? t('vinculacion.vinculando')
+              : t('vinculacion.vincularCon', { proveedor: providerLabel })}
           </button>
         </form>
 
         <p className="auth-footer">
-          <Link to="/login">Cancelar</Link>
+          <Link to="/login">{t('comun.cancelar')}</Link>
         </p>
       </div>
     </div>

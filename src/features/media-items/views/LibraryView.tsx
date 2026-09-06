@@ -9,6 +9,9 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
+import i18n from '@/shared/i18n'
 import { CategoriesApi } from '@/features/categories/api/CategoriesAPI'
 import { FormatsApi } from '@/features/catalog/api/FormatsAPI'
 import { MediaItemsApi } from '@/features/media-items/api/MediaItemsAPI'
@@ -132,38 +135,45 @@ function getTransferFormatLabel(format: LibraryTransferFormat): string {
   return format === 'Json' ? 'JSON' : 'CSV'
 }
 
-function formatCount(count: number, singular: string, plural: string): string {
-  return `${count} ${count === 1 ? singular : plural}`
+/**
+ * Une «3 creados», «1 actualizado» y «2 categorías nuevas» en una enumeración.
+ *
+ * Antes lo hacía una función a mano que pegaba « y » entre los dos últimos. Esa «y» es
+ * española: en inglés hay que decir «and», y en muchos idiomas la coma de antes también
+ * cambia. `Intl.ListFormat` es el que sabe eso para el idioma que se le pase, así que la
+ * función a mano sobra.
+ */
+function enumerar(valores: string[], idioma: string): string {
+  return new Intl.ListFormat(idioma, { style: 'long', type: 'conjunction' }).format(valores)
 }
 
-function joinWithAnd(values: string[]): string {
-  if (values.length <= 1) {
-    return values[0] ?? ''
-  }
-
-  return `${values.slice(0, -1).join(', ')} y ${values[values.length - 1]}`
-}
-
-function buildImportToastMessage(result: LibraryImportResponse): string {
+function buildImportToastMessage(result: LibraryImportResponse, t: TFunction): string {
   const details: string[] = []
 
   if (result.itemsCreated > 0) {
-    details.push(formatCount(result.itemsCreated, 'creado', 'creados'))
+    details.push(t('biblioteca.importCreados', { count: result.itemsCreated }))
   }
 
   if (result.itemsUpdated > 0) {
-    details.push(formatCount(result.itemsUpdated, 'actualizado', 'actualizados'))
+    details.push(t('biblioteca.importActualizados', { count: result.itemsUpdated }))
   }
 
   if (result.categoriesCreated > 0) {
-    details.push(formatCount(result.categoriesCreated, 'categoría nueva', 'categorías nuevas'))
+    details.push(t('biblioteca.importCategorias', { count: result.categoriesCreated }))
   }
 
+  const formato = getTransferFormatLabel(result.format)
+
+  // T2-29 sigue abierta: un JSON que no es una exportación no crea ni actualiza nada, así
+  // que cae aquí y se anuncia como una importación correcta «sin cambios».
   if (details.length === 0) {
-    return `Importación ${getTransferFormatLabel(result.format)} completada sin cambios.`
+    return t('biblioteca.importSinCambios', { formato })
   }
 
-  return `Importación ${getTransferFormatLabel(result.format)} completada: ${joinWithAnd(details)}.`
+  return t('biblioteca.importResumen', {
+    formato,
+    detalles: enumerar(details, i18n.language),
+  })
 }
 
 function countAppliedFilters(filters: MediaItemsFilters): number {
@@ -220,6 +230,7 @@ export default function LibraryView() {
   const importCsvInputRef = useRef<HTMLInputElement | null>(null)
   const queryClient = useQueryClient()
   const { showToast } = useToast()
+  const { t } = useTranslation()
 
   const isEditorOpen = isCreateEditorOpen || editingItem !== null
 
@@ -256,8 +267,8 @@ export default function LibraryView() {
       showToast({
         tone: 'success',
         message: variables.itemId
-          ? `"${savedItem.title}" se actualizó correctamente.`
-          : `"${savedItem.title}" se agregó a tu biblioteca.`,
+          ? t('biblioteca.actualizado', { titulo: savedItem.title })
+          : t('biblioteca.agregado', { titulo: savedItem.title }),
       })
       setEditorError(null)
       setEditingItem(null)
@@ -268,7 +279,7 @@ export default function LibraryView() {
       setEditorError(
         extractApiError(
           error,
-          variables.itemId ? 'No se pudo actualizar el elemento.' : 'No se pudo crear el elemento.',
+          variables.itemId ? t('biblioteca.errorActualizar') : t('biblioteca.errorCrear'),
         ),
       )
     },
@@ -288,14 +299,14 @@ export default function LibraryView() {
       }
 
       setDeleteCandidate(null)
-      showToast({ tone: 'success', message: `"${item.title}" se eliminó de tu biblioteca.` })
+      showToast({ tone: 'success', message: t('biblioteca.eliminado', { titulo: item.title }) })
       void queryClient.invalidateQueries({ queryKey: queryKeys.mediaItems.root })
     },
     onError: (error) => {
       setDeleteCandidate(null)
       showToast({
         tone: 'danger',
-        message: extractApiError(error, 'No se pudo eliminar el elemento.'),
+        message: extractApiError(error, t('biblioteca.errorEliminar')),
       })
     },
     onSettled: () => {
@@ -309,7 +320,7 @@ export default function LibraryView() {
       downloadBlob(blob, fileName)
       showToast({
         tone: 'success',
-        message: `Se descargó tu biblioteca en formato ${getTransferFormatLabel(format)}.`,
+        message: t('biblioteca.exportado', { formato: getTransferFormatLabel(format) }),
       })
     },
     onError: (error, format) => {
@@ -317,7 +328,7 @@ export default function LibraryView() {
         tone: 'danger',
         message: extractApiError(
           error,
-          `No se pudo exportar la biblioteca en ${getTransferFormatLabel(format)}.`,
+          t('biblioteca.errorExportar', { formato: getTransferFormatLabel(format) }),
         ),
       })
     },
@@ -329,7 +340,7 @@ export default function LibraryView() {
     onSuccess: (result) => {
       showToast({
         tone: 'success',
-        message: buildImportToastMessage(result),
+        message: buildImportToastMessage(result, t),
       })
       void queryClient.invalidateQueries({ queryKey: queryKeys.mediaItems.root })
       void queryClient.invalidateQueries({ queryKey: queryKeys.categories.root })
@@ -339,7 +350,7 @@ export default function LibraryView() {
         tone: 'danger',
         message: extractApiError(
           error,
-          `No se pudo importar el archivo ${getTransferFormatLabel(variables.format)}.`,
+          t('biblioteca.errorImportar', { formato: getTransferFormatLabel(variables.format) }),
         ),
       })
     },
@@ -444,12 +455,12 @@ export default function LibraryView() {
   const appliedFilterCount = countAppliedFilters(filters)
   const hasItems = (response?.totalCount ?? 0) > 0
   const showStatusStack = Boolean(libraryQuery.isError || categoriesQuery.isError)
-  const categoriesHelpText = categoriesQuery.isError
-    ? 'Las categorías no están disponibles ahora mismo. Puedes seguir filtrando por texto, estado y origen.'
-    : undefined
+  const categoriesHelpText = categoriesQuery.isError ? t('biblioteca.categoriasAyuda') : undefined
 
   if (libraryQuery.isLoading && !response) {
-    return <Loader title="Cargando biblioteca" message="Sincronizando filtros y listado." />
+    return (
+      <Loader title={t('biblioteca.cargandoTitulo')} message={t('biblioteca.cargandoMensaje')} />
+    )
   }
 
   return (
@@ -457,23 +468,27 @@ export default function LibraryView() {
       <section className="hero-panel">
         <span className="hero-panel__eyebrow">
           <RectangleStackIcon width={18} height={18} />
-          Biblioteca
+          {t('biblioteca.eyebrow')}
         </span>
-        <h1 className="hero-panel__title">Tu biblioteca</h1>
-        <p className="hero-panel__description">
-          Encuentra, filtra y actualiza tu colección desde un único panel.
-        </p>
+        <h1 className="hero-panel__title">{t('biblioteca.titulo')}</h1>
+        <p className="hero-panel__description">{t('biblioteca.descripcion')}</p>
         <div className="hero-panel__meta">
-          <span className="hero-chip">{response?.totalCount ?? 0} registros</span>
           <span className="hero-chip">
-            {appliedFilterCount > 0 ? `${appliedFilterCount} filtros activos` : 'Sin filtros extra'}
+            {t('biblioteca.registros', { count: response?.totalCount ?? 0 })}
           </span>
-          <span className="hero-chip">Página {response?.page ?? filters.page ?? 1}</span>
+          <span className="hero-chip">
+            {appliedFilterCount > 0
+              ? t('biblioteca.filtrosActivos', { count: appliedFilterCount })
+              : t('biblioteca.sinFiltros')}
+          </span>
+          <span className="hero-chip">
+            {t('biblioteca.pagina', { numero: String(response?.page ?? filters.page ?? 1) })}
+          </span>
         </div>
         <div className="hero-panel__actions">
           <button className="button button--primary" type="button" onClick={openCreateEditor}>
             <PlusIcon width={18} height={18} />
-            Nuevo registro
+            {t('biblioteca.nuevoRegistro')}
           </button>
           <button
             className={`button button--secondary${isFiltersOpen ? ' button--active' : ''}`}
@@ -481,11 +496,11 @@ export default function LibraryView() {
             onClick={() => setIsFiltersOpen((prev) => !prev)}
           >
             <AdjustmentsHorizontalIcon width={18} height={18} />
-            {isFiltersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+            {isFiltersOpen ? t('biblioteca.ocultarFiltros') : t('biblioteca.mostrarFiltros')}
             {appliedFilterCount > 0 ? ` (${appliedFilterCount})` : ''}
           </button>
           <TransferActionMenu
-            label="Importar"
+            label={t('biblioteca.importar')}
             icon={<ArrowUpTrayIcon width={18} height={18} />}
             disabled={importMutation.isPending}
             items={[
@@ -494,7 +509,7 @@ export default function LibraryView() {
             ]}
           />
           <TransferActionMenu
-            label="Exportar"
+            label={t('biblioteca.exportar')}
             icon={<ArrowDownTrayIcon width={18} height={18} />}
             disabled={exportMutation.isPending || libraryQuery.isError || !hasItems}
             items={[
@@ -525,16 +540,14 @@ export default function LibraryView() {
         <div className="status-stack">
           {libraryQuery.isError ? (
             <div className="status-banner status-banner--danger" role="alert">
-              <strong>La biblioteca no se sincronizó.</strong>
-              <span>Reintenta la carga o revisa el backend antes de seguir editando.</span>
+              <strong>{t('biblioteca.noSincronizadaTitulo')}</strong>
+              <span>{t('biblioteca.noSincronizadaTexto')}</span>
             </div>
           ) : null}
           {categoriesQuery.isError ? (
             <div className="status-banner status-banner--warning" role="status">
-              <strong>Las categorías no se cargaron.</strong>
-              <span>
-                El editor y los filtros seguirán sin categorías hasta que vuelva la conexión.
-              </span>
+              <strong>{t('biblioteca.categoriasNoCargadasTitulo')}</strong>
+              <span>{t('biblioteca.categoriasNoCargadasTexto')}</span>
             </div>
           ) : null}
         </div>
@@ -558,22 +571,22 @@ export default function LibraryView() {
       <section className="panel">
         <div className="results-header">
           <div>
-            <h2 className="results-title">Resultados</h2>
+            <h2 className="results-title">{t('biblioteca.resultadosTitulo')}</h2>
             <p className="results-subtitle">
               {libraryQuery.isError
-                ? 'No pudimos actualizar el listado con los criterios actuales.'
-                : `${response?.totalCount ?? 0} coincidencias con los criterios actuales.`}
+                ? t('biblioteca.resultadosError')
+                : t('biblioteca.coincidencias', { count: response?.totalCount ?? 0 })}
             </p>
           </div>
         </div>
 
         {libraryQuery.isError ? (
           <EmptyState
-            title="No se pudo cargar la biblioteca"
-            message="Verifica tu conexión o recarga la página."
+            title={t('biblioteca.errorTitulo')}
+            message={t('biblioteca.errorMensaje')}
             action={
               <button className="button button--primary" onClick={() => libraryQuery.refetch()}>
-                Reintentar
+                {t('comun.reintentar')}
               </button>
             }
           />
@@ -581,12 +594,12 @@ export default function LibraryView() {
 
         {!libraryQuery.isError && items.length === 0 ? (
           <EmptyState
-            title="Tu biblioteca todavía está vacía"
-            message="Usa Descubrir para importar títulos desde los catálogos activos o agrega un registro manual desde aquí."
+            title={t('biblioteca.vaciaTitulo')}
+            message={t('biblioteca.vaciaMensaje')}
             action={
               <button className="button button--primary" type="button" onClick={openCreateEditor}>
                 <PlusIcon width={18} height={18} />
-                Agregar manualmente
+                {t('biblioteca.agregarManual')}
               </button>
             }
           />
@@ -599,14 +612,14 @@ export default function LibraryView() {
                 <thead>
                   <tr>
                     <th></th>
-                    <th>Título</th>
-                    <th>Tipo</th>
-                    <th>Estado</th>
-                    <th>Origen</th>
-                    <th>Progreso</th>
-                    <th>Año</th>
-                    <th>Puntuación</th>
-                    <th>Acciones</th>
+                    <th>{t('descubrir.colTitulo')}</th>
+                    <th>{t('descubrir.colTipo')}</th>
+                    <th>{t('filtros.estado')}</th>
+                    <th>{t('descubrir.colOrigen')}</th>
+                    <th>{t('biblioteca.colProgreso')}</th>
+                    <th>{t('descubrir.colAnio')}</th>
+                    <th>{t('descubrir.colPuntuacion')}</th>
+                    <th>{t('descubrir.colAcciones')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -629,10 +642,13 @@ export default function LibraryView() {
                 onClick={() => goToPage(Math.max((response?.page ?? 1) - 1, 1))}
                 disabled={(response?.page ?? 1) <= 1}
               >
-                Anterior
+                {t('biblioteca.anterior')}
               </button>
               <span className="pagination__label">
-                Página {response?.page ?? 1} de {response?.totalPages ?? 1}
+                {t('biblioteca.paginaDe', {
+                  actual: String(response?.page ?? 1),
+                  total: String(response?.totalPages ?? 1),
+                })}
               </span>
               <button
                 className="button button--secondary"
@@ -641,7 +657,7 @@ export default function LibraryView() {
                 }
                 disabled={!response || response.page >= response.totalPages}
               >
-                Siguiente
+                {t('biblioteca.siguiente')}
               </button>
             </div>
           </>
@@ -651,19 +667,21 @@ export default function LibraryView() {
       {isEditorOpen ? (
         <SidePanelDialog
           open={isEditorOpen}
-          ariaLabel={editingItem ? `Editar ${editingItem.title}` : 'Crear elemento de biblioteca'}
+          ariaLabel={
+            editingItem
+              ? t('biblioteca.editarTitulo', { titulo: editingItem.title })
+              : t('biblioteca.crearTitulo')
+          }
           variant="centered"
           onClose={closeEditor}
         >
           <div className="side-panel__meta">
             <span className="hero-chip">
               <RectangleStackIcon width={16} height={16} />
-              {editingItem ? 'Edición rápida' : 'Registro manual'}
+              {editingItem ? t('biblioteca.edicionRapida') : t('biblioteca.registroManual')}
             </span>
             <p className="side-panel__hint">
-              {editingItem
-                ? 'Ajusta la ficha seleccionada sin perder el contexto del listado ni los filtros actuales.'
-                : 'Añade un nuevo elemento desde la biblioteca sin desplazar el contenido principal.'}
+              {editingItem ? t('biblioteca.pistaEdicion') : t('biblioteca.pistaCreacion')}
             </p>
           </div>
 
@@ -682,10 +700,14 @@ export default function LibraryView() {
 
       <ConfirmDialog
         open={deleteCandidate !== null}
-        title={deleteCandidate ? `Eliminar "${deleteCandidate.title}"` : 'Eliminar elemento'}
-        message="Esta acción sacará el elemento de tu biblioteca. Podrás volver a crearlo o importarlo después, pero perderás su estado y notas actuales."
-        confirmLabel="Eliminar elemento"
-        cancelLabel="Conservar elemento"
+        title={
+          deleteCandidate
+            ? t('biblioteca.dialogoTitulo', { titulo: deleteCandidate.title })
+            : t('biblioteca.dialogoTituloGenerico')
+        }
+        message={t('biblioteca.dialogoMensaje')}
+        confirmLabel={t('biblioteca.dialogoConfirmar')}
+        cancelLabel={t('biblioteca.dialogoCancelar')}
         tone="danger"
         isPending={deleteMutation.isPending}
         onClose={() => setDeleteCandidate(null)}

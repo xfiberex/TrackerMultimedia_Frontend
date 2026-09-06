@@ -1,4 +1,9 @@
 import { z } from 'zod'
+import { mensaje } from '@/shared/i18n/mensajeZod'
+import type { es } from '@/shared/i18n/es'
+
+/** Clave del diccionario dentro de la sección `medios`. */
+type ClaveMedios = `medios.${keyof typeof es.medios}`
 
 export const mediaTypes = ['Anime', 'Manga', 'Donghua', 'Manhwa', 'Manhua'] as const
 export const contentKinds = [
@@ -58,7 +63,7 @@ const sortDirSchema = z.enum(sortDirections)
 
 export const mediaItemCategorySchema = z.object({
   id: z.string(),
-  name: z.string().min(1, 'Nombre requerido'),
+  name: z.string().min(1, mensaje('validacion.nombreRequerido')),
   color: z.string().nullable(),
 })
 
@@ -186,32 +191,20 @@ export const mediaTypeToProgressUnit: Record<MediaType, ProgressUnit> = {
   Manhua: 'Chapters',
 }
 
+/**
+ * **Estos dos mapas no se traducen y no deben traducirse.**
+ *
+ * `Anime`, `Manga`, `Donghua`, `Manhwa` y `Manhua` son los nombres de sus medios en
+ * cualquier idioma, y `Jikan`, `AniList` y `MangaDex` son nombres propios de servicios.
+ * Meterlos en el diccionario solo crearía dos entradas idénticas en `es` y en `en` que
+ * alguien acabaría «traduciendo» algún día.
+ */
 export const mediaTypeLabels: Record<MediaType, string> = {
   Anime: 'Anime',
   Manga: 'Manga',
   Donghua: 'Donghua',
   Manhwa: 'Manhwa',
   Manhua: 'Manhua',
-}
-
-export const contentKindLabels: Record<ContentKind, string> = {
-  Series: 'Serie',
-  Movie: 'Película',
-  Book: 'Libro',
-  Comic: 'Cómic',
-  Game: 'Juego',
-  Podcast: 'Podcast',
-  Video: 'Video',
-  Album: 'Álbum',
-  Other: 'Otro',
-}
-
-export const mediaTrackingStatusLabels: Record<MediaTrackingStatus, string> = {
-  Planned: 'Planeado',
-  InProgress: 'En progreso',
-  Completed: 'Completado',
-  OnHold: 'En pausa',
-  Dropped: 'Abandonado',
 }
 
 export const mediaSourceLabels: Record<MediaItemSourceType, string> = {
@@ -221,28 +214,59 @@ export const mediaSourceLabels: Record<MediaItemSourceType, string> = {
   MangaDex: 'MangaDex',
 }
 
-export const progressUnitLabels: Record<ProgressUnit, string> = {
-  Episodes: 'Episodios',
-  Chapters: 'Capítulos',
-  Volumes: 'Volúmenes',
-  Pages: 'Páginas',
-  Hours: 'Horas',
-  Seasons: 'Temporadas',
-  Tracks: 'Pistas',
-  Items: 'Elementos',
-  None: 'Sin unidad',
+/**
+ * Los que sí se traducen guardan **la clave del diccionario**, no el texto (T4-03).
+ *
+ * Son constantes de módulo: si guardaran el resultado de `i18n.t`, se evaluaría al
+ * importar y el idioma quedaría congelado en el de arranque. Guardando la clave, quien
+ * pinta decide cuándo traducir —`t(contentKindLabelKeys[kind])`— y eso ocurre en cada
+ * render, que es justo lo que hace falta para que el interruptor de idioma se note.
+ *
+ * Siguen siendo mapas y no funciones porque las listas desplegables recorren sus
+ * entradas para construir las opciones.
+ */
+export const contentKindLabelKeys: Record<ContentKind, ClaveMedios> = {
+  Series: 'medios.tipo_Series',
+  Movie: 'medios.tipo_Movie',
+  Book: 'medios.tipo_Book',
+  Comic: 'medios.tipo_Comic',
+  Game: 'medios.tipo_Game',
+  Podcast: 'medios.tipo_Podcast',
+  Video: 'medios.tipo_Video',
+  Album: 'medios.tipo_Album',
+  Other: 'medios.tipo_Other',
 }
 
-export const progressUnitShortLabels: Record<ProgressUnit, string> = {
-  Episodes: 'Ep.',
-  Chapters: 'Cap.',
-  Volumes: 'Vol.',
-  Pages: 'Pág.',
-  Hours: 'Hrs.',
-  Seasons: 'Temp.',
-  Tracks: 'Pista',
-  Items: 'Ítem',
-  None: '—',
+export const mediaTrackingStatusLabelKeys: Record<MediaTrackingStatus, ClaveMedios> = {
+  Planned: 'medios.estado_Planned',
+  InProgress: 'medios.estado_InProgress',
+  Completed: 'medios.estado_Completed',
+  OnHold: 'medios.estado_OnHold',
+  Dropped: 'medios.estado_Dropped',
+}
+
+export const progressUnitLabelKeys: Record<ProgressUnit, ClaveMedios> = {
+  Episodes: 'medios.unidad_Episodes',
+  Chapters: 'medios.unidad_Chapters',
+  Volumes: 'medios.unidad_Volumes',
+  Pages: 'medios.unidad_Pages',
+  Hours: 'medios.unidad_Hours',
+  Seasons: 'medios.unidad_Seasons',
+  Tracks: 'medios.unidad_Tracks',
+  Items: 'medios.unidad_Items',
+  None: 'medios.unidad_None',
+}
+
+export const progressUnitShortLabelKeys: Record<ProgressUnit, ClaveMedios> = {
+  Episodes: 'medios.breve_Episodes',
+  Chapters: 'medios.breve_Chapters',
+  Volumes: 'medios.breve_Volumes',
+  Pages: 'medios.breve_Pages',
+  Hours: 'medios.breve_Hours',
+  Seasons: 'medios.breve_Seasons',
+  Tracks: 'medios.breve_Tracks',
+  Items: 'medios.breve_Items',
+  None: 'medios.breve_None',
 }
 
 export const defaultProgressUnitByContentKind: Record<ContentKind, ProgressUnit> = {
@@ -257,14 +281,14 @@ export const defaultProgressUnitByContentKind: Record<ContentKind, ProgressUnit>
   Other: 'Items',
 }
 
-export const mediaSortFieldLabels: Record<MediaItemsSortField, string> = {
-  CreatedAt: 'Fecha agregado',
-  PersonalScore: 'Puntuación personal',
-  ReleaseYear: 'Año de estreno',
-  Title: 'Título',
+export const mediaSortFieldLabelKeys: Record<MediaItemsSortField, ClaveMedios> = {
+  CreatedAt: 'medios.orden_CreatedAt',
+  PersonalScore: 'medios.orden_PersonalScore',
+  ReleaseYear: 'medios.orden_ReleaseYear',
+  Title: 'medios.orden_Title',
 }
 
-export const sortDirectionLabels: Record<SortDirection, string> = {
-  Asc: 'Ascendente',
-  Desc: 'Descendente',
+export const sortDirectionLabelKeys: Record<SortDirection, ClaveMedios> = {
+  Asc: 'medios.sentido_Asc',
+  Desc: 'medios.sentido_Desc',
 }

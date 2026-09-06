@@ -5,6 +5,9 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthProvider } from '@/features/auth/context/AuthContext'
 import { ToastProvider } from '@/shared/components/ToastProvider'
 import ErrorBoundary from '@/shared/components/ErrorBoundary'
+// Antes que `App`: arranca i18next de forma síncrona, de modo que el primer render ya
+// tiene idioma y no hay un instante con las claves sin resolver.
+import '@/shared/i18n'
 import './index.css'
 import App from './App.tsx'
 

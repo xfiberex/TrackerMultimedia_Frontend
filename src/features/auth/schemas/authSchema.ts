@@ -1,13 +1,14 @@
 import { z } from 'zod'
+import { mensaje } from '@/shared/i18n/mensajeZod'
 
 // ── Validadores ──────────────────────────────────────────────────────────────
 
-const emailSchema = z.string().email('Email inválido')
-const passwordSchema = z.string().min(8, 'Contraseña: mínimo 8 caracteres')
+const emailSchema = z.string().email(mensaje('validacion.emailInvalido'))
+const passwordSchema = z.string().min(8, mensaje('validacion.passwordMinima'))
 const displayNameSchema = z
   .string()
-  .min(1, 'Nombre requerido')
-  .max(100, 'Máximo 100 caracteres')
+  .min(1, mensaje('validacion.nombreRequerido'))
+  .max(100, mensaje('validacion.maximo100'))
   .optional()
 
 export const userSchema = z.object({
@@ -31,7 +32,7 @@ export const authResponseSchema = z.object({
 
 export const loginPayloadSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, 'Contraseña requerida'),
+  password: z.string().min(1, mensaje('validacion.passwordRequerida')),
 })
 
 export const registerPayloadSchema = z.object({
@@ -41,7 +42,7 @@ export const registerPayloadSchema = z.object({
 })
 
 export const changePasswordPayloadSchema = z.object({
-  currentPassword: z.string().min(1, 'Contraseña actual requerida'),
+  currentPassword: z.string().min(1, mensaje('validacion.passwordActualRequerida')),
   newPassword: passwordSchema,
 })
 
@@ -99,7 +100,7 @@ export const oauthLinkConfirmPayloadSchema = z.object({
   linkToken: z.string().min(1),
   provider: z.string().min(1),
   email: emailSchema,
-  password: z.string().min(1, 'Contraseña requerida'),
+  password: z.string().min(1, mensaje('validacion.passwordRequerida')),
 })
 
 // ── Tipos inferidos ──────────────────────────────────────────────────────────

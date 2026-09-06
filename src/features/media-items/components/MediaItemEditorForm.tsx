@@ -1,11 +1,12 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  contentKindLabels,
+  contentKindLabelKeys,
   contentKinds,
   defaultProgressUnitByContentKind,
-  mediaTrackingStatusLabels,
+  mediaTrackingStatusLabelKeys,
   mediaTrackingStatuses,
-  progressUnitLabels,
+  progressUnitLabelKeys,
   type CreateMediaItemInput,
   type MediaItem,
   type MediaItemCategory,
@@ -100,10 +101,11 @@ export default function MediaItemEditorForm({
   onCancel,
   onSubmit,
 }: MediaItemEditorFormProps) {
+  const { t } = useTranslation()
   const isEditing = item !== null
   const [draft, setDraft] = useState<MediaItemDraft>(() => createDraft(item))
   const progressUnit = item?.progressUnit ?? defaultProgressUnitByContentKind[draft.contentKind]
-  const progressLabel = progressUnitLabels[progressUnit]
+  const progressLabel = t(progressUnitLabelKeys[progressUnit])
 
   const updateField = <K extends keyof MediaItemDraft>(field: K, value: MediaItemDraft[K]) => {
     setDraft((current) => ({ ...current, [field]: value }))
@@ -158,28 +160,24 @@ export default function MediaItemEditorForm({
   return (
     <form
       className="filters-form media-editor"
-      aria-label="Editor de biblioteca"
+      aria-label={t('editor.etiqueta')}
       onSubmit={handleSubmit}
     >
       <div className="media-editor__header">
         <div>
           <h2 className="panel__title">
-            {isEditing ? 'Editar elemento' : 'Nuevo elemento manual'}
+            {isEditing ? t('editor.tituloEditar') : t('editor.tituloNuevo')}
           </h2>
           <p className="panel__description">
-            {isEditing
-              ? 'Ajusta el formato base, el progreso flexible y los metadatos visibles del elemento seleccionado.'
-              : 'Crea un registro manual con el nuevo modelo flexible, sin depender del buscador externo.'}
+            {isEditing ? t('editor.descripcionEditar') : t('editor.descripcionNuevo')}
           </p>
           {item !== null && item.sourceType !== 'Manual' ? (
-            <p className="panel__description">
-              El origen externo y sus identificadores se conservarán al guardar.
-            </p>
+            <p className="panel__description">{t('editor.origenExterno')}</p>
           ) : null}
         </div>
 
         <button type="button" className="button button--ghost" onClick={onCancel}>
-          Cancelar
+          {t('comun.cancelar')}
         </button>
       </div>
 
@@ -191,7 +189,7 @@ export default function MediaItemEditorForm({
 
       <div className="control-grid">
         <div className="control control--span-full">
-          <label htmlFor="editor-title">Título principal</label>
+          <label htmlFor="editor-title">{t('editor.tituloPrincipal')}</label>
           <input
             id="editor-title"
             className="input"
@@ -203,7 +201,7 @@ export default function MediaItemEditorForm({
         </div>
 
         <div className="control control--span-full">
-          <label htmlFor="editor-description">Descripción</label>
+          <label htmlFor="editor-description">{t('editor.descripcion')}</label>
           <input
             id="editor-description"
             className="input"
@@ -213,7 +211,7 @@ export default function MediaItemEditorForm({
         </div>
 
         <div className="control">
-          <label htmlFor="editor-format">Formato</label>
+          <label htmlFor="editor-format">{t('editor.formato')}</label>
           {availableFormats && availableFormats.length > 0 ? (
             <select
               id="editor-format"
@@ -221,7 +219,7 @@ export default function MediaItemEditorForm({
               value={draft.formatId ?? ''}
               onChange={(event) => updateField('formatId', event.target.value || null)}
             >
-              <option value="">Sin formato</option>
+              <option value="">{t('editor.sinFormato')}</option>
               {availableFormats.map((fmt) => (
                 <option key={fmt.id} value={fmt.id}>
                   {fmt.name}
@@ -239,7 +237,7 @@ export default function MediaItemEditorForm({
             >
               {contentKinds.map((contentKind) => (
                 <option key={contentKind} value={contentKind}>
-                  {contentKindLabels[contentKind]}
+                  {t(contentKindLabelKeys[contentKind])}
                 </option>
               ))}
             </select>
@@ -247,7 +245,7 @@ export default function MediaItemEditorForm({
         </div>
 
         <div className="control">
-          <label htmlFor="editor-status">Estado del registro</label>
+          <label htmlFor="editor-status">{t('editor.estadoRegistro')}</label>
           <select
             id="editor-status"
             className="select"
@@ -258,7 +256,7 @@ export default function MediaItemEditorForm({
           >
             {mediaTrackingStatuses.map((status) => (
               <option key={status} value={status}>
-                {mediaTrackingStatusLabels[status]}
+                {t(mediaTrackingStatusLabelKeys[status])}
               </option>
             ))}
           </select>
@@ -270,7 +268,7 @@ export default function MediaItemEditorForm({
           aria-labelledby="editor-categories-label"
         >
           <span className="control__label" id="editor-categories-label">
-            Categorías
+            {t('editor.categorias')}
           </span>
           {availableCategories.length > 0 ? (
             <div className="category-pills">
@@ -296,14 +294,12 @@ export default function MediaItemEditorForm({
               })}
             </div>
           ) : (
-            <p className="category-empty">
-              Aún no tienes categorías. Créalas desde la sección Catálogo.
-            </p>
+            <p className="category-empty">{t('editor.sinCategorias')}</p>
           )}
         </div>
 
         <div className="control">
-          <label htmlFor="editor-release-year">Año de estreno</label>
+          <label htmlFor="editor-release-year">{t('editor.anioEstreno')}</label>
           <input
             id="editor-release-year"
             className="input"
@@ -316,7 +312,7 @@ export default function MediaItemEditorForm({
         </div>
 
         <div className="control">
-          <label htmlFor="editor-score">Puntuación personal (0–10)</label>
+          <label htmlFor="editor-score">{t('editor.puntuacion')}</label>
           <input
             id="editor-score"
             className="input"
@@ -330,7 +326,7 @@ export default function MediaItemEditorForm({
         </div>
 
         <div className="control">
-          <label htmlFor="editor-season">Temporada</label>
+          <label htmlFor="editor-season">{t('editor.temporada')}</label>
           <input
             id="editor-season"
             className="input"
@@ -354,7 +350,7 @@ export default function MediaItemEditorForm({
         </div>
 
         <div className="control control--span-full">
-          <label htmlFor="editor-cover">Portada URL</label>
+          <label htmlFor="editor-cover">{t('editor.portada')}</label>
           <input
             id="editor-cover"
             className="input"
@@ -365,7 +361,7 @@ export default function MediaItemEditorForm({
         </div>
 
         <div className="control control--span-full">
-          <label htmlFor="editor-reference">Enlace de referencia</label>
+          <label htmlFor="editor-reference">{t('editor.referencia')}</label>
           <input
             id="editor-reference"
             className="input"
@@ -376,7 +372,7 @@ export default function MediaItemEditorForm({
         </div>
 
         <div className="control">
-          <label htmlFor="editor-started-at">Fecha de inicio</label>
+          <label htmlFor="editor-started-at">{t('editor.fechaInicio')}</label>
           <input
             id="editor-started-at"
             className="input"
@@ -387,7 +383,7 @@ export default function MediaItemEditorForm({
         </div>
 
         <div className="control">
-          <label htmlFor="editor-completed-at">Fecha de finalización</label>
+          <label htmlFor="editor-completed-at">{t('editor.fechaFin')}</label>
           <input
             id="editor-completed-at"
             className="input"
@@ -399,7 +395,7 @@ export default function MediaItemEditorForm({
       </div>
 
       <div className="control">
-        <label htmlFor="editor-notes">Notas personales</label>
+        <label htmlFor="editor-notes">{t('editor.notas')}</label>
         <textarea
           id="editor-notes"
           className="input media-editor__textarea"
@@ -410,7 +406,11 @@ export default function MediaItemEditorForm({
 
       <div className="media-editor__actions">
         <button type="submit" className="button button--primary" disabled={isPending}>
-          {isPending ? 'Guardando…' : isEditing ? 'Guardar cambios' : 'Guardar nuevo registro'}
+          {isPending
+            ? t('comun.guardando')
+            : isEditing
+              ? t('perfil.guardarCambios')
+              : t('editor.guardarNuevo')}
         </button>
       </div>
     </form>

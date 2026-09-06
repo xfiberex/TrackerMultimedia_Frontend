@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import type { AxiosError } from 'axios'
+import i18n from '@/shared/i18n'
+import type { es } from '@/shared/i18n/es'
 import { loginPayloadSchema } from '../schemas/authSchema'
 
 // ── Re-export del schema de login ────────────────────────────────────────────
@@ -26,17 +28,20 @@ export type AppError =
 
 // ── Mapeos OAuth ─────────────────────────────────────────────────────────────
 
-const oauthErrorMessages: Record<string, string> = {
-  access_denied: 'Cancelaste el acceso con el proveedor.',
-  invalid_callback: 'La respuesta del proveedor llegó incompleta. Inténtalo de nuevo.',
-  state_mismatch: 'La sesión de acceso con el proveedor expiró. Vuelve a intentarlo.',
-  profile_error: 'No se pudo completar el acceso con el proveedor.',
-  create_failed: 'No se pudo crear tu cuenta con el proveedor.',
-  missing_tokens: 'La respuesta del proveedor no incluyó la sesión esperada.',
-  session_error: 'No se pudo abrir la sesión devuelta por el proveedor.',
-  account_unavailable:
-    'No se pudo iniciar sesión con esa cuenta. Comprueba tu correo o inténtalo más tarde.',
-}
+/**
+ * Los códigos que el backend puede devolver en `?oauth_error=`. Ya no llevan el texto:
+ * son la lista blanca, y el texto sale del diccionario con la misma clave.
+ */
+const CODIGOS_OAUTH = [
+  'access_denied',
+  'invalid_callback',
+  'state_mismatch',
+  'profile_error',
+  'create_failed',
+  'missing_tokens',
+  'session_error',
+  'account_unavailable',
+] as const satisfies readonly (keyof typeof es.oauth)[]
 
 // ── Funciones de extracción ──────────────────────────────────────────────────
 
@@ -55,7 +60,7 @@ export function normalizeError(err: unknown): AppError {
   if (axiosError.code === 'ERR_NETWORK' || !axiosError.response) {
     return {
       type: 'network',
-      message: 'Error de conexión. Verifica tu internet e intenta de nuevo.',
+      message: i18n.t('errores.red'),
     }
   }
 
@@ -70,7 +75,7 @@ export function normalizeError(err: unknown): AppError {
     // Errores de validación (400 con campo 'errors')
     if (status === 400 && pd.errors && Object.keys(pd.errors).length > 0) {
       const errors = pd.errors as Record<string, string[]>
-      const firstMessage = Object.values(errors).flat()[0] ?? 'Error de validación'
+      const firstMessage = Object.values(errors).flat()[0] ?? i18n.t('errores.validacion')
       return {
         type: 'validation' as const,
         errors,
@@ -79,7 +84,7 @@ export function normalizeError(err: unknown): AppError {
     }
 
     // Otros errores con detalles
-    const message = pd.detail || pd.title || 'Error en el servidor'
+    const message = pd.detail || pd.title || i18n.t('errores.servidor')
     return {
       type: status === 401 || status === 403 ? 'auth' : 'server',
       message,
@@ -100,7 +105,7 @@ export function normalizeError(err: unknown): AppError {
   if (status === 401 || status === 403) {
     return {
       type: 'auth',
-      message: status === 401 ? 'Credenciales inválidas' : 'No tienes permiso',
+      message: status === 401 ? i18n.t('errores.credenciales') : i18n.t('errores.sinPermiso'),
       status,
     }
   }
@@ -108,14 +113,14 @@ export function normalizeError(err: unknown): AppError {
   if (status >= 500) {
     return {
       type: 'server',
-      message: 'Error interno del servidor. Intenta más tarde.',
+      message: i18n.t('errores.interno'),
       status,
     }
   }
 
   return {
     type: 'unknown',
-    message: 'Error inesperado',
+    message: i18n.t('errores.inesperado'),
     originalError: err,
   }
 }
@@ -135,5 +140,8 @@ export function getOAuthErrorMessage(errorCode: string | null): string | null {
     return null
   }
 
-  return oauthErrorMessages[errorCode] ?? oauthErrorMessages.profile_error
+  const conocido = (CODIGOS_OAUTH as readonly string[]).includes(errorCode)
+  return i18n.t(
+    `oauth.${conocido ? (errorCode as (typeof CODIGOS_OAUTH)[number]) : 'profile_error'}`,
+  )
 }

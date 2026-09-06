@@ -1,10 +1,14 @@
 import { z } from 'zod'
+import { mensaje } from '@/shared/i18n/mensajeZod'
 
 export const createCategoryInputSchema = z.object({
-  name: z.string().min(1, 'Nombre requerido').max(100, 'Máximo 100 caracteres'),
+  name: z
+    .string()
+    .min(1, mensaje('validacion.nombreRequerido'))
+    .max(100, mensaje('validacion.maximo100')),
   color: z
     .string()
-    .regex(/^#[0-9A-F]{6}$/i, 'Color inválido')
+    .regex(/^#[0-9A-F]{6}$/i, mensaje('validacion.colorInvalido'))
     .nullable()
     .optional(),
 })

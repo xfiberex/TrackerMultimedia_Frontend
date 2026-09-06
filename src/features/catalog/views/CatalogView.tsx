@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CategoriesApi } from '@/features/categories/api/CategoriesAPI'
 import type { Category, CreateCategoryInput } from '@/features/categories/schemas/categorySchema'
 import { FormatsApi } from '@/features/catalog/api/FormatsAPI'
@@ -42,6 +43,7 @@ function ColorPickerDropdown({
   /** Id del texto que etiqueta el control, para que el disparador tenga nombre accesible. */
   labelId: string
 }) {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
 
@@ -82,7 +84,7 @@ function ColorPickerDropdown({
           style={{ backgroundColor: isValidHex ? value.trim() : 'transparent' }}
         />
         <span className="color-picker-trigger__value" id={`${labelId}-value`}>
-          {value.trim() || 'Sin color'}
+          {value.trim() || t('categorias.sinColor')}
         </span>
         <ChevronDownIcon
           className={`color-picker-trigger__chevron${isOpen ? ' color-picker-trigger__chevron--open' : ''}`}
@@ -92,8 +94,16 @@ function ColorPickerDropdown({
       </button>
 
       {isOpen ? (
-        <div className="color-picker-popover" role="listbox" aria-label="Selector de color">
-          <div className="color-picker-presets" role="group" aria-label="Colores predefinidos">
+        <div
+          className="color-picker-popover"
+          role="listbox"
+          aria-label={t('categorias.selectorColor')}
+        >
+          <div
+            className="color-picker-presets"
+            role="group"
+            aria-label={t('categorias.coloresPredefinidos')}
+          >
             {PRESET_COLORS.map((color) => (
               <button
                 key={color}
@@ -112,7 +122,7 @@ function ColorPickerDropdown({
           </div>
 
           <div className="color-picker-native-row">
-            <label htmlFor="cat-color-native">Personalizado</label>
+            <label htmlFor="cat-color-native">{t('categorias.personalizado')}</label>
             <input
               id="cat-color-native"
               type="color"
@@ -126,7 +136,7 @@ function ColorPickerDropdown({
               placeholder="#336699"
               value={value}
               onChange={(e) => onChange(e.target.value)}
-              aria-label="Valor hexadecimal del color"
+              aria-label={t('categorias.hexadecimal')}
             />
             {value.trim() ? (
               <button
@@ -138,7 +148,7 @@ function ColorPickerDropdown({
                   setIsOpen(false)
                 }}
               >
-                Quitar
+                {t('categorias.quitar')}
               </button>
             ) : null}
           </div>
@@ -181,6 +191,7 @@ function makeCategoryDraft(cat: Category | null): CategoryDraft {
 function CategoriesSection() {
   const queryClient = useQueryClient()
   const { showToast } = useToast()
+  const { t } = useTranslation()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
@@ -202,8 +213,8 @@ function CategoriesSection() {
       showToast({
         tone: 'success',
         message: variables.id
-          ? `"${saved.name}" se actualizó correctamente.`
-          : `"${saved.name}" se creó correctamente.`,
+          ? t('categorias.actualizada', { nombre: saved.name })
+          : t('categorias.creada', { nombre: saved.name }),
       })
       setIsModalOpen(false)
       setFormError(null)
@@ -214,7 +225,7 @@ function CategoriesSection() {
       setFormError(
         extractApiError(
           err,
-          variables.id ? 'No se pudo actualizar la categoría.' : 'No se pudo crear la categoría.',
+          variables.id ? t('categorias.errorActualizar') : t('categorias.errorCrear'),
         ),
       )
     },
@@ -227,7 +238,7 @@ function CategoriesSection() {
     },
     onSuccess: (deleted) => {
       setDeleteCandidate(null)
-      showToast({ tone: 'success', message: `"${deleted.name}" se eliminó correctamente.` })
+      showToast({ tone: 'success', message: t('categorias.eliminada', { nombre: deleted.name }) })
       void queryClient.invalidateQueries({ queryKey: queryKeys.categories.root })
       void queryClient.invalidateQueries({ queryKey: queryKeys.mediaItems.root })
     },
@@ -235,7 +246,7 @@ function CategoriesSection() {
       setDeleteCandidate(null)
       showToast({
         tone: 'danger',
-        message: extractApiError(err, 'No se pudo eliminar la categoría.'),
+        message: extractApiError(err, t('categorias.errorEliminar')),
       })
     },
   })
@@ -266,7 +277,7 @@ function CategoriesSection() {
   }
 
   if (categoriesQuery.isLoading && !categoriesQuery.data) {
-    return <Loader title="Cargando categorías" />
+    return <Loader title={t('categorias.cargandoTitulo')} />
   }
 
   return (
@@ -276,41 +287,38 @@ function CategoriesSection() {
           <div>
             <h2 className="catalog-section__title">
               <TagIcon width={18} height={18} />
-              Categorías
+              {t('catalogo.pestanaCategorias')}
             </h2>
-            <p className="catalog-section__description">
-              Etiquetas personales para organizar tu biblioteca. Colores opcionales para diferenciar
-              grupos.
-            </p>
+            <p className="catalog-section__description">{t('catalogo.categoriasDescripcion')}</p>
           </div>
           <button className="button button--primary" type="button" onClick={openCreate}>
             <PlusIcon width={18} height={18} />
-            Nueva categoría
+            {t('catalogo.nuevaCategoria')}
           </button>
         </div>
 
         {categoriesQuery.isError ? (
           <EmptyState
-            title="No se pudieron cargar las categorías"
-            message="Recarga la vista o revisa la conexión con el backend."
+            title={t('categorias.errorTitulo')}
+            message={t('categorias.errorMensaje')}
             action={
               <button
                 className="button button--primary"
                 type="button"
                 onClick={() => categoriesQuery.refetch()}
               >
-                Reintentar
+                {t('comun.reintentar')}
               </button>
             }
           />
         ) : categories.length === 0 ? (
           <EmptyState
-            title="Todavía no tienes categorías"
-            message="Crea la primera para empezar a organizar tu biblioteca."
+            title={t('catalogo.categoriasVaciaTitulo')}
+            message={t('catalogo.categoriasVaciaMensaje')}
             action={
               <button className="button button--primary" type="button" onClick={openCreate}>
                 <PlusIcon width={18} height={18} />
-                Nueva categoría
+                {t('catalogo.nuevaCategoria')}
               </button>
             }
           />
@@ -319,9 +327,9 @@ function CategoriesSection() {
             <table className="search-table">
               <thead>
                 <tr>
-                  <th>Color</th>
-                  <th>Nombre</th>
-                  <th>Acciones</th>
+                  <th>{t('categorias.color')}</th>
+                  <th>{t('catalogo.nombre')}</th>
+                  <th>{t('descubrir.colAcciones')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -334,7 +342,7 @@ function CategoriesSection() {
                           style={{ backgroundColor: cat.color ?? 'transparent' }}
                           aria-hidden="true"
                         />
-                        <span>{cat.color ?? 'Sin color'}</span>
+                        <span>{cat.color ?? t('categorias.sinColor')}</span>
                       </div>
                     </td>
                     <td className="search-row__title-cell">
@@ -348,7 +356,7 @@ function CategoriesSection() {
                           onClick={() => openEdit(cat)}
                         >
                           <PencilSquareIcon width={16} height={16} />
-                          Editar
+                          {t('comun.editar')}
                         </button>
                         <button
                           className="button button--danger"
@@ -357,7 +365,7 @@ function CategoriesSection() {
                           disabled={deleteMutation.isPending}
                         >
                           <TrashIcon width={16} height={16} />
-                          Eliminar
+                          {t('comun.eliminar')}
                         </button>
                       </div>
                     </td>
@@ -372,20 +380,22 @@ function CategoriesSection() {
       <SidePanelDialog
         open={isModalOpen}
         variant="centered"
-        ariaLabel={editingCategory ? 'Editar categoría' : 'Nueva categoría'}
+        ariaLabel={editingCategory ? t('catalogo.editarCategoria') : t('catalogo.nuevaCategoria')}
         onClose={() => setIsModalOpen(false)}
       >
         <div className="catalog-modal">
           <div className="catalog-modal__header">
             <h3 className="catalog-modal__title">
-              {editingCategory ? `Editar "${editingCategory.name}"` : 'Nueva categoría'}
+              {editingCategory
+                ? t('catalogo.editarNombrado', { nombre: editingCategory.name })
+                : t('catalogo.nuevaCategoria')}
             </h3>
             <button
               type="button"
               className="button button--ghost"
               onClick={() => setIsModalOpen(false)}
             >
-              Cancelar
+              {t('comun.cancelar')}
             </button>
           </div>
 
@@ -397,7 +407,7 @@ function CategoriesSection() {
             ) : null}
 
             <div className="control">
-              <label htmlFor="cat-name">Nombre</label>
+              <label htmlFor="cat-name">{t('catalogo.nombre')}</label>
               <input
                 id="cat-name"
                 className="input"
@@ -411,7 +421,7 @@ function CategoriesSection() {
             <div className="control">
               {/* Widget compuesto, no un control único: se nombra por aria-labelledby. */}
               <span className="control__label" id="format-color-label">
-                Color
+                {t('categorias.color')}
               </span>
               <ColorPickerDropdown
                 labelId="format-color-label"
@@ -427,10 +437,10 @@ function CategoriesSection() {
                 disabled={saveMutation.isPending}
               >
                 {saveMutation.isPending
-                  ? 'Guardando…'
+                  ? t('comun.guardando')
                   : editingCategory
-                    ? 'Guardar cambios'
-                    : 'Crear categoría'}
+                    ? t('perfil.guardarCambios')
+                    : t('categorias.crear')}
               </button>
             </div>
           </form>
@@ -439,10 +449,14 @@ function CategoriesSection() {
 
       <ConfirmDialog
         open={deleteCandidate !== null}
-        title={deleteCandidate ? `Eliminar "${deleteCandidate.name}"` : 'Eliminar categoría'}
-        message="Esta categoría se eliminará de tu biblioteca y dejará de estar disponible en todos los registros."
-        confirmLabel="Eliminar categoría"
-        cancelLabel="Conservar"
+        title={
+          deleteCandidate
+            ? t('catalogo.eliminarNombrado', { nombre: deleteCandidate.name })
+            : t('categorias.dialogoTituloGenerico')
+        }
+        message={t('catalogo.categoriaDialogoMensaje')}
+        confirmLabel={t('categorias.dialogoConfirmar')}
+        cancelLabel={t('catalogo.conservar')}
         tone="danger"
         isPending={deleteMutation.isPending}
         onClose={() => setDeleteCandidate(null)}
@@ -465,6 +479,7 @@ function makeFormatDraft(fmt: UserFormat | null): FormatDraft {
 function FormatsSection() {
   const queryClient = useQueryClient()
   const { showToast } = useToast()
+  const { t } = useTranslation()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingFormat, setEditingFormat] = useState<UserFormat | null>(null)
@@ -486,8 +501,8 @@ function FormatsSection() {
       showToast({
         tone: 'success',
         message: variables.id
-          ? `"${saved.name}" se actualizó correctamente.`
-          : `"${saved.name}" se creó correctamente.`,
+          ? t('categorias.actualizada', { nombre: saved.name })
+          : t('categorias.creada', { nombre: saved.name }),
       })
       setIsModalOpen(false)
       setFormError(null)
@@ -497,7 +512,7 @@ function FormatsSection() {
       setFormError(
         extractApiError(
           err,
-          variables.id ? 'No se pudo actualizar el formato.' : 'No se pudo crear el formato.',
+          variables.id ? t('catalogo.formatoErrorActualizar') : t('catalogo.formatoErrorCrear'),
         ),
       )
     },
@@ -510,14 +525,14 @@ function FormatsSection() {
     },
     onSuccess: (deleted) => {
       setDeleteCandidate(null)
-      showToast({ tone: 'success', message: `"${deleted.name}" se eliminó correctamente.` })
+      showToast({ tone: 'success', message: t('categorias.eliminada', { nombre: deleted.name }) })
       void queryClient.invalidateQueries({ queryKey: queryKeys.formats.root })
     },
     onError: (err) => {
       setDeleteCandidate(null)
       showToast({
         tone: 'danger',
-        message: extractApiError(err, 'No se pudo eliminar el formato.'),
+        message: extractApiError(err, t('catalogo.formatoErrorEliminar')),
       })
     },
   })
@@ -548,7 +563,7 @@ function FormatsSection() {
   }
 
   if (formatsQuery.isLoading && !formatsQuery.data) {
-    return <Loader title="Cargando formatos" />
+    return <Loader title={t('catalogo.formatosCargando')} />
   }
 
   return (
@@ -558,41 +573,38 @@ function FormatsSection() {
           <div>
             <h2 className="catalog-section__title">
               <Squares2X2Icon width={18} height={18} />
-              Formatos
+              {t('catalogo.pestanaFormatos')}
             </h2>
-            <p className="catalog-section__description">
-              Etiquetas personales para clasificar el contenido de tu biblioteca: Anime, Serie,
-              Película, Manga, etc.
-            </p>
+            <p className="catalog-section__description">{t('catalogo.formatosDescripcion')}</p>
           </div>
           <button className="button button--primary" type="button" onClick={openCreate}>
             <PlusIcon width={18} height={18} />
-            Nuevo formato
+            {t('catalogo.nuevoFormato')}
           </button>
         </div>
 
         {formatsQuery.isError ? (
           <EmptyState
-            title="No se pudieron cargar los formatos"
-            message="Recarga la vista o revisa la conexión con el backend."
+            title={t('catalogo.formatosErrorTitulo')}
+            message={t('categorias.errorMensaje')}
             action={
               <button
                 className="button button--primary"
                 type="button"
                 onClick={() => formatsQuery.refetch()}
               >
-                Reintentar
+                {t('comun.reintentar')}
               </button>
             }
           />
         ) : formats.length === 0 ? (
           <EmptyState
-            title="Todavía no tienes formatos"
-            message="Crea el primero para que aparezca en el selector de la biblioteca."
+            title={t('catalogo.formatosVaciaTitulo')}
+            message={t('catalogo.formatosVaciaMensaje')}
             action={
               <button className="button button--primary" type="button" onClick={openCreate}>
                 <PlusIcon width={18} height={18} />
-                Nuevo formato
+                {t('catalogo.nuevoFormato')}
               </button>
             }
           />
@@ -601,8 +613,8 @@ function FormatsSection() {
             <table className="search-table">
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>Acciones</th>
+                  <th>{t('catalogo.nombre')}</th>
+                  <th>{t('descubrir.colAcciones')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -619,7 +631,7 @@ function FormatsSection() {
                           onClick={() => openEdit(fmt)}
                         >
                           <PencilSquareIcon width={16} height={16} />
-                          Editar
+                          {t('comun.editar')}
                         </button>
                         <button
                           className="button button--danger"
@@ -628,7 +640,7 @@ function FormatsSection() {
                           disabled={deleteMutation.isPending}
                         >
                           <TrashIcon width={16} height={16} />
-                          Eliminar
+                          {t('comun.eliminar')}
                         </button>
                       </div>
                     </td>
@@ -643,20 +655,22 @@ function FormatsSection() {
       <SidePanelDialog
         open={isModalOpen}
         variant="centered"
-        ariaLabel={editingFormat ? 'Editar formato' : 'Nuevo formato'}
+        ariaLabel={editingFormat ? t('catalogo.editarFormato') : t('catalogo.nuevoFormato')}
         onClose={() => setIsModalOpen(false)}
       >
         <div className="catalog-modal">
           <div className="catalog-modal__header">
             <h3 className="catalog-modal__title">
-              {editingFormat ? `Editar "${editingFormat.name}"` : 'Nuevo formato'}
+              {editingFormat
+                ? t('catalogo.editarNombrado', { nombre: editingFormat.name })
+                : t('catalogo.nuevoFormato')}
             </h3>
             <button
               type="button"
               className="button button--ghost"
               onClick={() => setIsModalOpen(false)}
             >
-              Cancelar
+              {t('comun.cancelar')}
             </button>
           </div>
 
@@ -668,7 +682,7 @@ function FormatsSection() {
             ) : null}
 
             <div className="control">
-              <label htmlFor="fmt-name">Nombre del formato</label>
+              <label htmlFor="fmt-name">{t('catalogo.nombreFormato')}</label>
               <input
                 id="fmt-name"
                 className="input"
@@ -676,7 +690,7 @@ function FormatsSection() {
                 onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
                 required
                 data-dialog-autofocus
-                placeholder="Ej: OVA, Novela visual, Cortometraje…"
+                placeholder={t('catalogo.nombreFormatoPista')}
               />
             </div>
 
@@ -687,10 +701,10 @@ function FormatsSection() {
                 disabled={saveMutation.isPending}
               >
                 {saveMutation.isPending
-                  ? 'Guardando…'
+                  ? t('comun.guardando')
                   : editingFormat
-                    ? 'Guardar cambios'
-                    : 'Crear formato'}
+                    ? t('perfil.guardarCambios')
+                    : t('catalogo.crearFormato')}
               </button>
             </div>
           </form>
@@ -699,10 +713,14 @@ function FormatsSection() {
 
       <ConfirmDialog
         open={deleteCandidate !== null}
-        title={deleteCandidate ? `Eliminar "${deleteCandidate.name}"` : 'Eliminar formato'}
-        message="Este formato dejará de aparecer en el selector de la biblioteca. Los registros existentes no se verán afectados."
-        confirmLabel="Eliminar formato"
-        cancelLabel="Conservar"
+        title={
+          deleteCandidate
+            ? t('catalogo.eliminarNombrado', { nombre: deleteCandidate.name })
+            : t('catalogo.formatoDialogoTituloGenerico')
+        }
+        message={t('catalogo.formatoDialogoMensaje')}
+        confirmLabel={t('catalogo.formatoDialogoConfirmar')}
+        cancelLabel={t('catalogo.conservar')}
         tone="danger"
         isPending={deleteMutation.isPending}
         onClose={() => setDeleteCandidate(null)}
@@ -719,6 +737,7 @@ function FormatsSection() {
 type CatalogTab = 'categories' | 'formats'
 
 export default function CatalogView() {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<CatalogTab>('categories')
 
   return (
@@ -726,13 +745,10 @@ export default function CatalogView() {
       <section className="hero-panel">
         <span className="hero-panel__eyebrow">
           <Squares2X2Icon width={18} height={18} />
-          Catálogo
+          {t('catalogo.eyebrow')}
         </span>
-        <h1 className="hero-panel__title">Tu catálogo personal</h1>
-        <p className="hero-panel__description">
-          Administra las categorías y formatos que usas para organizar y clasificar tu biblioteca
-          multimedia.
-        </p>
+        <h1 className="hero-panel__title">{t('catalogo.titulo')}</h1>
+        <p className="hero-panel__description">{t('catalogo.descripcion')}</p>
       </section>
 
       <div className="catalog-tabs">
@@ -742,7 +758,7 @@ export default function CatalogView() {
           onClick={() => setActiveTab('categories')}
         >
           <TagIcon width={16} height={16} />
-          Categorías
+          {t('catalogo.pestanaCategorias')}
         </button>
         <button
           type="button"
@@ -750,7 +766,7 @@ export default function CatalogView() {
           onClick={() => setActiveTab('formats')}
         >
           <Squares2X2Icon width={16} height={16} />
-          Formatos
+          {t('catalogo.pestanaFormatos')}
         </button>
       </div>
 

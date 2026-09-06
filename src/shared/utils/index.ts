@@ -1,3 +1,5 @@
+import i18n from '@/shared/i18n'
+
 export * from './download'
 
 export function buildQueryString<T extends object>(params: T): string {
@@ -27,12 +29,22 @@ export function buildQueryString<T extends object>(params: T): string {
   return searchParams.toString()
 }
 
+/**
+ * Formatea una fecha en el idioma elegido para la interfaz.
+ *
+ * Estaba clavado a `es-DO`. El primer arreglo de T4-03 lo dejó en `undefined`, que es
+ * «lo que diga el navegador»: era lo correcto **mientras los textos seguían incrustados
+ * en español**, porque entonces no había ningún idioma de interfaz que respetar.
+ *
+ * Ahora sí lo hay, y manda ese. Con `undefined`, elegir English dejaba una pantalla en
+ * inglés con las fechas en «05 sept 2026»; la mezcla no la pidió nadie.
+ */
 export function formatDate(value?: string | null): string {
   if (!value) {
-    return 'Sin fecha'
+    return i18n.t('comun.sinFecha')
   }
 
-  return new Intl.DateTimeFormat('es-DO', {
+  return new Intl.DateTimeFormat(i18n.language, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -41,7 +53,7 @@ export function formatDate(value?: string | null): string {
 
 export function formatScore(value?: number | null): string {
   if (value === undefined || value === null) {
-    return 'Sin puntuación'
+    return i18n.t('comun.sinPuntuacion')
   }
 
   return value.toFixed(1)

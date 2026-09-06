@@ -4,16 +4,17 @@ import {
   SparklesIcon,
 } from '@heroicons/react/24/outline'
 import { useState, type FormEventHandler } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Category } from '@/features/categories/schemas/categorySchema'
 import {
   mediaItemSourceTypes,
-  mediaSortFieldLabels,
-  mediaTrackingStatusLabels,
+  mediaSortFieldLabelKeys,
+  mediaTrackingStatusLabelKeys,
   mediaTrackingStatuses,
   mediaTypeLabels,
   mediaTypes,
   mediaSourceLabels,
-  sortDirectionLabels,
+  sortDirectionLabelKeys,
   sortDirections,
   mediaItemsSortFields,
   type MediaItemsFilters,
@@ -56,6 +57,7 @@ export default function LibraryFilters({
   onFilterChange,
   onClearFilters,
 }: LibraryFiltersProps) {
+  const { t } = useTranslation()
   const advancedFilterCount = countAdvancedFilters(filters)
   const [isManuallyOpen, setIsManuallyOpen] = useState(false)
   const isAdvancedOpen = isManuallyOpen || advancedFilterCount > 0
@@ -72,58 +74,55 @@ export default function LibraryFilters({
   const selectedCategoryCount = filters.categoryIds?.length ?? 0
 
   return (
-    <form className="filters-form" aria-label="Filtros de biblioteca" onSubmit={onSubmit}>
+    <form className="filters-form" aria-label={t('filtros.titulo')} onSubmit={onSubmit}>
       <div className="panel__header panel__header--stack">
         <div>
-          <h2 className="panel__title">Filtros de biblioteca</h2>
-          <p className="panel__description">
-            Busca por título, ordena por fecha o puntuación y segmenta por formato, estado,
-            categorías y origen.
-          </p>
+          <h2 className="panel__title">{t('filtros.titulo')}</h2>
+          <p className="panel__description">{t('filtros.descripcion')}</p>
         </div>
         <div className="panel__header-actions">
           <span className="hero-chip">
             <AdjustmentsHorizontalIcon width={18} height={18} />
             {selectedCategoryCount > 0
-              ? `${selectedCategoryCount} categorías activas`
+              ? t('filtros.categoriasActivas', { count: selectedCategoryCount })
               : advancedFilterCount > 0
-                ? `${advancedFilterCount} ajustes avanzados activos`
-                : 'Vista compacta'}
+                ? t('filtros.avanzadosActivos', { count: advancedFilterCount })
+                : t('filtros.vistaCompacta')}
           </span>
           <button type="button" className="button button--ghost" onClick={onClearFilters}>
             <SparklesIcon width={18} height={18} />
-            Limpiar
+            {t('filtros.limpiar')}
           </button>
         </div>
       </div>
 
       <div className="search-bar">
         <div className="control search-bar__field">
-          <label htmlFor="library-search">Buscar título</label>
+          <label htmlFor="library-search">{t('filtros.buscarTitulo')}</label>
           <input
             id="library-search"
             className="input"
-            placeholder="Naruto, Solo Leveling, Vagabond..."
+            placeholder={t('filtros.buscarPista')}
             value={searchInput}
             onChange={(event) => onSearchInputChange(event.target.value)}
           />
         </div>
         <button type="submit" className="button button--primary search-bar__submit">
           <MagnifyingGlassIcon width={18} height={18} />
-          Buscar
+          {t('filtros.buscar')}
         </button>
       </div>
 
       <div className="control-grid control-grid--compact">
         <div className="control">
-          <label htmlFor="library-type">Formato</label>
+          <label htmlFor="library-type">{t('filtros.formato')}</label>
           <select
             id="library-type"
             className="select"
             value={filters.type ?? ''}
             onChange={(event) => onFilterChange({ type: event.target.value || undefined })}
           >
-            <option value="">Todos</option>
+            <option value="">{t('filtros.todos')}</option>
             {mediaTypes.map((type) => (
               <option key={type} value={type}>
                 {mediaTypeLabels[type]}
@@ -133,31 +132,31 @@ export default function LibraryFilters({
         </div>
 
         <div className="control">
-          <label htmlFor="library-status">Estado</label>
+          <label htmlFor="library-status">{t('filtros.estado')}</label>
           <select
             id="library-status"
             className="select"
             value={filters.status ?? ''}
             onChange={(event) => onFilterChange({ status: event.target.value || undefined })}
           >
-            <option value="">Todos</option>
+            <option value="">{t('filtros.todos')}</option>
             {mediaTrackingStatuses.map((status) => (
               <option key={status} value={status}>
-                {mediaTrackingStatusLabels[status]}
+                {t(mediaTrackingStatusLabelKeys[status])}
               </option>
             ))}
           </select>
         </div>
 
         <div className="control">
-          <label htmlFor="library-source">Origen</label>
+          <label htmlFor="library-source">{t('filtros.origen')}</label>
           <select
             id="library-source"
             className="select"
             value={filters.sourceType ?? ''}
             onChange={(event) => onFilterChange({ sourceType: event.target.value || undefined })}
           >
-            <option value="">Todos</option>
+            <option value="">{t('filtros.todos')}</option>
             {mediaItemSourceTypes.map((sourceType) => (
               <option key={sourceType} value={sourceType}>
                 {mediaSourceLabels[sourceType]}
@@ -169,7 +168,7 @@ export default function LibraryFilters({
 
       <div className="control" role="group" aria-labelledby="library-categories-label">
         <span className="control__label" id="library-categories-label">
-          Categorías
+          {t('filtros.categorias')}
         </span>
         {categories.length > 0 ? (
           <div className="category-pills">
@@ -196,7 +195,7 @@ export default function LibraryFilters({
           </div>
         ) : (
           <p className={`category-empty${categoriesHelpText ? ' category-empty--warning' : ''}`}>
-            {categoriesHelpText ?? 'Todavía no has creado categorías para usar en filtros.'}
+            {categoriesHelpText ?? t('filtros.sinCategorias')}
           </p>
         )}
       </div>
@@ -208,21 +207,20 @@ export default function LibraryFilters({
       >
         <summary className="filters-advanced__summary">
           <div>
-            <span className="filters-advanced__title">Más filtros y orden</span>
-            <span className="filters-advanced__hint">
-              Ajusta puntuación, fechas, orden y densidad del listado sin saturar la vista
-              principal.
-            </span>
+            <span className="filters-advanced__title">{t('filtros.masFiltros')}</span>
+            <span className="filters-advanced__hint">{t('filtros.masFiltrosPista')}</span>
           </div>
           <span className="hero-chip">
             <SparklesIcon width={16} height={16} />
-            {advancedFilterCount > 0 ? `${advancedFilterCount} activos` : 'Opcional'}
+            {advancedFilterCount > 0
+              ? t('filtros.activos', { count: advancedFilterCount })
+              : t('filtros.opcional')}
           </span>
         </summary>
 
         <div className="control-grid filters-advanced__grid">
           <div className="control">
-            <label htmlFor="library-sort-by">Ordenar por</label>
+            <label htmlFor="library-sort-by">{t('filtros.ordenarPor')}</label>
             <select
               id="library-sort-by"
               className="select"
@@ -231,14 +229,14 @@ export default function LibraryFilters({
             >
               {mediaItemsSortFields.map((sortBy) => (
                 <option key={sortBy} value={sortBy}>
-                  {mediaSortFieldLabels[sortBy]}
+                  {t(mediaSortFieldLabelKeys[sortBy])}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="control">
-            <label htmlFor="library-sort-direction">Dirección</label>
+            <label htmlFor="library-sort-direction">{t('filtros.direccion')}</label>
             <select
               id="library-sort-direction"
               className="select"
@@ -249,14 +247,14 @@ export default function LibraryFilters({
             >
               {sortDirections.map((direction) => (
                 <option key={direction} value={direction}>
-                  {sortDirectionLabels[direction]}
+                  {t(sortDirectionLabelKeys[direction])}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="control">
-            <label htmlFor="library-min-score">Puntuación mínima</label>
+            <label htmlFor="library-min-score">{t('filtros.puntuacionMinima')}</label>
             <input
               id="library-min-score"
               className="input"
@@ -275,7 +273,7 @@ export default function LibraryFilters({
           </div>
 
           <div className="control">
-            <label htmlFor="library-max-score">Puntuación máxima</label>
+            <label htmlFor="library-max-score">{t('filtros.puntuacionMaxima')}</label>
             <input
               id="library-max-score"
               className="input"
@@ -294,7 +292,7 @@ export default function LibraryFilters({
           </div>
 
           <div className="control">
-            <label htmlFor="library-created-from">Agregado desde</label>
+            <label htmlFor="library-created-from">{t('filtros.agregadoDesde')}</label>
             <input
               id="library-created-from"
               className="input"
@@ -305,7 +303,7 @@ export default function LibraryFilters({
           </div>
 
           <div className="control">
-            <label htmlFor="library-created-to">Agregado hasta</label>
+            <label htmlFor="library-created-to">{t('filtros.agregadoHasta')}</label>
             <input
               id="library-created-to"
               className="input"
@@ -316,7 +314,7 @@ export default function LibraryFilters({
           </div>
 
           <div className="control">
-            <label htmlFor="library-page-size">Elementos por página</label>
+            <label htmlFor="library-page-size">{t('filtros.porPagina')}</label>
             <select
               id="library-page-size"
               className="select"

@@ -6,6 +6,8 @@
  */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
+import LanguageToggle from '@/shared/components/LanguageToggle'
 import { useToast } from '@/shared/hooks/useToast'
 import { AuthAPI } from '../api/AuthAPI'
 import { extractApiError } from '@/shared/utils'
@@ -16,6 +18,7 @@ export default function ResendConfirmationView() {
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { showToast } = useToast()
+  const { t } = useTranslation()
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault()
@@ -26,11 +29,11 @@ export default function ResendConfirmationView() {
       await AuthAPI.resendConfirmation({ email })
       showToast({
         tone: 'success',
-        message: `Si existe una cuenta sin confirmar para ${email}, enviaremos un nuevo enlace.`,
+        message: t('reenvio.aviso', { correo: email }),
       })
       setSent(true)
     } catch (err) {
-      setError(extractApiError(err, 'No se pudo enviar el correo. Inténtalo más tarde.'))
+      setError(extractApiError(err, t('reenvio.error')))
     } finally {
       setIsPending(false)
     }
@@ -42,14 +45,18 @@ export default function ResendConfirmationView() {
         <div className="auth-card">
           <div className="auth-brand">
             <span className="brand__title">TrackerMultimedia</span>
+            <LanguageToggle />
           </div>
-          <h1 className="auth-card__title">Correo enviado</h1>
+          <h1 className="auth-card__title">{t('reenvio.hechoTitulo')}</h1>
           <p className="auth-card__subtitle">
-            Si existe una cuenta sin confirmar para <strong>{email}</strong>, recibirás el enlace de
-            confirmación.
+            <Trans
+              i18nKey="reenvio.hechoSubtitulo"
+              values={{ correo: email }}
+              components={{ destacado: <strong /> }}
+            />
           </p>
           <p className="auth-footer">
-            <Link to="/login">Volver al inicio de sesión</Link>
+            <Link to="/login">{t('comun.volverAlLogin')}</Link>
           </p>
         </div>
       </div>
@@ -61,12 +68,11 @@ export default function ResendConfirmationView() {
       <div className="auth-card">
         <div className="auth-brand">
           <span className="brand__title">TrackerMultimedia</span>
+          <LanguageToggle />
         </div>
 
-        <h1 className="auth-card__title">Reenviar confirmación</h1>
-        <p className="auth-card__subtitle">
-          Ingresa tu correo y te enviaremos un nuevo enlace de confirmación.
-        </p>
+        <h1 className="auth-card__title">{t('reenvio.titulo')}</h1>
+        <p className="auth-card__subtitle">{t('reenvio.subtitulo')}</p>
 
         {error ? (
           <div className="auth-error" role="alert">
@@ -76,7 +82,7 @@ export default function ResendConfirmationView() {
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="control">
-            <label htmlFor="email">Correo electrónico</label>
+            <label htmlFor="email">{t('acceso.correo')}</label>
             <input
               id="email"
               type="email"
@@ -95,12 +101,12 @@ export default function ResendConfirmationView() {
           </div>
 
           <button type="submit" className="button button--primary" disabled={isPending}>
-            {isPending ? 'Enviando…' : 'Enviar enlace'}
+            {isPending ? t('reenvio.enviando') : t('reenvio.enviar')}
           </button>
         </form>
 
         <p className="auth-footer">
-          <Link to="/login">Volver al inicio de sesión</Link>
+          <Link to="/login">{t('comun.volverAlLogin')}</Link>
         </p>
       </div>
     </div>

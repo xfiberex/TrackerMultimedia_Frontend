@@ -2,10 +2,12 @@ import { MagnifyingGlassIcon, SparklesIcon } from '@heroicons/react/24/outline'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { CategoriesApi } from '@/features/categories/api/CategoriesAPI'
 import { MediaItemsApi } from '@/features/media-items/api/MediaItemsAPI'
 import {
-  mediaTrackingStatusLabels,
+  mediaTrackingStatusLabelKeys,
   mediaTypeToContentKind,
   mediaTypeToProgressUnit,
   type CreateMediaItemInput,
@@ -16,7 +18,7 @@ import SearchQuickAddForm, {
 import SearchResultCard from '@/features/search/components/SearchResultCard'
 import { SearchApi } from '@/features/search/api/SearchAPI'
 import {
-  mediaSearchTypeLabels,
+  etiquetaTipoBusqueda,
   mediaSearchTypes,
   type DiscoverProvider,
   type MediaSearchType,
@@ -62,9 +64,9 @@ function getActiveProviders(
   return providers.filter((provider) => provider.supportedTypes.includes(type))
 }
 
-function formatProviderSupport(provider: DiscoverProvider): string {
+function formatProviderSupport(provider: DiscoverProvider, t: TFunction): string {
   const concreteTypes = provider.supportedTypes.filter((type) => type !== 'All')
-  return concreteTypes.map((type) => mediaSearchTypeLabels[type]).join(', ')
+  return concreteTypes.map((type) => etiquetaTipoBusqueda(type, t)).join(', ')
 }
 
 function resolveSearchFilters(searchParams: URLSearchParams): SearchMediaItemsFilters {
@@ -118,6 +120,7 @@ export default function DiscoverView() {
   const [enabledProviderKeys, setEnabledProviderKeys] = useState<string[]>(loadEnabledProviders)
   const queryClient = useQueryClient()
   const { showToast } = useToast()
+  const { t } = useTranslation()
 
   if (prevFiltersQuery !== filters.query) {
     setPrevFiltersQuery(filters.query)
@@ -169,17 +172,15 @@ export default function DiscoverView() {
       setSelectedItem(null)
       showToast({
         tone: 'success',
-        message: `"${createdItem.title}" fue agregado a tu biblioteca con estado ${mediaTrackingStatusLabels[variables.overrides.status]}.`,
+        message: t('descubrir.agregado', {
+          titulo: createdItem.title,
+          estado: t(mediaTrackingStatusLabelKeys[variables.overrides.status]),
+        }),
       })
       void queryClient.invalidateQueries({ queryKey: queryKeys.mediaItems.root })
     },
     onError: (error) => {
-      setQuickAddError(
-        extractApiError(
-          error,
-          'No pudimos agregar el título a tu biblioteca. Vuelve a intentarlo en unos segundos.',
-        ),
-      )
+      setQuickAddError(extractApiError(error, t('descubrir.agregadoError')))
     },
     onSettled: () => {
       setPendingExternalId(null)
@@ -241,14 +242,14 @@ export default function DiscoverView() {
   const activeProvidersLabel =
     activeProviders.length > 0
       ? activeProviders.map((provider) => provider.displayName).join(' · ')
-      : 'Sin proveedores activos'
+      : t('descubrir.sinProveedores')
   const searchLoaderTitle =
     activeProviders.length === 1
-      ? `Consultando ${activeProviders[0].displayName}`
-      : 'Consultando catálogos externos'
+      ? t('descubrir.consultando', { proveedor: activeProviders[0].displayName })
+      : t('descubrir.consultandoVarios')
   const availableCategories = categoriesQuery.data ?? []
   const categoriesHelpText = categoriesQuery.isError
-    ? 'Las categorías no están disponibles ahora mismo. Puedes importar igual y clasificarlas después desde Biblioteca.'
+    ? t('descubrir.categoriasNoDisponibles')
     : undefined
 
   return (
@@ -256,23 +257,20 @@ export default function DiscoverView() {
       <section className="hero-panel">
         <span className="hero-panel__eyebrow">
           <SparklesIcon width={18} height={18} />
-          Descubrir
+          {t('descubrir.eyebrow')}
         </span>
-        <h1 className="hero-panel__title">Descubrir contenido</h1>
-        <p className="hero-panel__description">
-          Busca en los catálogos externos disponibles y prepara cada importación antes de llevarla a
-          tu biblioteca.
-        </p>
+        <h1 className="hero-panel__title">{t('descubrir.titulo')}</h1>
+        <p className="hero-panel__description">{t('descubrir.descripcion')}</p>
         <div className="hero-panel__meta">
-          <span className="hero-chip">{mediaSearchTypeLabels[filters.type ?? 'All']}</span>
+          <span className="hero-chip">{etiquetaTipoBusqueda(filters.type ?? 'All', t)}</span>
           <span className="hero-chip">
-            {filters.query ? `"${filters.query}"` : 'Sin búsqueda activa'}
+            {filters.query ? `"${filters.query}"` : t('descubrir.sinBusqueda')}
           </span>
           <span className="hero-chip">{activeProvidersLabel}</span>
           <span className="hero-chip">
             {filters.query.trim().length >= 2 && !searchQuery.isLoading
-              ? `${results.length} listos para importar`
-              : `${filters.limit ?? 8} por tanda`}
+              ? t('descubrir.listosParaImportar', { count: results.length })
+              : t('descubrir.porTanda', { count: filters.limit ?? 8 })}
           </span>
         </div>
       </section>
@@ -281,21 +279,18 @@ export default function DiscoverView() {
         <form className="filters-form" onSubmit={handleSearchSubmit}>
           <div className="panel__header">
             <div>
-              <h2 className="panel__title">Catálogos externos</h2>
-              <p className="panel__description">
-                Elige el formato, revisa los proveedores activos y abre una importación asistida
-                cuando un resultado merezca entrar.
-              </p>
+              <h2 className="panel__title">{t('descubrir.catalogosTitulo')}</h2>
+              <p className="panel__description">{t('descubrir.catalogosDescripcion')}</p>
             </div>
           </div>
 
           <div className="search-bar">
             <div className="control search-bar__field">
-              <label htmlFor="discover-query">Consulta</label>
+              <label htmlFor="discover-query">{t('descubrir.consulta')}</label>
               <input
                 id="discover-query"
                 className="input"
-                placeholder="Naruto, Berserk, Solo Leveling..."
+                placeholder={t('descubrir.consultaPista')}
                 value={queryInput}
                 onChange={(event) => setQueryInput(event.target.value)}
               />
@@ -307,7 +302,7 @@ export default function DiscoverView() {
               disabled={!isSearchReady}
             >
               <MagnifyingGlassIcon width={18} height={18} />
-              Buscar
+              {t('filtros.buscar')}
             </button>
           </div>
 
@@ -318,12 +313,10 @@ export default function DiscoverView() {
               aria-labelledby="discover-providers-label"
             >
               <span className="control__label" id="discover-providers-label">
-                Proveedores
+                {t('descubrir.proveedores')}
               </span>
               {providersQuery.isError ? (
-                <p className="category-empty">
-                  No se pudo cargar la lista de proveedores disponibles.
-                </p>
+                <p className="category-empty">{t('descubrir.proveedoresError')}</p>
               ) : discoverProviders.length > 0 ? (
                 <div className="provider-cards">
                   {discoverProviders.map((provider) => {
@@ -337,13 +330,19 @@ export default function DiscoverView() {
                         <div className="provider-card__info">
                           <span className="provider-card__name">{provider.displayName}</span>
                           <span className="provider-card__types">
-                            {formatProviderSupport(provider)}
+                            {formatProviderSupport(provider, t)}
                           </span>
                         </div>
                         <label
                           className="toggle-switch"
                           htmlFor={switchId}
-                          aria-label={`${isEnabled ? 'Desactivar' : 'Activar'} ${provider.displayName}`}
+                          aria-label={
+                            isEnabled
+                              ? t('descubrir.desactivarProveedor', {
+                                  proveedor: provider.displayName,
+                                })
+                              : t('descubrir.activarProveedor', { proveedor: provider.displayName })
+                          }
                         >
                           <input
                             id={switchId}
@@ -358,12 +357,12 @@ export default function DiscoverView() {
                   })}
                 </div>
               ) : (
-                <p className="category-empty">Cargando proveedores...</p>
+                <p className="category-empty">{t('descubrir.proveedoresCargando')}</p>
               )}
             </div>
 
             <div className="control">
-              <label htmlFor="discover-type">Formato</label>
+              <label htmlFor="discover-type">{t('descubrir.formato')}</label>
               <select
                 id="discover-type"
                 className="select"
@@ -372,14 +371,14 @@ export default function DiscoverView() {
               >
                 {mediaSearchTypes.map((type) => (
                   <option key={type} value={type}>
-                    {mediaSearchTypeLabels[type]}
+                    {etiquetaTipoBusqueda(type, t)}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="control">
-              <label htmlFor="discover-limit">Cantidad</label>
+              <label htmlFor="discover-limit">{t('descubrir.cantidad')}</label>
               <select
                 id="discover-limit"
                 className="select"
@@ -400,25 +399,21 @@ export default function DiscoverView() {
       <section className="panel">
         <div className="results-header">
           <div>
-            <h2 className="results-title">Resultados de catálogos externos</h2>
+            <h2 className="results-title">{t('descubrir.resultadosTitulo')}</h2>
             <p className="results-subtitle">
-              {results.length} {results.length === 1 ? 'resultado' : 'resultados'} listos para
-              importar.
+              {t('descubrir.resultadosSubtitulo', { count: results.length })}
             </p>
           </div>
         </div>
 
         {searchQuery.isLoading ? (
-          <Loader
-            title={searchLoaderTitle}
-            message="Buscando en los catálogos externos activos..."
-          />
+          <Loader title={searchLoaderTitle} message={t('descubrir.consultandoMensaje')} />
         ) : null}
 
         {!searchQuery.isLoading && enabledProviderKeys.length === 0 ? (
           <EmptyState
-            title="Sin proveedores activos"
-            message="Activa al menos un proveedor para poder realizar búsquedas."
+            title={t('descubrir.sinProveedores')}
+            message={t('descubrir.sinProveedoresMensaje')}
           />
         ) : null}
 
@@ -426,18 +421,18 @@ export default function DiscoverView() {
         enabledProviderKeys.length > 0 &&
         filters.query.trim().length < 2 ? (
           <EmptyState
-            title="Empieza con una búsqueda"
-            message="Escribe al menos 2 caracteres para iniciar la búsqueda."
+            title={t('descubrir.empiezaTitulo')}
+            message={t('descubrir.empiezaMensaje')}
           />
         ) : null}
 
         {searchQuery.isError ? (
           <EmptyState
-            title="No se pudo consultar los catálogos externos"
-            message="Verifica tu conexión o vuelve a intentarlo más tarde."
+            title={t('descubrir.errorTitulo')}
+            message={t('descubrir.errorMensaje')}
             action={
               <button className="button button--primary" onClick={() => searchQuery.refetch()}>
-                Reintentar
+                {t('comun.reintentar')}
               </button>
             }
           />
@@ -449,8 +444,8 @@ export default function DiscoverView() {
         filters.query.trim().length >= 2 &&
         enabledProviderKeys.length > 0 ? (
           <EmptyState
-            title="Sin resultados"
-            message="Prueba con otro nombre o cambia el tipo de búsqueda para ampliar el alcance."
+            title={t('descubrir.sinResultadosTitulo')}
+            message={t('descubrir.sinResultadosMensaje')}
           />
         ) : null}
 
@@ -460,13 +455,13 @@ export default function DiscoverView() {
               <thead>
                 <tr>
                   <th></th>
-                  <th>Título</th>
-                  <th>Tipo</th>
-                  <th>Origen</th>
-                  <th>Estado editorial</th>
-                  <th>Año</th>
-                  <th>Puntuación</th>
-                  <th>Acciones</th>
+                  <th>{t('descubrir.colTitulo')}</th>
+                  <th>{t('descubrir.colTipo')}</th>
+                  <th>{t('descubrir.colOrigen')}</th>
+                  <th>{t('descubrir.colEstadoEditorial')}</th>
+                  <th>{t('descubrir.colAnio')}</th>
+                  <th>{t('descubrir.colPuntuacion')}</th>
+                  <th>{t('descubrir.colAcciones')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -487,19 +482,16 @@ export default function DiscoverView() {
       {selectedItem ? (
         <SidePanelDialog
           open={selectedItem !== null}
-          ariaLabel={`Importar ${selectedItem.title}`}
+          ariaLabel={t('descubrir.importarTitulo', { titulo: selectedItem.title })}
           disableClose={addMutation.isPending}
           onClose={closeQuickAdd}
         >
           <div className="side-panel__meta">
             <span className="hero-chip">
               <SparklesIcon width={16} height={16} />
-              Importación asistida
+              {t('descubrir.importacionAsistida')}
             </span>
-            <p className="side-panel__hint">
-              Ajusta el estado inicial y etiqueta el contenido antes de guardarlo. El resto de
-              metadatos llegará desde el catálogo externo.
-            </p>
+            <p className="side-panel__hint">{t('descubrir.importacionPista')}</p>
           </div>
 
           <SearchQuickAddForm

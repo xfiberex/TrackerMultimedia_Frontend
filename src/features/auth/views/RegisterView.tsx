@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
+import LanguageToggle from '@/shared/components/LanguageToggle'
 import { useAuth } from '../context/useAuth'
 import { extractApiError } from '@/shared/utils'
 
@@ -15,6 +17,7 @@ export default function RegisterView() {
 
   const { user, isLoading, register, loginWithOAuth, methods } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -27,7 +30,7 @@ export default function RegisterView() {
     setError(null)
 
     if (password !== confirm) {
-      setError('Las contraseñas no coinciden.')
+      setError(t('registro.noCoinciden'))
       return
     }
 
@@ -37,7 +40,7 @@ export default function RegisterView() {
       await register({ email, password, displayName: displayName.trim() || undefined })
       setRegistered(true)
     } catch (err) {
-      setError(extractApiError(err, 'No se pudo crear la cuenta. Inténtalo de nuevo.'))
+      setError(extractApiError(err, t('registro.noSePudoCrear')))
     } finally {
       setIsPending(false)
     }
@@ -49,7 +52,7 @@ export default function RegisterView() {
     try {
       await loginWithOAuth(provider)
     } catch (err) {
-      setError(extractApiError(err, `No se pudo iniciar el acceso con ${provider}.`))
+      setError(extractApiError(err, t('oauth.noSePudoIniciar', { proveedor: provider })))
       setOAuthPending(null)
     }
   }
@@ -60,17 +63,25 @@ export default function RegisterView() {
         <div className="auth-card">
           <div className="auth-brand">
             <span className="brand__title">TrackerMultimedia</span>
+            <LanguageToggle />
           </div>
-          <h1 className="auth-card__title">¡Cuenta creada!</h1>
+          <h1 className="auth-card__title">{t('registro.hechoTitulo')}</h1>
+          {/* `Trans` y no `t`: el correo va dentro de la frase y en negrita. Partir el
+              texto en tres trozos para intercalar el <strong> ata el orden de las
+              palabras al español, y en otro idioma la frase puede colocarlo en otro
+              sitio. Así el traductor mueve `<destacado>` dentro de su propia frase. */}
           <p className="auth-card__subtitle">
-            Te hemos enviado un correo a <strong>{email}</strong>. Abre el enlace de confirmación
-            para activar tu cuenta.
+            <Trans
+              i18nKey="registro.hechoSubtitulo"
+              values={{ correo: email }}
+              components={{ destacado: <strong /> }}
+            />
           </p>
           <p className="auth-footer">
-            <Link to="/resend-confirmation">¿No recibiste el correo?</Link>
+            <Link to="/resend-confirmation">{t('registro.hechoNoRecibiste')}</Link>
           </p>
           <p className="auth-footer">
-            <Link to="/login">Volver al inicio de sesión</Link>
+            <Link to="/login">{t('comun.volverAlLogin')}</Link>
           </p>
         </div>
       </div>
@@ -82,10 +93,11 @@ export default function RegisterView() {
       <div className="auth-card">
         <div className="auth-brand">
           <span className="brand__title">TrackerMultimedia</span>
+          <LanguageToggle />
         </div>
 
-        <h1 className="auth-card__title">Crear cuenta</h1>
-        <p className="auth-card__subtitle">Comienza a gestionar tu contenido multimedia.</p>
+        <h1 className="auth-card__title">{t('registro.titulo')}</h1>
+        <p className="auth-card__subtitle">{t('registro.subtitulo')}</p>
 
         {error ? (
           <div className="auth-error" role="alert">
@@ -104,7 +116,7 @@ export default function RegisterView() {
                   disabled={oauthPending !== null}
                   onClick={() => handleOAuth('google')}
                 >
-                  {oauthPending === 'google' ? 'Redirigiendo…' : 'Continuar con Google'}
+                  {oauthPending === 'google' ? t('oauth.redirigiendo') : t('oauth.conGoogle')}
                 </button>
               )}
               {methods?.gitHubEnabled && (
@@ -114,20 +126,20 @@ export default function RegisterView() {
                   disabled={oauthPending !== null}
                   onClick={() => handleOAuth('github')}
                 >
-                  {oauthPending === 'github' ? 'Redirigiendo…' : 'Continuar con GitHub'}
+                  {oauthPending === 'github' ? t('oauth.redirigiendo') : t('oauth.conGitHub')}
                 </button>
               )}
             </div>
 
             <div className="auth-divider">
-              <span>o regístrate con correo</span>
+              <span>{t('registro.separador')}</span>
             </div>
           </>
         )}
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="control">
-            <label htmlFor="email">Correo electrónico</label>
+            <label htmlFor="email">{t('acceso.correo')}</label>
             <input
               id="email"
               type="email"
@@ -147,7 +159,8 @@ export default function RegisterView() {
 
           <div className="control">
             <label htmlFor="displayName">
-              Nombre visible <span className="control__optional">(opcional)</span>
+              {t('registro.nombreVisible')}{' '}
+              <span className="control__optional">{t('registro.opcional')}</span>
             </label>
             <input
               id="displayName"
@@ -161,7 +174,7 @@ export default function RegisterView() {
           </div>
 
           <div className="control">
-            <label htmlFor="password">Contraseña</label>
+            <label htmlFor="password">{t('acceso.contrasena')}</label>
             <input
               id="password"
               type="password"
@@ -175,7 +188,7 @@ export default function RegisterView() {
           </div>
 
           <div className="control">
-            <label htmlFor="confirm">Confirmar contraseña</label>
+            <label htmlFor="confirm">{t('registro.confirmarContrasena')}</label>
             <input
               id="confirm"
               type="password"
@@ -192,12 +205,12 @@ export default function RegisterView() {
             className="button button--primary"
             disabled={isPending || oauthPending !== null}
           >
-            {isPending ? 'Creando cuenta…' : 'Crear cuenta'}
+            {isPending ? t('registro.creando') : t('registro.crear')}
           </button>
         </form>
 
         <p className="auth-footer">
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+          {t('registro.yaTienesCuenta')} <Link to="/login">{t('registro.iniciaSesion')}</Link>
         </p>
       </div>
     </div>

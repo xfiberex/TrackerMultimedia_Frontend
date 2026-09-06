@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import type {
   ExternalMediaKind,
   MediaItemSourceType,
@@ -36,11 +37,12 @@ export interface SearchMediaItem {
   releaseYear: number | null
 }
 
-export const mediaSearchTypeLabels: Record<MediaSearchType, string> = {
-  All: 'Todos',
-  Anime: 'Anime',
-  Manga: 'Manga',
-  Donghua: 'Donghua',
-  Manhwa: 'Manhwa',
-  Manhua: 'Manhua',
+/**
+ * De los seis tipos de búsqueda **solo `All` es una palabra**: los otros cinco son los
+ * nombres de sus medios y se escriben igual en cualquier idioma. Por eso esto es una
+ * función con un caso especial y no un mapa entero en el diccionario, que habría
+ * duplicado cinco entradas idénticas en `es` y en `en`.
+ */
+export function etiquetaTipoBusqueda(tipo: MediaSearchType, t: TFunction): string {
+  return tipo === 'All' ? t('filtros.todos') : tipo
 }

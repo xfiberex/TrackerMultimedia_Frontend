@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useModalDialog } from '../hooks/useModalDialog'
 
 const CONFIRM_DIALOG_EXIT_DURATION_MS = 220
@@ -19,13 +20,14 @@ export default function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = 'Confirmar',
-  cancelLabel = 'Cancelar',
+  confirmLabel,
+  cancelLabel,
   tone = 'default',
   isPending = false,
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation()
   const titleId = useId()
   const messageId = useId()
   const [isClosing, setIsClosing] = useState(false)
@@ -116,7 +118,7 @@ export default function ConfirmDialog({
             disabled={isPending}
             {...(tone === 'danger' ? { 'data-dialog-autofocus': true } : {})}
           >
-            {cancelLabel}
+            {cancelLabel ?? t('comun.cancelar')}
           </button>
           <button
             type="button"
@@ -125,7 +127,7 @@ export default function ConfirmDialog({
             disabled={isPending}
             {...(tone === 'danger' ? {} : { 'data-dialog-autofocus': true })}
           >
-            {isPending ? 'Procesando…' : confirmLabel}
+            {isPending ? t('comun.procesando') : (confirmLabel ?? t('comun.confirmar'))}
           </button>
         </div>
       </section>

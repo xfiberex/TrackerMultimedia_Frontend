@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /**
- * T5-03 — La escala de medidas, y la pantalla que sirve de plantilla.
+ * T5-03 y T5-08 — La escala de medidas, y el archivo entero apoyado en ella.
  *
  * Los 33 tokens que había eran todos de color y sombra, así que cada clase escribía sus
  * medidas a mano. Medido antes de la escala: **39 espaciados**, 9 radios y **19 tamaños
@@ -11,10 +11,12 @@ import { describe, expect, it } from 'vitest'
  * de modo que `0,8`, `0,82`, `0,84`, `0,85`, `0,875` y `0,88` eran seis maneras de
  * escribir lo mismo sin que nadie pudiera verlas distintas.
  *
+ * T5-03 montó la escala y migró una vista; **T5-08 migró las 296 medidas restantes** y con
+ * ello esta prueba pasó de vigilar una lista de prefijos a vigilar el archivo completo.
+ *
  * Estas pruebas no comprueban que la escala sea bonita, sino las dos cosas que pueden
- * dejar de ser ciertas sin que se note: que la escala siga siendo una escala, y que la
- * vista migrada siga sin medidas a mano. La segunda es la que importa, porque la
- * plantilla solo sirve mientras siga siéndolo.
+ * dejar de ser ciertas sin que se note: que la escala siga siendo una escala, y que no
+ * vuelva a colarse una medida a mano en ninguna regla.
  */
 
 const css = readFileSync(resolve(__dirname, '../index.css'), 'utf8')
@@ -65,11 +67,37 @@ describe('la escala de medidas', () => {
 })
 
 /**
- * La pantalla de acceso es la vista migrada entera, y por eso es la plantilla del resto.
- * Mientras nada vuelva a escribir una medida a mano ahí, sirve de referencia para mirar
- * cómo se hace; en cuanto una se cuele, deja de servir y esta prueba lo dice.
+ * Medidas que **no** son de diseño, y por eso no salen de la escala. La lista es corta a
+ * propósito: cada entrada necesita un motivo por el que la rejilla de 4px no tiene nada
+ * que decir sobre ese valor. «Queda mejor así» no es un motivo — para eso está la escala.
  */
-it('la pantalla de acceso no escribe ninguna medida a mano', () => {
+const EXCEPCIONES: { selector: string; propiedad: string; porque: string }[] = [
+  {
+    selector: '.toggle-switch',
+    propiedad: 'margin-top',
+    porque:
+      'Ajuste óptico de 2px para alinear el interruptor con la línea base de su etiqueta. ' +
+      'No es espaciado, es un empujón.',
+  },
+  {
+    selector: '.catalog-tab',
+    propiedad: 'margin-bottom',
+    porque:
+      'Los -1,5px suben la pestaña para que su subrayado de 2,5px monte sobre el borde ' +
+      'del contenedor. Va atado al grosor del borde, no a la rejilla de espaciado.',
+  },
+]
+
+/**
+ * T5-08 — **Ya no hay una lista de bloques migrados: se comprueba el archivo entero.**
+ *
+ * T5-03 dejó la escala montada y una sola vista sobre ella, y esta prueba vigilaba solo
+ * esa vista por su prefijo. Al terminar la migración la lista habría tenido los 43
+ * prefijos del archivo, que es una forma peor de decir «todos»: invertida, cualquier clase
+ * nueva queda vigilada desde el momento en que se escribe, sin que nadie tenga que
+ * acordarse de apuntarla.
+ */
+it('ninguna regla del archivo escribe una medida a mano', () => {
   const sinComentarios = css.replace(/\/\*[\s\S]*?\*\//g, '')
 
   // Literal, no `new RegExp` con plantilla: una barra invertida dentro de una plantilla
@@ -77,13 +105,41 @@ it('la pantalla de acceso no escribe ninguna medida a mano', () => {
   const medidas =
     /(?:^|[\s;])(padding[a-z-]*|margin[a-z-]*|gap|row-gap|column-gap|border-radius|font-size|line-height):\s*([^;}]+)/g
 
-  const culpables = [...sinComentarios.matchAll(/([^{}]+)\{([^}]*)\}/g)]
-    .filter(([, selector]) => selector.includes('auth') || selector.includes('oauth'))
-    .flatMap(([, selector, cuerpo]) =>
-      [...cuerpo.matchAll(medidas)]
-        .filter(([, , valor]) => /[\d.]+(rem|px|em)/.test(valor) || /^\s*[\d.]+\s*$/.test(valor))
-        .map(([, propiedad, valor]) => `${selector.trim()} → ${propiedad}: ${valor.trim()}`),
+  /**
+   * `0` no es una medida de la escala: es la ausencia de medida, y no hay ningún token
+   * que darle. Un `margin: 0` que quitara el margen por defecto del navegador tendría que
+   * escribirse igual con escala o sin ella.
+   *
+   * La comprobación original no lo excluía y nadie se enteró, porque la pantalla de acceso
+   * —la única vista migrada entonces— no tenía ni un cero. Apareció al migrar el catálogo
+   * de categorías, con cuatro.
+   */
+  const esMedidaAMano = (valor: string) => {
+    // Lo que ya sale de la escala no cuenta, y `5vw` de un `clamp()` tampoco: son
+    // proporciones de la ventana, no peldaños.
+    const sinTokens = valor.replace(/var\([^)]*\)/g, '').replace(/[\d.]+(vw|vh|vmin|vmax|%)/g, '')
+
+    const conUnidad = [...sinTokens.matchAll(/([\d.]+)(rem|px|em)\b/g)].map((m) => Number(m[1]))
+    const sinUnidad = [...sinTokens.matchAll(/(?:^|[\s,(])([\d.]+)(?![\d.]*[a-z%])/g)].map((m) =>
+      Number(m[1]),
     )
+
+    return [...conUnidad, ...sinUnidad].some((numero) => numero !== 0)
+  }
+
+  const exceptuada = (selector: string, propiedad: string) =>
+    EXCEPCIONES.some((e) => selector.includes(e.selector) && propiedad.trim() === e.propiedad)
+
+  // `[^{}]*` en el cuerpo, no `[^}]*`: este último se traga la llave de apertura de una
+  // regla anidada, así que el «selector» de una regla dentro de `@media` acababa siendo la
+  // propia consulta de medios y sus reglas internas quedaban fuera del alcance. Con esto
+  // solo casan las reglas más internas, que son las que tienen un selector de verdad.
+  const culpables = [...sinComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)].flatMap(
+    ([, selector, cuerpo]) =>
+      [...cuerpo.matchAll(medidas)]
+        .filter(([, propiedad, valor]) => esMedidaAMano(valor) && !exceptuada(selector, propiedad))
+        .map(([, propiedad, valor]) => `${selector.trim()} → ${propiedad}: ${valor.trim()}`),
+  )
 
   expect(
     culpables,

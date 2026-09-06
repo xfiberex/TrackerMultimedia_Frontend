@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ToastContext, type ShowToastOptions, type ToastTone } from '@/shared/context/ToastContext'
 
 const TOAST_EXIT_DURATION_MS = 220
@@ -10,6 +11,7 @@ interface ToastRecord extends ShowToastOptions {
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation()
   const [toasts, setToasts] = useState<ToastRecord[]>([])
   const nextIdRef = useRef(1)
   const dismissTimeoutIdsRef = useRef<Map<number, number>>(new Map())
@@ -109,10 +111,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <button
               type="button"
               className="button button--ghost toast__dismiss"
-              aria-label="Cerrar notificación"
+              aria-label={t('notificacion.cerrar')}
               onClick={() => closeToast(toast.id)}
             >
-              Cerrar
+              {t('comun.cerrar')}
             </button>
           </section>
         ))}

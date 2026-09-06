@@ -7,6 +7,8 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import LanguageToggle from '@/shared/components/LanguageToggle'
 import { useToast } from '@/shared/hooks/useToast'
 import { AuthAPI } from '../api/AuthAPI'
 
@@ -18,6 +20,7 @@ export default function ConfirmEmailView() {
   const [message, setMessage] = useState('')
   const called = useRef(false)
   const { showToast } = useToast()
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (called.current) return
@@ -38,32 +41,33 @@ export default function ConfirmEmailView() {
         setStatus('success')
       })
       .catch(() => {
-        setMessage('El enlace de confirmación no es válido o ha expirado.')
+        setMessage(t('confirmacion.enlaceInvalido'))
         setStatus('error')
       })
 
     return () => {
       called.current = false
     }
-  }, [searchParams, showToast])
+  }, [searchParams, showToast, t])
 
   return (
     <div className="auth-shell">
       <div className="auth-card">
         <div className="auth-brand">
           <span className="brand__title">TrackerMultimedia</span>
+          <LanguageToggle />
         </div>
 
         {status === 'pending' && (
           <>
-            <h1 className="auth-card__title">Confirmando cuenta…</h1>
-            <p className="auth-card__subtitle">Por favor espera un momento.</p>
+            <h1 className="auth-card__title">{t('confirmacion.confirmando')}</h1>
+            <p className="auth-card__subtitle">{t('confirmacion.espera')}</p>
           </>
         )}
 
         {status === 'success' && (
           <>
-            <h1 className="auth-card__title">¡Cuenta confirmada!</h1>
+            <h1 className="auth-card__title">{t('confirmacion.hechoTitulo')}</h1>
             <p className="auth-card__subtitle">{message}</p>
             <p className="auth-footer">
               <Link
@@ -71,7 +75,7 @@ export default function ConfirmEmailView() {
                 className="button button--primary"
                 style={{ display: 'inline-block', marginTop: '1rem' }}
               >
-                Iniciar sesión
+                {t('acceso.entrar')}
               </Link>
             </p>
           </>
@@ -79,15 +83,15 @@ export default function ConfirmEmailView() {
 
         {status === 'error' && (
           <>
-            <h1 className="auth-card__title">Enlace no válido</h1>
+            <h1 className="auth-card__title">{t('confirmacion.errorTitulo')}</h1>
             <div className="auth-error" role="alert">
               {message}
             </div>
             <p className="auth-footer">
-              <Link to="/resend-confirmation">Solicitar un nuevo enlace</Link>
+              <Link to="/resend-confirmation">{t('confirmacion.nuevoEnlace')}</Link>
             </p>
             <p className="auth-footer">
-              <Link to="/login">Volver al inicio de sesión</Link>
+              <Link to="/login">{t('comun.volverAlLogin')}</Link>
             </p>
           </>
         )}

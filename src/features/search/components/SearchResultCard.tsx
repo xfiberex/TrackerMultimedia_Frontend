@@ -1,4 +1,5 @@
 import { ArrowTopRightOnSquareIcon, PlusIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from 'react-i18next'
 import { mediaSourceLabels } from '@/features/media-items/schemas/mediaItemSchema'
 import type { SearchMediaItem } from '@/features/search/schemas/searchSchema'
 import { formatScore } from '@/shared/utils'
@@ -10,6 +11,8 @@ interface SearchResultCardProps {
 }
 
 export default function SearchResultCard({ item, isPending, onAdd }: SearchResultCardProps) {
+  const { t } = useTranslation()
+
   return (
     <tr className="search-row">
       <td className="search-row__cover-cell">
@@ -45,7 +48,7 @@ export default function SearchResultCard({ item, isPending, onAdd }: SearchResul
             disabled={isPending}
           >
             <PlusIcon width={16} height={16} />
-            {isPending ? 'Guardando...' : 'Importar'}
+            {isPending ? t('importacion.guardandoBreve') : t('importacion.importar')}
           </button>
           {item.referenceUrl ? (
             // El icono es decorativo (aria-hidden), así que sin aria-label el enlace se
@@ -55,7 +58,10 @@ export default function SearchResultCard({ item, isPending, onAdd }: SearchResul
               href={item.referenceUrl}
               target="_blank"
               rel="noreferrer"
-              aria-label={`Abrir ${item.title} en ${mediaSourceLabels[item.sourceType]}`}
+              aria-label={t('importacion.abrirEn', {
+                titulo: item.title,
+                origen: mediaSourceLabels[item.sourceType],
+              })}
             >
               <ArrowTopRightOnSquareIcon width={16} height={16} />
             </a>

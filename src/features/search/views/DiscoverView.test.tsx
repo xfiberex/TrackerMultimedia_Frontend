@@ -124,7 +124,11 @@ describe('DiscoverView', () => {
 
     expect(await screen.findByText('Anime, Manga, Donghua, Manhwa, Manhua')).toBeInTheDocument()
     expect(await screen.findByText('Naruto')).toBeInTheDocument()
-    expect(screen.getByText('1 resultado listos para importar.')).toBeInTheDocument()
+    // «listo», no «listos»: el texto anterior decía «1 resultado listos para importar»
+    // porque el singular estaba resuelto a medias —se cambiaba el sustantivo y no el
+    // adjetivo—, y esta línea lo daba por bueno. Al pasar la frase al diccionario con
+    // las formas `_one` / `_other` de i18next, la concordancia la elige la biblioteca.
+    expect(screen.getByText('1 resultado listo para importar.')).toBeInTheDocument()
   })
 
   it('submits a trimmed query and persists the selected options into the URL', async () => {

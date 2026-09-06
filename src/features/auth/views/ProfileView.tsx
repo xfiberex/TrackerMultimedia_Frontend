@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
 import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import { useToast } from '@/shared/hooks/useToast'
 import { AuthAPI } from '../api/AuthAPI'
@@ -10,6 +11,7 @@ export default function ProfileView() {
   const { user, refreshUser, logoutAll, deleteAccount } = useAuth()
   const navigate = useNavigate()
   const { showToast } = useToast()
+  const { t } = useTranslation()
 
   // --- Nombre mostrado ---
   const [displayName, setDisplayName] = useState(user?.displayName ?? '')
@@ -65,11 +67,11 @@ export default function ProfileView() {
     try {
       const { blob, fileName } = await AuthAPI.exportPersonalData()
       downloadBlob(blob, fileName)
-      showToast({ tone: 'success', message: 'Se descargó el archivo con tus datos.' })
+      showToast({ tone: 'success', message: t('perfil.datosHecho') })
     } catch (error) {
       showToast({
         tone: 'danger',
-        message: extractApiError(error, 'No se pudieron descargar tus datos.'),
+        message: extractApiError(error, t('perfil.datosError')),
       })
     } finally {
       setIsExportPending(false)
@@ -87,14 +89,14 @@ export default function ProfileView() {
           : { confirmationEmail: deleteConfirmation.trim() },
       )
       setIsDeleteDialogOpen(false)
-      showToast({ tone: 'success', message: 'Tu cuenta y todos tus datos se han borrado.' })
+      showToast({ tone: 'success', message: t('perfil.borradoHecho') })
       navigate('/login', { replace: true })
     } catch (err) {
       // El diálogo se cierra y el error se muestra en el formulario, junto al campo que
       // hay que corregir. Dejarlo dentro del diálogo obligaría a leerlo y cerrarlo para
       // poder tocar el campo.
       setIsDeleteDialogOpen(false)
-      setDeleteError(extractApiError(err, 'No se pudo borrar la cuenta.'))
+      setDeleteError(extractApiError(err, t('perfil.borradoError')))
     } finally {
       setIsDeletePending(false)
     }
@@ -108,9 +110,9 @@ export default function ProfileView() {
     try {
       await AuthAPI.updateProfile({ displayName })
       await refreshUser()
-      showToast({ tone: 'success', message: 'Perfil actualizado correctamente.' })
+      showToast({ tone: 'success', message: t('perfil.perfilActualizado') })
     } catch (err) {
-      setProfileError(extractApiError(err, 'No se pudo actualizar el perfil.'))
+      setProfileError(extractApiError(err, t('perfil.perfilError')))
     } finally {
       setIsProfilePending(false)
     }
@@ -121,7 +123,7 @@ export default function ProfileView() {
     setPwError(null)
 
     if (newPassword !== confirmPassword) {
-      setPwError('Las contraseñas nuevas no coinciden.')
+      setPwError(t('perfil.contrasenaNoCoinciden'))
       return
     }
 
@@ -129,12 +131,12 @@ export default function ProfileView() {
 
     try {
       await AuthAPI.changePassword({ currentPassword, newPassword })
-      showToast({ tone: 'success', message: 'Contraseña actualizada correctamente.' })
+      showToast({ tone: 'success', message: t('perfil.contrasenaHecha') })
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (err) {
-      setPwError(extractApiError(err, 'No se pudo cambiar la contraseña.'))
+      setPwError(extractApiError(err, t('perfil.contrasenaError')))
     } finally {
       setIsPwPending(false)
     }
@@ -146,13 +148,13 @@ export default function ProfileView() {
     try {
       await logoutAll()
       setIsLogoutDialogOpen(false)
-      showToast({ tone: 'success', message: 'Se cerraron todas tus sesiones correctamente.' })
+      showToast({ tone: 'success', message: t('perfil.sesionesHecho') })
       navigate('/login', { replace: true })
     } catch (err) {
       setIsLogoutDialogOpen(false)
       showToast({
         tone: 'danger',
-        message: extractApiError(err, 'No se pudieron cerrar todas las sesiones.'),
+        message: extractApiError(err, t('perfil.sesionesError')),
       })
     } finally {
       setIsLogoutAllPending(false)
@@ -163,18 +165,18 @@ export default function ProfileView() {
     <div className="profile-page">
       <div className="profile-page__header">
         <button type="button" className="button button--ghost" onClick={() => navigate(-1)}>
-          ← Volver
+          {t('perfil.volver')}
         </button>
-        <h1>Mi perfil</h1>
+        <h1>{t('perfil.titulo')}</h1>
       </div>
 
       <div className="profile-sections">
         {/* Información de cuenta */}
         <section className="profile-card">
-          <h2 className="profile-card__title">Información de cuenta</h2>
+          <h2 className="profile-card__title">{t('perfil.cuentaTitulo')}</h2>
 
           <div className="control">
-            <label htmlFor="email-readonly">Correo electrónico</label>
+            <label htmlFor="email-readonly">{t('acceso.correo')}</label>
             <input
               id="email-readonly"
               type="text"
@@ -188,7 +190,7 @@ export default function ProfileView() {
 
           <form className="auth-form" onSubmit={handleProfileSubmit} noValidate>
             <div className="control">
-              <label htmlFor="displayName">Nombre mostrado</label>
+              <label htmlFor="displayName">{t('perfil.nombreMostrado')}</label>
               <input
                 id="displayName"
                 type="text"
@@ -209,18 +211,18 @@ export default function ProfileView() {
             ) : null}
 
             <button type="submit" className="button button--primary" disabled={isProfilePending}>
-              {isProfilePending ? 'Guardando…' : 'Guardar cambios'}
+              {isProfilePending ? t('comun.guardando') : t('perfil.guardarCambios')}
             </button>
           </form>
         </section>
 
         {/* Cambio de contraseña */}
         <section className="profile-card">
-          <h2 className="profile-card__title">Cambiar contraseña</h2>
+          <h2 className="profile-card__title">{t('perfil.contrasenaTitulo')}</h2>
 
           <form className="auth-form" onSubmit={handlePasswordSubmit} noValidate>
             <div className="control">
-              <label htmlFor="currentPassword">Contraseña actual</label>
+              <label htmlFor="currentPassword">{t('perfil.contrasenaActual')}</label>
               <input
                 id="currentPassword"
                 type="password"
@@ -235,7 +237,7 @@ export default function ProfileView() {
             </div>
 
             <div className="control">
-              <label htmlFor="newPassword">Nueva contraseña</label>
+              <label htmlFor="newPassword">{t('perfil.contrasenaNueva')}</label>
               <input
                 id="newPassword"
                 type="password"
@@ -250,7 +252,7 @@ export default function ProfileView() {
             </div>
 
             <div className="control">
-              <label htmlFor="confirmPassword">Confirmar nueva contraseña</label>
+              <label htmlFor="confirmPassword">{t('perfil.contrasenaConfirmar')}</label>
               <input
                 id="confirmPassword"
                 type="password"
@@ -271,16 +273,15 @@ export default function ProfileView() {
             ) : null}
 
             <button type="submit" className="button button--primary" disabled={isPwPending}>
-              {isPwPending ? 'Actualizando…' : 'Cambiar contraseña'}
+              {isPwPending ? t('perfil.contrasenaActualizando') : t('perfil.contrasenaCambiar')}
             </button>
           </form>
         </section>
 
         <section className="profile-card">
-          <h2 className="profile-card__title">Sesiones</h2>
+          <h2 className="profile-card__title">{t('perfil.sesionesTitulo')}</h2>
           <p className="results-subtitle" style={{ marginBottom: '1rem' }}>
-            Revoca todos los refresh tokens y fuerza un nuevo inicio de sesión en todos tus
-            dispositivos.
+            {t('perfil.sesionesTexto')}
           </p>
 
           <button
@@ -289,16 +290,14 @@ export default function ProfileView() {
             onClick={() => setIsLogoutDialogOpen(true)}
             disabled={isLogoutAllPending}
           >
-            {isLogoutAllPending ? 'Cerrando sesiones…' : 'Cerrar todas las sesiones'}
+            {isLogoutAllPending ? t('perfil.sesionesCerrando') : t('perfil.sesionesCerrarTodas')}
           </button>
         </section>
 
         <section className="profile-card">
-          <h2 className="profile-card__title">Descargar mis datos</h2>
+          <h2 className="profile-card__title">{t('perfil.datosTitulo')}</h2>
           <p className="results-subtitle" style={{ marginBottom: '1rem' }}>
-            Un archivo JSON con todo lo que se guarda de ti: los datos de la cuenta, los proveedores
-            que tengas vinculados, tus sesiones abiertas, tus formatos y tu biblioteca completa con
-            sus categorías. No incluye contraseñas ni tokens.
+            {t('perfil.datosTexto')}
           </p>
 
           <button
@@ -307,59 +306,74 @@ export default function ProfileView() {
             onClick={() => void handleExportPersonalData()}
             disabled={isExportPending}
           >
-            {isExportPending ? 'Preparando la descarga…' : 'Descargar mis datos'}
+            {isExportPending ? t('perfil.datosPreparando') : t('perfil.datosDescargar')}
           </button>
         </section>
 
         <section className="profile-card">
-          <h2 className="profile-card__title">Borrar la cuenta</h2>
+          <h2 className="profile-card__title">{t('perfil.borradoTitulo')}</h2>
           <p className="results-subtitle" style={{ marginBottom: '1rem' }}>
-            Se borran tu cuenta y <strong>todo</strong> lo que contiene: tu biblioteca, tus
-            categorías, tus formatos y tus sesiones. No hay forma de recuperarlo, y no se envía
-            ninguna copia por correo.
+            <Trans i18nKey="perfil.borradoTexto" components={{ destacado: <strong /> }} />
           </p>
 
-          <div className="field">
-            <label htmlFor="delete-confirmation">
-              {requiresPassword
-                ? 'Escribe tu contraseña para continuar'
-                : `Escribe ${expectedConfirmation} para continuar`}
-            </label>
-            <input
-              id="delete-confirmation"
-              type={requiresPassword ? 'password' : 'text'}
-              value={deleteConfirmation}
-              onChange={(e) => {
-                setDeleteConfirmation(e.target.value)
-                setDeleteError(null)
-              }}
-              autoComplete={requiresPassword ? 'current-password' : 'off'}
-            />
-          </div>
-
-          {deleteError ? (
-            <div className="auth-error" role="alert">
-              {deleteError}
+          {/* Este bloque acumuló tres defectos de presentación, los tres invisibles para
+              las pruebas de comportamiento y los tres vistos a simple vista:
+              - `field` en vez de `control`, una clase que no existe en el CSS, así que la
+                etiqueta y su campo salían pegados en la misma línea (T5-09);
+              - el campo sin `className="input"`, con lo que el navegador pintaba su
+                control nativo en medio de una pantalla que usa el del sistema de diseño;
+              - y sin contenedor: las otras cuatro tarjetas separan sus elementos con el
+                `gap` de `.auth-form`, y esta no es un formulario —no se envía, abre un
+                diálogo—, así que el botón quedaba pegado al campo.
+              `profile-danger` da ese mismo ritmo sin fingir un formulario, y
+              `form-controls.test.ts` vigila desde ahora el segundo de los tres. */}
+          <div className="profile-danger">
+            <div className="control">
+              <label htmlFor="delete-confirmation">
+                {requiresPassword
+                  ? t('perfil.borradoPideContrasena')
+                  : // `expectedConfirmation` es `string | null`, y solo en esta rama se
+                    // sabe que no es nulo. El texto anterior lo interpolaba con una
+                    // plantilla, que habría escrito «Escribe null para continuar».
+                    t('perfil.borradoPideCorreo', { correo: expectedConfirmation ?? '' })}
+              </label>
+              <input
+                id="delete-confirmation"
+                className="input"
+                type={requiresPassword ? 'password' : 'text'}
+                value={deleteConfirmation}
+                onChange={(e) => {
+                  setDeleteConfirmation(e.target.value)
+                  setDeleteError(null)
+                }}
+                autoComplete={requiresPassword ? 'current-password' : 'off'}
+              />
             </div>
-          ) : null}
 
-          <button
-            type="button"
-            className="button button--danger"
-            onClick={() => setIsDeleteDialogOpen(true)}
-            disabled={!canOpenDeleteDialog || isDeletePending}
-          >
-            {isDeletePending ? 'Borrando…' : 'Borrar mi cuenta'}
-          </button>
+            {deleteError ? (
+              <div className="auth-error" role="alert">
+                {deleteError}
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              className="button button--danger profile-danger__accion"
+              onClick={() => setIsDeleteDialogOpen(true)}
+              disabled={!canOpenDeleteDialog || isDeletePending}
+            >
+              {isDeletePending ? t('perfil.borradoEnCurso') : t('perfil.borradoBoton')}
+            </button>
+          </div>
         </section>
       </div>
 
       <ConfirmDialog
         open={isLogoutDialogOpen}
-        title="Cerrar todas las sesiones"
-        message="Se invalidarán tus refresh tokens y tendrás que iniciar sesión de nuevo en todos tus dispositivos. Usa esta acción cuando sospeches actividad ajena o quieras forzar un reinicio completo."
-        confirmLabel="Sí, cerrar todas"
-        cancelLabel="Seguir conectado"
+        title={t('perfil.sesionesDialogoTitulo')}
+        message={t('perfil.sesionesDialogoMensaje')}
+        confirmLabel={t('perfil.sesionesDialogoConfirmar')}
+        cancelLabel={t('perfil.sesionesDialogoCancelar')}
         tone="danger"
         isPending={isLogoutAllPending}
         onClose={() => setIsLogoutDialogOpen(false)}
@@ -368,10 +382,10 @@ export default function ProfileView() {
 
       <ConfirmDialog
         open={isDeleteDialogOpen}
-        title="Borrar la cuenta definitivamente"
-        message="Esto borra tu cuenta y todos tus datos: biblioteca, categorías, formatos y sesiones. La acción no se puede deshacer y no queda ninguna copia."
-        confirmLabel="Sí, borrar mi cuenta"
-        cancelLabel="Cancelar"
+        title={t('perfil.borradoDialogoTitulo')}
+        message={t('perfil.borradoDialogoMensaje')}
+        confirmLabel={t('perfil.borradoDialogoConfirmar')}
+        cancelLabel={t('comun.cancelar')}
         tone="danger"
         isPending={isDeletePending}
         onClose={() => setIsDeleteDialogOpen(false)}

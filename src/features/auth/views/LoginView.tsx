@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import LanguageToggle from '@/shared/components/LanguageToggle'
 import { useToast } from '@/shared/hooks/useToast'
 import { useAuth } from '../context/useAuth'
 import { loginPayloadSchema, normalizeError, getOAuthErrorMessage } from '../utils/authErrors'
@@ -15,6 +17,7 @@ export default function LoginView() {
 
   const { user, isLoading, login, loginWithOAuth, methods } = useAuth()
   const { showToast } = useToast()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const consumedFlashRef = useRef<string | null>(null)
@@ -76,7 +79,7 @@ export default function LoginView() {
       // loginWithOAuth redirige; si llegamos aquí hubo un error
     } catch (err) {
       const appError = normalizeError(err)
-      setError(appError.message || `No se pudo iniciar el acceso con ${provider}.`)
+      setError(appError.message || t('oauth.noSePudoIniciar', { proveedor: provider }))
       setOAuthPending(null)
     }
   }
@@ -86,10 +89,11 @@ export default function LoginView() {
       <div className="auth-card">
         <div className="auth-brand">
           <span className="brand__title">TrackerMultimedia</span>
+          <LanguageToggle />
         </div>
 
-        <h1 className="auth-card__title">Iniciar sesión</h1>
-        <p className="auth-card__subtitle">Bienvenido de vuelta.</p>
+        <h1 className="auth-card__title">{t('acceso.titulo')}</h1>
+        <p className="auth-card__subtitle">{t('acceso.subtitulo')}</p>
 
         {displayError ? (
           <div className="auth-error" role="alert">
@@ -108,7 +112,7 @@ export default function LoginView() {
                   disabled={oauthPending !== null || isPending}
                   onClick={() => handleOAuth('google')}
                 >
-                  {oauthPending === 'google' ? 'Redirigiendo…' : 'Continuar con Google'}
+                  {oauthPending === 'google' ? t('oauth.redirigiendo') : t('oauth.conGoogle')}
                 </button>
               )}
               {methods?.gitHubEnabled && (
@@ -118,20 +122,20 @@ export default function LoginView() {
                   disabled={oauthPending !== null || isPending}
                   onClick={() => handleOAuth('github')}
                 >
-                  {oauthPending === 'github' ? 'Redirigiendo…' : 'Continuar con GitHub'}
+                  {oauthPending === 'github' ? t('oauth.redirigiendo') : t('oauth.conGitHub')}
                 </button>
               )}
             </div>
 
             <div className="auth-divider">
-              <span>o</span>
+              <span>{t('acceso.separador')}</span>
             </div>
           </>
         )}
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="control">
-            <label htmlFor="email">Correo electrónico</label>
+            <label htmlFor="email">{t('acceso.correo')}</label>
             <input
               id="email"
               type="email"
@@ -156,7 +160,7 @@ export default function LoginView() {
           </div>
 
           <div className="control">
-            <label htmlFor="password">Contraseña</label>
+            <label htmlFor="password">{t('acceso.contrasena')}</label>
             <input
               id="password"
               type="password"
@@ -173,18 +177,18 @@ export default function LoginView() {
             className="button button--primary"
             disabled={isPending || oauthPending !== null || !!emailError}
           >
-            {isPending ? 'Iniciando sesión…' : 'Iniciar sesión'}
+            {isPending ? t('acceso.entrando') : t('acceso.entrar')}
           </button>
         </form>
 
         <p className="auth-footer">
-          ¿Aún no tienes cuenta? <Link to="/register">Regístrate</Link>
+          {t('acceso.sinCuenta')} <Link to="/register">{t('acceso.registrate')}</Link>
         </p>
         <p className="auth-footer">
-          <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
+          <Link to="/forgot-password">{t('acceso.olvidaste')}</Link>
         </p>
         <p className="auth-footer">
-          <Link to="/resend-confirmation">¿No recibiste el correo de confirmación?</Link>
+          <Link to="/resend-confirmation">{t('acceso.noRecibisteConfirmacion')}</Link>
         </p>
       </div>
     </div>

@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Category } from '@/features/categories/schemas/categorySchema'
 import {
   mediaSourceLabels,
-  mediaTrackingStatusLabels,
+  mediaTrackingStatusLabelKeys,
   mediaTrackingStatuses,
   type CreateMediaItemInput,
 } from '@/features/media-items/schemas/mediaItemSchema'
@@ -61,6 +62,7 @@ export default function SearchQuickAddForm({
   onCancel,
   onSubmit,
 }: SearchQuickAddFormProps) {
+  const { t } = useTranslation()
   const [draft, setDraft] = useState<SearchQuickAddDraft>(() => createDraft())
 
   const updateField = <K extends keyof SearchQuickAddDraft>(
@@ -93,7 +95,7 @@ export default function SearchQuickAddForm({
   return (
     <form
       className="filters-form search-quick-add"
-      aria-label="Importación rápida"
+      aria-label={t('importacion.etiqueta')}
       onSubmit={handleSubmit}
     >
       <div className="search-quick-add__preview">
@@ -115,15 +117,19 @@ export default function SearchQuickAddForm({
 
         <div className="search-quick-add__summary">
           <h2 className="panel__title">{item.title}</h2>
-          <p className="panel__description">{item.alternativeTitle ?? 'Sin título alternativo'}</p>
+          <p className="panel__description">
+            {item.alternativeTitle ?? t('tarjeta.sinTituloAlternativo')}
+          </p>
           <div className="badge-row">
             <span className="badge">{item.suggestedType}</span>
             <span className="badge badge--source">{mediaSourceLabels[item.sourceType]}</span>
-            <span className="badge">{item.externalStatusLabel ?? 'Estado editorial sin dato'}</span>
-            <span className="badge">{item.releaseYear ?? 'Año sin dato'}</span>
+            <span className="badge">
+              {item.externalStatusLabel ?? t('importacion.sinEstadoEditorial')}
+            </span>
+            <span className="badge">{item.releaseYear ?? t('importacion.sinAnio')}</span>
           </div>
           <p className="search-card__footer">
-            Puntuación externa: {formatScore(item.externalScore)}
+            {t('importacion.puntuacionExterna', { valor: formatScore(item.externalScore) })}
           </p>
         </div>
       </div>
@@ -136,7 +142,7 @@ export default function SearchQuickAddForm({
 
       <div className="control-grid search-quick-add__grid">
         <div className="control">
-          <label htmlFor="quick-add-status">Estado inicial</label>
+          <label htmlFor="quick-add-status">{t('importacion.estadoInicial')}</label>
           <select
             id="quick-add-status"
             className="select"
@@ -148,14 +154,14 @@ export default function SearchQuickAddForm({
           >
             {mediaTrackingStatuses.map((status) => (
               <option key={status} value={status}>
-                {mediaTrackingStatusLabels[status]}
+                {t(mediaTrackingStatusLabelKeys[status])}
               </option>
             ))}
           </select>
         </div>
 
         <div className="control">
-          <label htmlFor="quick-add-score">Puntuación personal</label>
+          <label htmlFor="quick-add-score">{t('importacion.puntuacionPersonal')}</label>
           <input
             id="quick-add-score"
             className="input"
@@ -165,7 +171,7 @@ export default function SearchQuickAddForm({
             step="0.1"
             value={draft.personalScore}
             onChange={(event) => updateField('personalScore', event.target.value)}
-            placeholder="Opcional"
+            placeholder={t('importacion.opcional')}
           />
         </div>
 
@@ -175,7 +181,7 @@ export default function SearchQuickAddForm({
           aria-labelledby="quickadd-categories-label"
         >
           <span className="control__label" id="quickadd-categories-label">
-            Categorías
+            {t('importacion.categorias')}
           </span>
           {categories.length > 0 ? (
             <div className="category-pills">
@@ -202,21 +208,20 @@ export default function SearchQuickAddForm({
             </div>
           ) : (
             <p className={`category-empty${categoriesHelpText ? ' category-empty--warning' : ''}`}>
-              {categoriesHelpText ??
-                'Todavía no tienes categorías para clasificar esta importación.'}
+              {categoriesHelpText ?? t('importacion.sinCategorias')}
             </p>
           )}
         </div>
       </div>
 
       <div className="control">
-        <label htmlFor="quick-add-notes">Notas de arranque</label>
+        <label htmlFor="quick-add-notes">{t('importacion.notas')}</label>
         <textarea
           id="quick-add-notes"
           className="input media-editor__textarea"
           value={draft.notes}
           onChange={(event) => updateField('notes', event.target.value)}
-          placeholder="Contexto personal, por qué lo agregas, punto de entrada..."
+          placeholder={t('importacion.notasPista')}
         />
       </div>
 
@@ -227,10 +232,10 @@ export default function SearchQuickAddForm({
           onClick={onCancel}
           disabled={isPending}
         >
-          Cancelar
+          {t('comun.cancelar')}
         </button>
         <button type="submit" className="button button--primary" disabled={isPending}>
-          {isPending ? 'Guardando…' : 'Guardar en biblioteca'}
+          {isPending ? t('comun.guardando') : t('importacion.guardar')}
         </button>
       </div>
     </form>

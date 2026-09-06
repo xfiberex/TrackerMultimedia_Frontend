@@ -40,3 +40,9 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Playwright (T4-04). Los artefactos de una ejecución no se versionan; la suite sí.
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
