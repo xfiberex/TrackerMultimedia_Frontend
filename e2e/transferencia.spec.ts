@@ -44,17 +44,20 @@ test('lo exportado se puede volver a importar', async ({ page }) => {
 })
 
 /**
- * **Esta prueba fija el comportamiento de hoy, que no es el que debería ser.**
+ * T2-29, cerrada el 2026-09-06.
  *
- * Un JSON que no tiene nada que ver con una exportación se acepta y se responde
- * «Importación JSON completada sin cambios», con el tono de éxito. La aplicación no se
- * rompe —que es lo que esta prueba garantiza— pero tampoco dice que el archivo no era
- * suyo, así que quien se equivoque de archivo puede concluir que su copia estaba vacía.
+ * Hasta ese día un JSON que no tenía nada que ver con una exportación se aceptaba y se
+ * respondía «Importación JSON completada sin cambios», con el tono de éxito: quien se
+ * equivocara de archivo podía concluir que su copia de seguridad estaba vacía. Ahora el
+ * servidor lo rechaza y lo dice.
  *
- * Queda anotado como T2-29 en el ROADMAP. Cuando se decida qué hacer, esta prueba es la
- * que hay que cambiar, y el cambio se verá aquí en vez de pasar desapercibido.
+ * Esta prueba comprueba las dos mitades a la vez, porque separadas no significan nada:
+ * que **avisa** y que **no ha metido nada** en la biblioteca. Recorre el camino entero
+ * —archivo, servidor, mensaje en pantalla—, que es justo donde el aviso se perdía: el
+ * mensaje viaja en `errors` de un ProblemDetails, y el frontend leía antes el `title`
+ * genérico en inglés que ASP.NET pone siempre.
  */
-test('un archivo que no es una exportación no rompe la biblioteca', async ({ page }) => {
+test('un archivo que no es una exportación se rechaza y se dice por qué', async ({ page }) => {
   const seleccion = page.waitForEvent('filechooser')
   await page.getByRole('button', { name: 'Importar' }).click()
   await page.getByRole('menuitem', { name: 'JSON' }).click()
@@ -66,9 +69,14 @@ test('un archivo que no es una exportación no rompe la biblioteca', async ({ pa
     buffer: Buffer.from('{"esto":"no es una exportación"}'),
   })
 
-  // Lo que sí está garantizado: la aplicación sigue en pie, avisa de algo y no ha metido
-  // basura en la biblioteca. Un 500 con el mensaje de la excepción a la vista es lo que
+  // El mensaje concreto, no uno cualquiera: que diga que el archivo no es una exportación
+  // es la diferencia entre esta prueba y la de antes, que se daba por satisfecha con
+  // «Importación JSON» y por eso pasaba con el defecto dentro.
+  const aviso = page.locator('.toast-stack')
+  await expect(aviso).toContainText(/no es una exportación de TrackerMultimedia/i)
+  await expect(aviso).not.toContainText(/validation errors/i)
+
+  // Y sigue sin entrar basura. Un 500 con el mensaje de la excepción a la vista es lo que
   // cerraron T2-05 y T2-11.
-  await expect(page.locator('.toast-stack')).toContainText(/Importación JSON/i)
   await expect(page.getByText('Tu biblioteca todavía está vacía')).toBeVisible()
 })

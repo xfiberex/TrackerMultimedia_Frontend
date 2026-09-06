@@ -164,8 +164,9 @@ function buildImportToastMessage(result: LibraryImportResponse, t: TFunction): s
 
   const formato = getTransferFormatLabel(result.format)
 
-  // T2-29 sigue abierta: un JSON que no es una exportación no crea ni actualiza nada, así
-  // que cae aquí y se anuncia como una importación correcta «sin cambios».
+  // Desde T2-29 (2026-09-06) aquí solo cae una exportación de verdad que no traía nada
+  // nuevo: una biblioteca vacía, o una que ya estaba entera. Un archivo que no es una
+  // exportación lo rechaza el servidor y sale por `onError`, con tono de aviso.
   if (details.length === 0) {
     return t('biblioteca.importSinCambios', { formato })
   }

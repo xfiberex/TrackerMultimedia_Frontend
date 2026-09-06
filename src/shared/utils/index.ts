@@ -91,20 +91,26 @@ export function extractApiError(err: unknown, fallback: string): string {
   }
 
   if (typeof data === 'object' && data !== null) {
-    if ('detail' in data && typeof data.detail === 'string') {
-      return data.detail
-    }
-
-    if ('title' in data && typeof data.title === 'string') {
-      return data.title
-    }
-
+    // `errors` va primero, y no es un detalle de orden. Un `ValidationProblemDetails` de
+    // ASP.NET trae SIEMPRE `title: "One or more validation errors occurred."`, que es
+    // genérico y está en inglés, junto al mensaje de verdad dentro de `errors`. Mirando
+    // `title` antes, todos los errores de validación del backend llegaban al usuario como
+    // esa frase, y ninguno de los mensajes escritos a mano en el servidor se veía nunca.
+    // Descubierto al cerrar T2-29, cuyo aviso nuevo habría muerto aquí.
     if ('errors' in data && typeof data.errors === 'object' && data.errors !== null) {
       for (const fieldErrors of Object.values(data.errors as Record<string, unknown>)) {
         if (Array.isArray(fieldErrors) && typeof fieldErrors[0] === 'string') {
           return fieldErrors[0]
         }
       }
+    }
+
+    if ('detail' in data && typeof data.detail === 'string') {
+      return data.detail
+    }
+
+    if ('title' in data && typeof data.title === 'string') {
+      return data.title
     }
   }
 
