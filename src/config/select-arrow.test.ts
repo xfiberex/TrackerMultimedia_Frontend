@@ -47,24 +47,59 @@ function reglasDelTema(prefijo: string): Regla[] {
 }
 
 /**
- * Reproduce lo único de la cascada que importa aquí: `background` en forma corta borra
- * la imagen; `background-image` la pone.
+ * Las cuatro propiedades que hacen falta para que la flecha se vea bien. Dibujarla no es
+ * solo ponerla: sin `no-repeat` se empapela el campo, sin tamaño sale al natural del SVG
+ * y sin posición se va a la esquina superior izquierda.
  */
-function imagenFinal(reglasDelSelect: Regla[]): string | null {
-  let imagen: string | null = null
+const PROPIEDADES = [
+  'background-image',
+  'background-repeat',
+  'background-size',
+  'background-position',
+] as const
 
-  for (const { cuerpo } of reglasDelSelect) {
-    if (/(^|;|\s)background\s*:/.test(cuerpo)) imagen = null
-    const declarada = /background-image\s*:\s*([^;]+)/.exec(cuerpo)
-    if (declarada) imagen = declarada[1].trim()
+type Propiedad = (typeof PROPIEDADES)[number]
+
+/**
+ * Reproduce lo único de la cascada que importa aquí, y que es más de lo que parece:
+ * `background` en forma corta **reinicia las cuatro**, no solo la imagen. Esa fue
+ * exactamente la equivocación que hubo que corregir —se repuso la imagen en tema oscuro y
+ * se dieron por buenas las otras tres—, y el resultado fue un campo empapelado de flechas
+ * gigantes que esta prueba, entonces, daba por bueno.
+ */
+function fondoFinal(reglasDelSelect: Regla[]): Record<Propiedad, string | null> {
+  const estado: Record<Propiedad, string | null> = {
+    'background-image': null,
+    'background-repeat': null,
+    'background-size': null,
+    'background-position': null,
   }
 
-  return imagen
+  // Literal, no `new RegExp` con plantilla: una barra invertida dentro de una plantilla se
+  // pierde en silencio y la comprobación pasa a no comprobar nada. Ver PITFALLS.md.
+  const longhand = /(background-(?:image|repeat|size|position))\s*:\s*([^;]+)/g
+  const formaCorta = /(?:^|[;\s])background\s*:/
+
+  for (const { cuerpo } of reglasDelSelect) {
+    if (formaCorta.test(cuerpo)) {
+      for (const propiedad of PROPIEDADES) estado[propiedad] = null
+    }
+
+    for (const [, propiedad, valor] of cuerpo.matchAll(longhand)) {
+      estado[propiedad as Propiedad] = valor.trim()
+    }
+  }
+
+  return estado
 }
 
 describe('la flecha de los `select`', () => {
   const claro = reglasDelTema('')
   const oscuro = [...claro, ...reglasDelTema("[data-theme='dark'] ")]
+  const temas: [string, Regla[]][] = [
+    ['claro', claro],
+    ['oscuro', oscuro],
+  ]
 
   it('sustituye la nativa en vez de convivir con ella', () => {
     const cuerpos = claro.map(({ cuerpo }) => cuerpo).join('\n')
@@ -80,31 +115,31 @@ describe('la flecha de los `select`', () => {
     )
   })
 
-  it.each([
-    ['claro', claro],
-    ['oscuro', oscuro],
-  ])('deja una flecha puesta en el tema %s', (tema, reglasDelTema) => {
+  it.each(temas)('deja la flecha entera en el tema %s', (tema, reglas) => {
+    const fondo = fondoFinal(reglas)
+    const perdidas = PROPIEDADES.filter((propiedad) => fondo[propiedad] === null)
+
     expect(
-      imagenFinal(reglasDelTema),
-      `en el tema ${tema} no queda ninguna \`background-image\` sobre \`.select\`. ` +
-        'Con `appearance: none` puesto, eso son desplegables sin ningún indicador. ' +
-        'Suele pasar por escribir `background` en forma corta, que reinicia la imagen: ' +
-        'la flecha hay que volver a declararla después.',
-    ).not.toBeNull()
+      perdidas,
+      `en el tema ${tema} \`.select\` se queda sin ${perdidas.join(', ')}. ` +
+        'Casi siempre es por pintar el fondo con `background` en forma corta, que reinicia ' +
+        'las cuatro de golpe: sin imagen no hay flecha, y con imagen pero sin las otras tres ' +
+        'el campo sale empapelado de flechas. Píntalo con `background-color`.',
+    ).toEqual([])
   })
 
-  it('separa la flecha del borde, que es lo que se venía a arreglar', () => {
-    const posicion = /background-position\s*:\s*([^;]+)/.exec(
-      claro.map(({ cuerpo }) => cuerpo).join('\n'),
-    )
+  it.each(temas)('coloca la flecha donde debe en el tema %s', (tema, reglas) => {
+    const fondo = fondoFinal(reglas)
 
-    expect(posicion, '`.select` no coloca su flecha con `background-position`').not.toBeNull()
+    // Una sola, no un mosaico. Es el valor por defecto de CSS el que empapela, así que
+    // esto no es redundante: es justo lo que se pierde al reiniciar.
+    expect(fondo['background-repeat'], `la flecha se repite en el tema ${tema}`).toBe('no-repeat')
 
     // `right var(--space-4)` es el mismo margen que el texto lleva al otro lado. Un
     // `right 0` o un `right` a secas la devuelven al filo, que es de donde venimos.
     expect(
-      posicion![1],
-      'la flecha vuelve a estar en el borde: `background-position` no la separa',
+      fondo['background-position'],
+      `la flecha vuelve a estar pegada al borde en el tema ${tema}`,
     ).toMatch(/right\s+var\(--space-4\)/)
   })
 })

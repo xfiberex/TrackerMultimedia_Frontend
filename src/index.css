@@ -543,7 +543,8 @@ a {
   width: 100%;
   padding: var(--space-3) var(--space-4);
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.88);
+  /* `background-color`, no `background`: ver el comentario de `.select`, más abajo. */
+  background-color: rgba(255, 255, 255, 0.88);
 }
 
 /*
@@ -559,8 +560,14 @@ a {
  * flechas distintas.
  *
  * El `padding-right` reserva su hueco: sin él, una opción larga se metería por debajo.
- * Y ojo con el orden —esta regla va después de la de arriba a propósito—: `background`
- * en forma corta reinicia `background-image`, así que ponerla antes borraría la flecha.
+ *
+ * **Ninguna regla de este archivo pinta el fondo de un campo con `background` en forma
+ * corta**, y por eso las dos que lo hacían ahora dicen `background-color`. La forma corta
+ * no reinicia solo `background-image`: se lleva por delante también `background-repeat`,
+ * `background-size` y `background-position`. Con la imagen repuesta a mano pero no las
+ * otras tres, la flecha vuelve a sus valores por defecto —`repeat`, `auto`, `0% 0%`— y
+ * el campo aparece **empapelado de flechas gigantes**. Pasó en tema oscuro y estuvo así
+ * hasta que alguien lo miró. `src/config/select-arrow.test.ts` vigila las cuatro.
  */
 .select {
   appearance: none;
@@ -2692,17 +2699,17 @@ a {
 
 [data-theme='dark'] .input,
 [data-theme='dark'] .select {
-  background: rgba(15, 23, 42, 0.8);
+  /* `background-color`, no `background`: ver el comentario de `.select`, más arriba. */
+  background-color: rgba(15, 23, 42, 0.8);
   color: #cbd5e1;
   border-color: #334155;
 }
 
 /*
- * La flecha, otra vez, y no por gusto: la regla de arriba usa `background` en forma
- * corta, que reinicia `background-image`. Sin esta línea el tema oscuro dejaría los
- * `select` **sin ningún indicador**, que es peor que el defecto que arregló todo esto.
- * El color acompaña al del texto en oscuro; el gris de tema claro se perdería contra el
- * fondo. `src/config/select-arrow.test.ts` vigila que las dos sigan estando.
+ * En oscuro solo cambia el color del trazo: el gris de tema claro se perdería contra el
+ * fondo. Todo lo demás —repetición, tamaño y posición— lo hereda de `.select`, y lo
+ * hereda porque la regla de fondo de aquí arriba usa `background-color` y no la forma
+ * corta. Si alguien la vuelve a acortar, esta línea sola no basta.
  */
 [data-theme='dark'] .select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23cbd5e1'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19.5 8.25-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");

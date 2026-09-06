@@ -1,9 +1,23 @@
 /**
  * AmbientBackground
  *
- * WebGL ambient background with shader-based soft bloom haze.
- * Matches the Compliance Platform design spec: soft bloom, ambient drift,
- * pointer-reactive drift. Falls back to a CSS gradient when WebGL is unavailable.
+ * Fondo ambiental en WebGL: una neblina fija. Si no hay WebGL, cae a un degradado CSS.
+ *
+ * **No se mueve, y es a propósito.** Tenía dos animaciones y se han ido las dos: seguía
+ * al puntero con un `drift` —mover el ratón arremolinaba el humo detrás de lo que estás
+ * leyendo— y además derivaba sola con el tiempo. Con ellas se van un `pointermove` global
+ * que disparaba en cada píxel de movimiento y **un `requestAnimationFrame` que repintaba
+ * la pantalla entera sesenta veces por segundo, para siempre**, aun con la ventana
+ * quieta.
+ *
+ * De ahí que se pinte **una sola vez**. Eso traslada una responsabilidad: sin bucle, el
+ * lienzo ya no se refresca solo, así que cada cosa que cambie lo que hay que pintar tiene
+ * que pedir el repintado —el tamaño de la ventana y el tema—. Olvidarse de una no rompe
+ * nada a la vista: deja el fondo del tema anterior debajo de la interfaz nueva.
+ *
+ * De propina, ya no hay nada que respetar en `prefers-reduced-motion`: una animación en
+ * `requestAnimationFrame` no la detiene ninguna regla de CSS, así que mientras el bucle
+ * existió, quien pidiera menos movimiento lo tenía igual.
  */
 import { useEffect, useRef, useState } from 'react'
 
@@ -19,9 +33,7 @@ const VERT_SRC = `
 const FRAG_SRC = `
   precision mediump float;
 
-  uniform float u_time;
   uniform vec2  u_resolution;
-  uniform vec2  u_pointer;
   uniform float u_dark;
 
   float hash(vec2 p) {
@@ -53,17 +65,11 @@ const FRAG_SRC = `
   void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution;
 
-    // Very subtle pointer-reactive drift
-    vec2 ptr   = u_pointer / u_resolution;
-    ptr.y      = 1.0 - ptr.y;
-    vec2 drift = (ptr - 0.5) * 0.06;
-
-    vec2  p = uv + drift;
-    float t = u_time * 0.06;
+    vec2 p = uv;
 
     // Layered FBM for the bloom haze
-    float n = fbm(p * 1.8 + t);
-    n += fbm(p * 3.2 - t * 0.6) * 0.45;
+    float n = fbm(p * 1.8);
+    n += fbm(p * 3.2) * 0.45;
     n  = clamp(n * 0.7 + 0.1, 0.0, 1.0);
 
     // Palettes: light (#F8FAFC→#E2E8F0→#CBD5E1) / dark (#0F172A→#1E293B→#334155)
@@ -119,16 +125,14 @@ function initGL(canvas: HTMLCanvasElement) {
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null
 
   const posLoc = gl.getAttribLocation(prog, 'a_position')
-  const timeLoc = gl.getUniformLocation(prog, 'u_time')
   const resLoc = gl.getUniformLocation(prog, 'u_resolution')
-  const ptrLoc = gl.getUniformLocation(prog, 'u_pointer')
   const darkLoc = gl.getUniformLocation(prog, 'u_dark')
 
   const buf = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, buf)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW)
 
-  return { gl, prog, buf, posLoc, timeLoc, resLoc, ptrLoc, darkLoc }
+  return { gl, prog, buf, posLoc, resLoc, darkLoc }
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -136,10 +140,6 @@ function initGL(canvas: HTMLCanvasElement) {
 export default function AmbientBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [failed, setFailed] = useState(false)
-  const ptrRef = useRef({ x: 0, y: 0 })
-  const rafRef = useRef(0)
-  const t0Ref = useRef(0)
-  const isDarkRef = useRef(document.documentElement.getAttribute('data-theme') === 'dark')
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -151,51 +151,41 @@ export default function AmbientBackground() {
       return
     }
 
-    const { gl, prog, buf, posLoc, timeLoc, resLoc, ptrLoc, darkLoc } = state
+    const { gl, prog, buf, posLoc, resLoc, darkLoc } = state
 
-    const resize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-      gl.viewport(0, 0, canvas.width, canvas.height)
-    }
-    resize()
-    window.addEventListener('resize', resize)
-
-    const onPointer = (e: PointerEvent) => {
-      ptrRef.current = { x: e.clientX, y: e.clientY }
-    }
-    window.addEventListener('pointermove', onPointer)
-
-    const observer = new MutationObserver(() => {
-      isDarkRef.current = document.documentElement.getAttribute('data-theme') === 'dark'
-    })
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    })
-
-    t0Ref.current = performance.now()
-
-    const frame = (now: number) => {
-      const t = (now - t0Ref.current) / 1000
+    const pintar = () => {
+      const esOscuro = document.documentElement.getAttribute('data-theme') === 'dark'
       gl.useProgram(prog)
       gl.bindBuffer(gl.ARRAY_BUFFER, buf)
       gl.enableVertexAttribArray(posLoc)
       gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0)
-      gl.uniform1f(timeLoc, t)
       gl.uniform2f(resLoc, canvas.width, canvas.height)
-      gl.uniform2f(ptrLoc, ptrRef.current.x, ptrRef.current.y)
-      gl.uniform1f(darkLoc, isDarkRef.current ? 1.0 : 0.0)
+      gl.uniform1f(darkLoc, esOscuro ? 1.0 : 0.0)
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-      rafRef.current = requestAnimationFrame(frame)
     }
-    rafRef.current = requestAnimationFrame(frame)
+
+    // Redimensionar el lienzo lo deja en blanco, así que aquí repintar no es opcional.
+    const alRedimensionar = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+      gl.viewport(0, 0, canvas.width, canvas.height)
+      pintar()
+    }
+    alRedimensionar()
+    window.addEventListener('resize', alRedimensionar)
+
+    // El interruptor de tema cambia `data-theme` en el `<html>`. Con el bucle, el
+    // fotograma siguiente ya traía el color nuevo; sin él, hay que repintar aquí o el
+    // fondo se queda en el tema anterior debajo de una interfaz que ya cambió.
+    const observador = new MutationObserver(pintar)
+    observador.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    })
 
     return () => {
-      cancelAnimationFrame(rafRef.current)
-      window.removeEventListener('resize', resize)
-      window.removeEventListener('pointermove', onPointer)
-      observer.disconnect()
+      window.removeEventListener('resize', alRedimensionar)
+      observador.disconnect()
     }
   }, [])
 
