@@ -480,7 +480,7 @@ export default function CategoriesView() {
                 <tr>
                   <th>{t('categorias.color')}</th>
                   <th>{t('categorias.colNombre')}</th>
-                  <th>{t('descubrir.colAcciones')}</th>
+                  <th>{t('tabla.colAcciones')}</th>
                 </tr>
               </thead>
               <tbody>

@@ -329,7 +329,7 @@ function CategoriesSection() {
                 <tr>
                   <th>{t('categorias.color')}</th>
                   <th>{t('catalogo.nombre')}</th>
-                  <th>{t('descubrir.colAcciones')}</th>
+                  <th>{t('tabla.colAcciones')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -614,7 +614,7 @@ function FormatsSection() {
               <thead>
                 <tr>
                   <th>{t('catalogo.nombre')}</th>
-                  <th>{t('descubrir.colAcciones')}</th>
+                  <th>{t('tabla.colAcciones')}</th>
                 </tr>
               </thead>
               <tbody>

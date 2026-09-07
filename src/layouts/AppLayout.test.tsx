@@ -24,7 +24,6 @@ function renderAppLayout(initialEntry = '/library') {
           <Route path="/" element={<AppLayout />}>
             <Route path="library" element={<div>Library content</div>} />
             <Route path="categories" element={<div>Categories content</div>} />
-            <Route path="discover" element={<div>Discover content</div>} />
             <Route path="profile" element={<div>Profile content</div>} />
           </Route>
         </Routes>
@@ -51,7 +50,6 @@ describe('AppLayout', () => {
     renderAppLayout('/library')
 
     expect(screen.getByRole('link', { name: 'Biblioteca' })).toHaveClass('app-nav__link--active')
-    expect(screen.getByRole('link', { name: 'Descubrir' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Catálogo' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Saltar al contenido' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Tester' })).toHaveAttribute('title', 'user@test.com')
@@ -61,11 +59,11 @@ describe('AppLayout', () => {
   it('calls logout when the user clicks the sign-out button', async () => {
     const user = userEvent.setup()
 
-    renderAppLayout('/discover')
+    renderAppLayout('/categories')
     await user.click(screen.getByRole('button', { name: 'Salir' }))
 
     expect(logoutMock).toHaveBeenCalled()
-    expect(screen.getByText('Discover content')).toBeInTheDocument()
+    expect(screen.getByText('Categories content')).toBeInTheDocument()
   })
 
   /// T3-16. `onClick={() => void logout()}` descartaba la promesa: un corte de red

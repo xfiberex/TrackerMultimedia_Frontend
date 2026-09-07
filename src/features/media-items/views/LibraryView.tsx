@@ -24,7 +24,6 @@ import {
   type LibraryTransferFormat,
   type MediaItem,
   type MediaItemsFilters,
-  type MediaItemSourceType,
   type MediaItemsSortField,
   type MediaTrackingStatus,
   type MediaType,
@@ -184,7 +183,6 @@ function countAppliedFilters(filters: MediaItemsFilters): number {
   if (filters.type) total += 1
   if ((filters.categoryIds?.length ?? 0) > 0) total += 1
   if (filters.status) total += 1
-  if (filters.sourceType) total += 1
   if (filters.createdFrom) total += 1
   if (filters.createdTo) total += 1
   if (typeof filters.minPersonalScore === 'number') total += 1
@@ -201,7 +199,6 @@ function resolveFilters(searchParams: URLSearchParams): MediaItemsFilters {
     type: (searchParams.get('type') as MediaType | null) ?? undefined,
     categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
     status: (searchParams.get('status') as MediaTrackingStatus | null) ?? undefined,
-    sourceType: (searchParams.get('sourceType') as MediaItemSourceType | null) ?? undefined,
     createdFrom: searchParams.get('createdFrom') || undefined,
     createdTo: searchParams.get('createdTo') || undefined,
     minPersonalScore: searchParams.get('minPersonalScore')
@@ -613,14 +610,13 @@ export default function LibraryView() {
                 <thead>
                   <tr>
                     <th></th>
-                    <th>{t('descubrir.colTitulo')}</th>
-                    <th>{t('descubrir.colTipo')}</th>
+                    <th>{t('tabla.colTitulo')}</th>
+                    <th>{t('tabla.colTipo')}</th>
                     <th>{t('filtros.estado')}</th>
-                    <th>{t('descubrir.colOrigen')}</th>
                     <th>{t('biblioteca.colProgreso')}</th>
-                    <th>{t('descubrir.colAnio')}</th>
-                    <th>{t('descubrir.colPuntuacion')}</th>
-                    <th>{t('descubrir.colAcciones')}</th>
+                    <th>{t('tabla.colAnio')}</th>
+                    <th>{t('tabla.colPuntuacion')}</th>
+                    <th>{t('tabla.colAcciones')}</th>
                   </tr>
                 </thead>
                 <tbody>

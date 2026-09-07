@@ -135,11 +135,6 @@ export default function MediaItemEditorForm({
       description: trimOrNull(draft.description),
       contentKind: draft.contentKind,
       status: draft.status,
-      sourceType: item?.sourceType ?? 'Manual',
-      externalId: item?.externalId ?? null,
-      externalMediaKind: item?.externalMediaKind ?? null,
-      externalStatusLabel: item?.externalStatusLabel ?? null,
-      externalScore: item?.externalScore ?? null,
       coverImageUrl: trimOrNull(draft.coverImageUrl),
       referenceUrl: trimOrNull(draft.referenceUrl),
       releaseYear: toOptionalNumber(draft.releaseYear),
@@ -171,9 +166,6 @@ export default function MediaItemEditorForm({
           <p className="panel__description">
             {isEditing ? t('editor.descripcionEditar') : t('editor.descripcionNuevo')}
           </p>
-          {item !== null && item.sourceType !== 'Manual' ? (
-            <p className="panel__description">{t('editor.origenExterno')}</p>
-          ) : null}
         </div>
 
         <button type="button" className="button button--ghost" onClick={onCancel}>

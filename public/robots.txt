@@ -14,7 +14,6 @@ User-agent: *
 # Zona privada: nada que un buscador deba listar.
 Disallow: /library
 Disallow: /catalog
-Disallow: /discover
 Disallow: /profile
 
 # Pantallas que solo tienen sentido con un token en la URL. Indexarlas no aporta

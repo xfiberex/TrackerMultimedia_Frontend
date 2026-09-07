@@ -36,7 +36,7 @@ export const en: Traducciones = {
 
   cabecera: {
     saltarAlContenido: 'Skip to content',
-    subtitulo: 'Manage and discover your media.',
+    subtitulo: 'Organise and track your media.',
     salir: 'Sign out',
     aModoClaro: 'Switch to light mode',
     aModoOscuro: 'Switch to dark mode',
@@ -48,7 +48,6 @@ export const en: Traducciones = {
 
   nav: {
     biblioteca: 'Library',
-    descubrir: 'Discover',
     catalogo: 'Catalogue',
   },
 
@@ -395,64 +394,16 @@ export const en: Traducciones = {
     importar: 'Import',
     abrirEn: 'Open {{titulo}} on {{origen}}',
   },
-  descubrir: {
-    eyebrow: 'Discover',
-    titulo: 'Discover content',
-    descripcion:
-      'Search the available external catalogues and set up each import before it reaches your ' +
-      'library.',
-    sinBusqueda: 'No active search',
-    sinProveedores: 'No active providers',
-    listosParaImportar_one: '{{count}} ready to import',
-    listosParaImportar_other: '{{count}} ready to import',
-    porTanda: '{{count}} per batch',
-
-    catalogosTitulo: 'External catalogues',
-    catalogosDescripcion:
-      'Pick the format, check the active providers and open an assisted import when a result ' +
-      'deserves to come in.',
-    consulta: 'Query',
-    consultaPista: 'Naruto, Berserk, Solo Leveling...',
-    proveedores: 'Providers',
-    proveedoresError: 'The list of available providers could not be loaded.',
-    proveedoresCargando: 'Loading providers...',
-    activarProveedor: 'Enable {{proveedor}}',
-    desactivarProveedor: 'Disable {{proveedor}}',
-    formato: 'Format',
-    cantidad: 'Amount',
-
-    resultadosTitulo: 'External catalogue results',
-    resultadosSubtitulo_one: '{{count}} result ready to import.',
-    resultadosSubtitulo_other: '{{count}} results ready to import.',
-    consultando: 'Querying {{proveedor}}',
-    consultandoVarios: 'Querying external catalogues',
-    consultandoMensaje: 'Searching the active external catalogues...',
-    sinProveedoresMensaje: 'Enable at least one provider to be able to search.',
-    empiezaTitulo: 'Start with a search',
-    empiezaMensaje: 'Type at least 2 characters to start the search.',
-    errorTitulo: 'The external catalogues could not be queried',
-    errorMensaje: 'Check your connection or try again later.',
-    sinResultadosTitulo: 'No results',
-    sinResultadosMensaje: 'Try another name or change the search type to widen the reach.',
-
+  // Etiquetas de columna compartidas por las tablas de Biblioteca, Catalogo y
+  // Categorias. Vivian bajo `descubrir` porque esa pantalla fue la primera en
+  // usar la tabla; al retirarse (2026-09-06) se quedaron aqui, con un nombre
+  // que ya no describe a ninguno de sus tres usuarios.
+  tabla: {
     colTitulo: 'Title',
     colTipo: 'Type',
-    colOrigen: 'Source',
-    colEstadoEditorial: 'Publication status',
     colAnio: 'Year',
     colPuntuacion: 'Score',
     colAcciones: 'Actions',
-
-    importarTitulo: 'Import {{titulo}}',
-    importacionAsistida: 'Assisted import',
-    importacionPista:
-      'Set the initial status and tag the content before saving it. The rest of the metadata ' +
-      'comes from the external catalogue.',
-    agregado: '"{{titulo}}" was added to your library with status {{estado}}.',
-    agregadoError: 'We could not add the title to your library. Try again in a few seconds.',
-    categoriasNoDisponibles:
-      'Categories are not available right now. You can import anyway and classify them later ' +
-      'from Library.',
   },
   categorias: {
     eyebrow: 'Categories',
@@ -508,7 +459,7 @@ export const en: Traducciones = {
     dialogoTituloGenerico: 'Delete category',
     dialogoMensaje:
       'This category will disappear from your personal taxonomy and will no longer be ' +
-      'available in Library and Discover.',
+      'available in Library.',
     dialogoConfirmar: 'Delete category',
     dialogoCancelar: 'Keep category',
   },
@@ -545,8 +496,7 @@ export const en: Traducciones = {
     errorTitulo: 'The library could not be loaded',
     errorMensaje: 'Check your connection or reload the page.',
     vaciaTitulo: 'Your library is still empty',
-    vaciaMensaje:
-      'Use Discover to import titles from the active catalogues, or add a manual entry from here.',
+    vaciaMensaje: 'Add your first entry by hand and fill in its details at your own pace.',
     agregarManual: 'Add manually',
 
     colProgreso: 'Progress',

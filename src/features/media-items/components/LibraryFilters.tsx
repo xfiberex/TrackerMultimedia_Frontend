@@ -7,13 +7,11 @@ import { useState, type FormEventHandler } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Category } from '@/features/categories/schemas/categorySchema'
 import {
-  mediaItemSourceTypes,
   mediaSortFieldLabelKeys,
   mediaTrackingStatusLabelKeys,
   mediaTrackingStatuses,
   mediaTypeLabels,
   mediaTypes,
-  mediaSourceLabels,
   sortDirectionLabelKeys,
   sortDirections,
   mediaItemsSortFields,
@@ -143,23 +141,6 @@ export default function LibraryFilters({
             {mediaTrackingStatuses.map((status) => (
               <option key={status} value={status}>
                 {t(mediaTrackingStatusLabelKeys[status])}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="control">
-          <label htmlFor="library-source">{t('filtros.origen')}</label>
-          <select
-            id="library-source"
-            className="select"
-            value={filters.sourceType ?? ''}
-            onChange={(event) => onFilterChange({ sourceType: event.target.value || undefined })}
-          >
-            <option value="">{t('filtros.todos')}</option>
-            {mediaItemSourceTypes.map((sourceType) => (
-              <option key={sourceType} value={sourceType}>
-                {mediaSourceLabels[sourceType]}
               </option>
             ))}
           </select>

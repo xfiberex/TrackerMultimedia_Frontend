@@ -24,8 +24,6 @@ export const mediaTrackingStatuses = [
   'OnHold',
   'Dropped',
 ] as const
-export const mediaItemSourceTypes = ['Manual', 'Jikan', 'AniList', 'MangaDex'] as const
-export const externalMediaKinds = ['Anime', 'Manga'] as const
 export const progressUnits = [
   'Episodes',
   'Chapters',
@@ -44,8 +42,6 @@ export const libraryTransferFormats = ['Json', 'Csv'] as const
 export type MediaType = (typeof mediaTypes)[number]
 export type ContentKind = (typeof contentKinds)[number]
 export type MediaTrackingStatus = (typeof mediaTrackingStatuses)[number]
-export type MediaItemSourceType = (typeof mediaItemSourceTypes)[number]
-export type ExternalMediaKind = (typeof externalMediaKinds)[number]
 export type ProgressUnit = (typeof progressUnits)[number]
 export type MediaItemsSortField = (typeof mediaItemsSortFields)[number]
 export type SortDirection = (typeof sortDirections)[number]
@@ -56,7 +52,6 @@ export type LibraryTransferFormat = (typeof libraryTransferFormats)[number]
 const mediaTypeSchema = z.enum(mediaTypes)
 const contentKindSchema = z.enum(contentKinds)
 const statusSchema = z.enum(mediaTrackingStatuses)
-const sourceTypeSchema = z.enum(mediaItemSourceTypes)
 const progressUnitSchema = z.enum(progressUnits)
 const sortFieldSchema = z.enum(mediaItemsSortFields)
 const sortDirSchema = z.enum(sortDirections)
@@ -75,11 +70,6 @@ export const mediaItemSchema = z.object({
   description: z.string().nullable(),
   contentKind: contentKindSchema,
   status: statusSchema,
-  sourceType: sourceTypeSchema,
-  externalId: z.number().nullable(),
-  externalMediaKind: z.enum(externalMediaKinds).nullable(),
-  externalStatusLabel: z.string().nullable(),
-  externalScore: z.number().min(0).max(10).nullable(),
   coverImageUrl: z.string().url().nullable(),
   referenceUrl: z.string().url().nullable(),
   releaseYear: z.number().int().positive().nullable(),
@@ -113,7 +103,6 @@ export const mediaItemsFiltersSchema = z.object({
   type: mediaTypeSchema.optional(),
   categoryIds: z.array(z.string()).optional(),
   status: statusSchema.optional(),
-  sourceType: sourceTypeSchema.optional(),
   createdFrom: z.string().optional(),
   createdTo: z.string().optional(),
   minPersonalScore: z.number().min(0).max(10).optional(),
@@ -153,11 +142,6 @@ export interface CreateMediaItemInput {
   contentKind: ContentKind
   categoryIds?: string[]
   status: MediaTrackingStatus
-  sourceType: MediaItemSourceType
-  externalId?: number | null
-  externalMediaKind?: ExternalMediaKind | null
-  externalStatusLabel?: string | null
-  externalScore?: number | null
   coverImageUrl?: string | null
   referenceUrl?: string | null
   releaseYear?: number | null
@@ -205,13 +189,6 @@ export const mediaTypeLabels: Record<MediaType, string> = {
   Donghua: 'Donghua',
   Manhwa: 'Manhwa',
   Manhua: 'Manhua',
-}
-
-export const mediaSourceLabels: Record<MediaItemSourceType, string> = {
-  Manual: 'Manual',
-  Jikan: 'Jikan',
-  AniList: 'AniList',
-  MangaDex: 'MangaDex',
 }
 
 /**

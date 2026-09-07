@@ -1,5 +1,4 @@
 import {
-  MagnifyingGlassIcon,
   MoonIcon,
   RectangleStackIcon,
   Squares2X2Icon,
@@ -20,11 +19,6 @@ const navigation = [
     to: '/library',
     clave: 'nav.biblioteca',
     icon: RectangleStackIcon,
-  },
-  {
-    to: '/discover',
-    clave: 'nav.descubrir',
-    icon: MagnifyingGlassIcon,
   },
   {
     to: '/catalog',

@@ -35,7 +35,7 @@ export const es = {
 
   cabecera: {
     saltarAlContenido: 'Saltar al contenido',
-    subtitulo: 'Gestiona y descubre tu contenido multimedia.',
+    subtitulo: 'Organiza y sigue tu contenido multimedia.',
     salir: 'Salir',
     aModoClaro: 'Cambiar a modo claro',
     aModoOscuro: 'Cambiar a modo oscuro',
@@ -47,7 +47,6 @@ export const es = {
 
   nav: {
     biblioteca: 'Biblioteca',
-    descubrir: 'Descubrir',
     catalogo: 'Catálogo',
   },
 
@@ -399,66 +398,16 @@ export const es = {
     importar: 'Importar',
     abrirEn: 'Abrir {{titulo}} en {{origen}}',
   },
-  descubrir: {
-    eyebrow: 'Descubrir',
-    titulo: 'Descubrir contenido',
-    descripcion:
-      'Busca en los catálogos externos disponibles y prepara cada importación antes de llevarla ' +
-      'a tu biblioteca.',
-    sinBusqueda: 'Sin búsqueda activa',
-    sinProveedores: 'Sin proveedores activos',
-    listosParaImportar_one: '{{count}} listo para importar',
-    listosParaImportar_other: '{{count}} listos para importar',
-    porTanda: '{{count}} por tanda',
-
-    catalogosTitulo: 'Catálogos externos',
-    catalogosDescripcion:
-      'Elige el formato, revisa los proveedores activos y abre una importación asistida cuando ' +
-      'un resultado merezca entrar.',
-    consulta: 'Consulta',
-    consultaPista: 'Naruto, Berserk, Solo Leveling...',
-    proveedores: 'Proveedores',
-    proveedoresError: 'No se pudo cargar la lista de proveedores disponibles.',
-    proveedoresCargando: 'Cargando proveedores...',
-    activarProveedor: 'Activar {{proveedor}}',
-    desactivarProveedor: 'Desactivar {{proveedor}}',
-    formato: 'Formato',
-    cantidad: 'Cantidad',
-
-    resultadosTitulo: 'Resultados de catálogos externos',
-    resultadosSubtitulo_one: '{{count}} resultado listo para importar.',
-    resultadosSubtitulo_other: '{{count}} resultados listos para importar.',
-    consultando: 'Consultando {{proveedor}}',
-    consultandoVarios: 'Consultando catálogos externos',
-    consultandoMensaje: 'Buscando en los catálogos externos activos...',
-    sinProveedoresMensaje: 'Activa al menos un proveedor para poder realizar búsquedas.',
-    empiezaTitulo: 'Empieza con una búsqueda',
-    empiezaMensaje: 'Escribe al menos 2 caracteres para iniciar la búsqueda.',
-    errorTitulo: 'No se pudo consultar los catálogos externos',
-    errorMensaje: 'Verifica tu conexión o vuelve a intentarlo más tarde.',
-    sinResultadosTitulo: 'Sin resultados',
-    sinResultadosMensaje:
-      'Prueba con otro nombre o cambia el tipo de búsqueda para ampliar el alcance.',
-
+  // Etiquetas de columna compartidas por las tablas de Biblioteca, Catalogo y
+  // Categorias. Vivian bajo `descubrir` porque esa pantalla fue la primera en
+  // usar la tabla; al retirarse (2026-09-06) se quedaron aqui, con un nombre
+  // que ya no describe a ninguno de sus tres usuarios.
+  tabla: {
     colTitulo: 'Título',
     colTipo: 'Tipo',
-    colOrigen: 'Origen',
-    colEstadoEditorial: 'Estado editorial',
     colAnio: 'Año',
     colPuntuacion: 'Puntuación',
     colAcciones: 'Acciones',
-
-    importarTitulo: 'Importar {{titulo}}',
-    importacionAsistida: 'Importación asistida',
-    importacionPista:
-      'Ajusta el estado inicial y etiqueta el contenido antes de guardarlo. El resto de ' +
-      'metadatos llegará desde el catálogo externo.',
-    agregado: '"{{titulo}}" fue agregado a tu biblioteca con estado {{estado}}.',
-    agregadoError:
-      'No pudimos agregar el título a tu biblioteca. Vuelve a intentarlo en unos segundos.',
-    categoriasNoDisponibles:
-      'Las categorías no están disponibles ahora mismo. Puedes importar igual y clasificarlas ' +
-      'después desde Biblioteca.',
   },
   categorias: {
     eyebrow: 'Categorías',
@@ -515,7 +464,7 @@ export const es = {
     dialogoTituloGenerico: 'Eliminar categoría',
     dialogoMensaje:
       'Esta categoría desaparecerá de tu taxonomía personal y dejará de estar disponible en ' +
-      'Biblioteca y Descubrir.',
+      'Biblioteca.',
     dialogoConfirmar: 'Eliminar categoría',
     dialogoCancelar: 'Conservar categoría',
   },
@@ -553,9 +502,7 @@ export const es = {
     errorTitulo: 'No se pudo cargar la biblioteca',
     errorMensaje: 'Verifica tu conexión o recarga la página.',
     vaciaTitulo: 'Tu biblioteca todavía está vacía',
-    vaciaMensaje:
-      'Usa Descubrir para importar títulos desde los catálogos activos o agrega un registro ' +
-      'manual desde aquí.',
+    vaciaMensaje: 'Añade tu primer registro a mano y ve completando su ficha a tu ritmo.',
     agregarManual: 'Agregar manualmente',
 
     colProgreso: 'Progreso',

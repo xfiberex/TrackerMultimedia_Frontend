@@ -8,7 +8,6 @@ import {
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import {
-  mediaSourceLabels,
   mediaTrackingStatusLabelKeys,
   contentKindLabelKeys,
   mediaTypeLabels,
@@ -103,10 +102,6 @@ export default function MediaItemCard({
         <div className="badge-row">
           <span className="badge">{getKindLabel(item, t)}</span>
           <span className={statusClassName}>{t(mediaTrackingStatusLabelKeys[item.status])}</span>
-          <span className="badge badge--source">{mediaSourceLabels[item.sourceType]}</span>
-          {item.externalStatusLabel ? (
-            <span className="badge">{item.externalStatusLabel}</span>
-          ) : null}
         </div>
 
         {categories.length > 0 ? (

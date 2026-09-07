@@ -1,7 +1,7 @@
 # TrackerMultimedia
 
-Aplicación para gestionar y descubrir anime, manga, manhwa y más contenido multimedia.
-Conecta con la API de [Jikan](https://jikan.moe/) para búsquedas externas.
+Aplicación para organizar y seguir anime, manga, manhwa y más contenido multimedia.
+La biblioteca se escribe a mano: **no depende de ningún catálogo externo** desde el 2026-09-06.
 
 ## Requisitos previos
 

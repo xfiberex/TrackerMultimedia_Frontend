@@ -28,14 +28,12 @@ const raiz = resolve(__dirname, '..')
  * Cada entrada tiene que explicar **quién** los pinta; si no se puede explicar, es
  * un defecto y no una excepción.
  */
-const EXCEPCIONES: { archivo: string; motivo: string }[] = [
-  {
-    archivo: 'features/search/views/DiscoverView.tsx',
-    motivo:
-      'La casilla del interruptor de proveedor la pinta la regla `.toggle-switch input` ' +
-      'junto con `.toggle-switch__track`; con `.input` se vería el cuadrado nativo encima.',
-  },
-]
+// Vacía desde el 2026-09-06. La única excepción que hubo era la casilla del
+// interruptor de proveedor de «Descubrir», que se pintaba desde `.toggle-switch`;
+// al retirarse esa pantalla no queda ni un campo del frontend sin la clase del
+// sistema de diseño. Si vuelve a hacer falta una excepción, tiene que explicar
+// **quién** pinta el campo: si no se puede explicar, es un defecto.
+const EXCEPCIONES: { archivo: string; motivo: string }[] = []
 
 const archivos = globSync('**/*.tsx', { cwd: raiz })
   .filter((ruta) => !ruta.includes('.test.'))

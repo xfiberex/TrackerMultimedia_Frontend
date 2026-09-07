@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import {
   contentKindLabelKeys,
-  mediaSourceLabels,
   mediaTrackingStatusLabelKeys,
   mediaTypeLabels,
   progressUnitShortLabelKeys,
@@ -88,8 +87,6 @@ export default function MediaItemRow({
       <td className="search-row__meta-cell">
         <span className={statusClassName}>{t(mediaTrackingStatusLabelKeys[item.status])}</span>
       </td>
-
-      <td className="search-row__meta-cell">{mediaSourceLabels[item.sourceType]}</td>
 
       <td className="search-row__meta-cell">{getProgressLabel(item, t)}</td>
 

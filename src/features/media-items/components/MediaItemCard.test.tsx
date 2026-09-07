@@ -10,11 +10,6 @@ const baseItem: MediaItem = {
   description: null,
   contentKind: 'Movie',
   status: 'Planned',
-  sourceType: 'Manual',
-  externalId: null,
-  externalMediaKind: null,
-  externalStatusLabel: null,
-  externalScore: null,
   coverImageUrl: null,
   referenceUrl: null,
   releaseYear: null,
@@ -40,13 +35,12 @@ describe('MediaItemCard', () => {
     expect(screen.getByText('Sin título alternativo')).toBeInTheDocument()
     expect(screen.getByText('Película')).toBeInTheDocument()
     expect(screen.getByText('Planeado')).toBeInTheDocument()
-    expect(screen.getByText('Manual')).toBeInTheDocument()
     expect(screen.getByText('Año sin registrar · Sin progreso')).toBeInTheDocument()
     expect(screen.getByText('Sin puntuación')).toBeInTheDocument()
     expect(screen.getByText(/2026/)).toBeInTheDocument()
   })
 
-  it('renders cover, status badge and external labels when present', () => {
+  it('renders cover, status badge and optional data when present', () => {
     render(
       <MediaItemCard
         item={{
@@ -56,8 +50,6 @@ describe('MediaItemCard', () => {
           coverImageUrl: 'https://img.test/frieren.jpg',
           alternativeTitle: 'Sousou no Frieren',
           status: 'InProgress',
-          sourceType: 'Jikan',
-          externalStatusLabel: 'Activo',
           releaseYear: 2023,
           progressUnit: 'Episodes',
           progressCount: 12,
@@ -75,8 +67,6 @@ describe('MediaItemCard', () => {
       'https://img.test/frieren.jpg',
     )
     expect(screen.getByText('En progreso')).toBeInTheDocument()
-    expect(screen.getByText('Jikan')).toBeInTheDocument()
-    expect(screen.getByText('Activo')).toBeInTheDocument()
     expect(screen.getByText('Backlog')).toBeInTheDocument()
     expect(
       screen.getByText('Estreno 2023 · Progreso 12/24 episodios · Temporada 2'),

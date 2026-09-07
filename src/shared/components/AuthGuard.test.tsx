@@ -41,18 +41,18 @@ describe('AuthGuard', () => {
     useAuthMock.mockReturnValue({ user: null, isLoading: false })
 
     render(
-      <MemoryRouter initialEntries={['/discover']}>
+      <MemoryRouter initialEntries={['/catalog']}>
         <Routes>
           <Route path="/login" element={<LoginProbe />} />
           <Route element={<AuthGuard />}>
-            <Route path="/discover" element={<div>discover content</div>} />
+            <Route path="/catalog" element={<div>catalog content</div>} />
           </Route>
         </Routes>
       </MemoryRouter>,
     )
 
-    expect(screen.getByTestId('login-probe')).toHaveTextContent('from:/discover')
-    expect(screen.queryByText('discover content')).not.toBeInTheDocument()
+    expect(screen.getByTestId('login-probe')).toHaveTextContent('from:/catalog')
+    expect(screen.queryByText('catalog content')).not.toBeInTheDocument()
   })
 
   it('renders the protected outlet when a user is authenticated', () => {
