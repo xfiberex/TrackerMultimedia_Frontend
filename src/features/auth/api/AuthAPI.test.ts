@@ -85,9 +85,6 @@ describe('AuthAPI', () => {
     await expect(AuthAPI.logout()).resolves.toBeUndefined()
     await expect(AuthAPI.logoutAll()).resolves.toBeUndefined()
     await expect(
-      AuthAPI.changePassword({ currentPassword: 'Old123$', newPassword: 'New123$' }),
-    ).resolves.toBeUndefined()
-    await expect(
       AuthAPI.resetPassword({
         email: 'user@test.com',
         token: 'reset-token',
@@ -97,13 +94,39 @@ describe('AuthAPI', () => {
 
     expect(apiMock.post).toHaveBeenNthCalledWith(1, '/auth/logout')
     expect(apiMock.post).toHaveBeenNthCalledWith(2, '/auth/logout-all')
-    expect(apiMock.post).toHaveBeenNthCalledWith(3, '/auth/change-password', {
-      currentPassword: 'Old123$',
-      newPassword: 'New123$',
-    })
-    expect(apiMock.post).toHaveBeenNthCalledWith(4, '/auth/reset-password', {
+    expect(apiMock.post).toHaveBeenNthCalledWith(3, '/auth/reset-password', {
       email: 'user@test.com',
       token: 'reset-token',
+      newPassword: 'New123$',
+    })
+  })
+
+  // Cambiar la contraseña dejó de ser un endpoint sin cuerpo en T6-01: revoca todas las
+  // sesiones del usuario y emite una nueva, que es lo que viaja en la respuesta. El test
+  // vive aparte de la tanda de arriba justamente por eso — si volviera a devolver void, el
+  // usuario se quedaría sin forma de renovar y lo descubriría al expirar el access token,
+  // no aquí.
+  it('changePassword returns the freshly issued session', async () => {
+    const session = {
+      accessToken: 'jwt-nuevo',
+      expiresIn: 900,
+      user: {
+        id: 'user-1',
+        email: 'user@test.com',
+        displayName: 'User',
+        emailConfirmed: true,
+        hasPassword: true,
+        linkedProviders: ['password'],
+      },
+    }
+    apiMock.post.mockResolvedValue({ data: session })
+
+    await expect(
+      AuthAPI.changePassword({ currentPassword: 'Old123$', newPassword: 'New123$' }),
+    ).resolves.toEqual(session)
+
+    expect(apiMock.post).toHaveBeenCalledWith('/auth/change-password', {
+      currentPassword: 'Old123$',
       newPassword: 'New123$',
     })
   })

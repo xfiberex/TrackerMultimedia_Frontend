@@ -213,7 +213,7 @@ export const en: Traducciones = {
     contrasenaActualizando: 'Updating…',
     contrasenaCambiar: 'Change password',
     contrasenaNoCoinciden: 'The new passwords do not match.',
-    contrasenaHecha: 'Password updated.',
+    contrasenaHecha: 'Password updated. Sessions on your other devices have been signed out.',
     contrasenaError: 'The password could not be changed.',
 
     sesionesTitulo: 'Sessions',

@@ -10,11 +10,13 @@ const changePasswordMock = vi.hoisted(() => vi.fn())
 const logoutAllMock = vi.hoisted(() => vi.fn())
 const deleteAccountMock = vi.hoisted(() => vi.fn())
 const exportPersonalDataMock = vi.hoisted(() => vi.fn())
+const completeSessionMock = vi.hoisted(() => vi.fn())
 const authState = vi.hoisted(() => ({
   user: null as User | null,
   refreshUser: vi.fn(),
   logoutAll: logoutAllMock,
   deleteAccount: deleteAccountMock,
+  completeSession: completeSessionMock,
 }))
 
 vi.mock('react-router-dom', async () => {
@@ -144,9 +146,14 @@ describe('ProfileView', () => {
     expect(changePasswordMock).not.toHaveBeenCalled()
   })
 
-  it('changes the password, clears the form and shows a toast', async () => {
+  it('changes the password, adopts the new session, clears the form and shows a toast', async () => {
     const user = userEvent.setup()
-    changePasswordMock.mockResolvedValue(undefined)
+    const session = {
+      accessToken: 'jwt-nuevo',
+      expiresIn: 900,
+      user: authState.user,
+    }
+    changePasswordMock.mockResolvedValue(session)
 
     renderProfileView()
 
@@ -166,7 +173,16 @@ describe('ProfileView', () => {
       })
     })
 
-    expect(await screen.findByText('Contraseña actualizada correctamente.')).toBeInTheDocument()
+    // El servidor acaba de revocar el token de refresco de este navegador junto con los
+    // demás (T6-01). Si la vista no adopta la sesión que viene en la respuesta, el usuario
+    // se queda sin poder renovar y acaba en la pantalla de login sin saber por qué.
+    expect(completeSessionMock).toHaveBeenCalledWith(session)
+
+    expect(
+      await screen.findByText(
+        'Contraseña actualizada. Se han cerrado las sesiones de los demás dispositivos.',
+      ),
+    ).toBeInTheDocument()
     expect(currentPassword).toHaveValue('')
     expect(newPassword).toHaveValue('')
     expect(confirmPassword).toHaveValue('')

@@ -8,7 +8,7 @@ import { useAuth } from '../context/useAuth'
 import { downloadBlob, extractApiError } from '@/shared/utils'
 
 export default function ProfileView() {
-  const { user, refreshUser, logoutAll, deleteAccount } = useAuth()
+  const { user, refreshUser, logoutAll, deleteAccount, completeSession } = useAuth()
   const navigate = useNavigate()
   const { showToast } = useToast()
   const { t } = useTranslation()
@@ -130,7 +130,10 @@ export default function ProfileView() {
     setIsPwPending(true)
 
     try {
-      await AuthAPI.changePassword({ currentPassword, newPassword })
+      // La sesión que devuelve el servidor sustituye a la actual: el cambio de contraseña
+      // revoca todas las sesiones del usuario, así que la que tenía este navegador hasta
+      // hace un instante ya no puede renovarse (T6-01).
+      completeSession(await AuthAPI.changePassword({ currentPassword, newPassword }))
       showToast({ tone: 'success', message: t('perfil.contrasenaHecha') })
       setCurrentPassword('')
       setNewPassword('')

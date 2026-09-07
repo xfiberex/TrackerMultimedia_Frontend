@@ -37,8 +37,12 @@ export const AuthAPI = {
 
   me: () => api.get<User>('/auth/me').then((r) => r.data),
 
+  // Devuelve una sesión, no void: desde T6-01 cambiar la contraseña revoca todos los
+  // tokens de refresco del usuario —incluido el de este navegador— y el servidor emite uno
+  // nuevo en la misma respuesta. Ignorar ese cuerpo dejaría al usuario con un access token
+  // que caduca en minutos y sin nada con lo que renovarlo.
   changePassword: (payload: ChangePasswordPayload) =>
-    api.post<void>('/auth/change-password', payload).then(() => {}),
+    api.post<AuthResponse>('/auth/change-password', payload).then((r) => r.data),
 
   updateProfile: (payload: UpdateProfilePayload) =>
     api.put<User>('/auth/profile', payload).then((r) => r.data),

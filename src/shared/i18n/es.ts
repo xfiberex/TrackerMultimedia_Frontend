@@ -212,7 +212,8 @@ export const es = {
     contrasenaActualizando: 'Actualizando…',
     contrasenaCambiar: 'Cambiar contraseña',
     contrasenaNoCoinciden: 'Las contraseñas nuevas no coinciden.',
-    contrasenaHecha: 'Contraseña actualizada correctamente.',
+    contrasenaHecha:
+      'Contraseña actualizada. Se han cerrado las sesiones de los demás dispositivos.',
     contrasenaError: 'No se pudo cambiar la contraseña.',
 
     sesionesTitulo: 'Sesiones',
